@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -21,6 +22,7 @@ class Settings(BaseSettings):
     mysql_password: str = "ibge"
     mysql_database: str = "ibge"
     mysql_required: bool = False
+    load_mysql_on_start: bool = False
     data_dir: Path = Path("data")
     datasets_path: Path = API_ROOT / "datasets.yaml"
     max_upload_mb: int = 50
@@ -31,8 +33,10 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
+        user = quote_plus(self.mysql_user)
+        password = quote_plus(self.mysql_password)
         return (
-            f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"
+            f"mysql+pymysql://{user}:{password}"
             f"@{self.mysql_host}:{self.mysql_port}/{self.mysql_database}"
             "?charset=utf8mb4"
         )

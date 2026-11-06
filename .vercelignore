@@ -1,0 +1,8 @@
+apps/api
+data
+docs
+e2e
+specs
+**/.venv
+**/__pycache__
+**/.pytest_cache

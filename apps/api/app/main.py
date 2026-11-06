@@ -1,5 +1,9 @@
 """Aplicação FastAPI."""
 
+import logging
+import threading
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -10,9 +14,27 @@ from app.core.errors import AppError, error_body
 from app.core.logging import setup_logging
 
 
+def _load_mysql() -> None:
+    try:
+        from app.tools.load_mysql_from_parquet import main
+
+        main()
+    except Exception:
+        logging.getLogger(__name__).exception("carga MySQL falhou")
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    from app.core.config import get_settings
+
+    if get_settings().load_mysql_on_start:
+        threading.Thread(target=_load_mysql, name="mysql-load", daemon=True).start()
+    yield
+
+
 def create_app() -> FastAPI:
     setup_logging()
-    app = FastAPI(title="Projeções da População IBGE", version="1.0.0")
+    app = FastAPI(title="Projeções da População IBGE", version="1.0.0", lifespan=_lifespan)
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(territories.router, prefix="/api/v1")
     app.include_router(datasets.router, prefix="/api/v1")

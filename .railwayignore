@@ -1,0 +1,9 @@
+apps/web
+e2e
+docs
+specs
+node_modules
+packages
+playwright-report
+test-results
+**/*.png

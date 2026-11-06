@@ -77,12 +77,13 @@ def _insert_batches(engine: Engine, staging: str, table, frame: pd.DataFrame) ->
     present = [col for col in columns if col in frame.columns]
     subset = frame.loc[:, present]
     records = [_record(row, present) for row in subset.itertuples(index=False, name=None)]
-    with engine.begin() as connection:
-        for offset in range(0, len(records), BATCH):
-            chunk = records[offset : offset + BATCH]
-            if not chunk:
-                continue
-            connection.execute(text(_insert_sql(staging, present)), chunk)
+    statement = text(_insert_sql(staging, present))
+    for offset in range(0, len(records), BATCH):
+        chunk = records[offset : offset + BATCH]
+        if not chunk:
+            continue
+        with engine.begin() as connection:
+            connection.execute(statement, chunk)
 
 
 def _insert_sql(table: str, columns: list[str]) -> str:
