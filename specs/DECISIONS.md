@@ -1,0 +1,47 @@
+# Decisões
+
+Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
+
+- 2026-11-05 | etapa 1 | Estratégia padrão de outliers = `flag` | As bases são projeções oficiais; alterar valores mudaria o dado publicado. `cap`/`remove` exigem confirmação.
+- 2026-11-05 | etapa 1 | Detecção de outliers por variação ano a ano dentro de cada série | O IQR global marca ~12% das linhas porque mistura Brasil, regiões e UFs.
+- 2026-11-05 | etapa 1 | Base "suja" gerada com seed fixa | Os originais não têm nulos indevidos nem duplicatas; sem isso o tratamento não pode ser demonstrado nem testado.
+- 2026-11-05 | geral | Web em React (Vite) em vez de React Native | Shadcn UI e Tailwind são para React DOM; mobile fica para um app Expo futuro reaproveitando `packages/shared`.
+- 2026-11-05 | etapa 1 | `header_row` do yaml é o índice base 0 do pandas | Os números do design (5 ou 6) caem na linha dos nomes; a linha anterior é o cabeçalho agrupador.
+- 2026-11-05 | etapa 1 | `DATA_PROFILE.md` foi materializado a partir das planilhas | O arquivo citado nas specs não estava no repositório; os totais foram lidos com calamine e gravados para os testes golden.
+- 2026-11-05 | etapa 1 | Leitura de todas as abas com python-calamine; openpyxl só escreve | A ds5 pede calamine e o mesmo motor mantém as outras tabelas dentro do tempo.
+- 2026-11-05 | etapa 1 | Coluna que começa com dígito ganha prefixo `n_` | Ex.: `0-14_T` vira `n_0_14_t` e `60+_T` vira `n_60_mais_t`.
+- 2026-11-05 | etapa 1 | `INTERVALO DE IDADE` é publicado como `intervalo` | O requisito fala em `intervalo`; o rótulo da planilha é mais longo.
+- 2026-11-05 | etapa 1 | Desempate de duplicata usa a contagem de nulos anterior à imputação | Depois da interpolação as duas linhas ficam igualmente preenchidas e o critério de "menos nulos" se perderia.
+- 2026-11-05 | etapa 1 | Soma territorial e `_H+_M=_T` só em colunas de contagem ou proporção | Indicadores como TFT, e0 e TCG não somam entre UFs nem entre sexos.
+- 2026-11-05 | etapa 1 | `MYSQL_REQUIRED` default false; no compose fica true | A API responde pelo Parquet sem banco. Docker exige a carga e o rollback do MySQL.
+- 2026-11-05 | etapa 1 | Censo 2022 = agregado 4709, variável 93 | Confirmado nos metadados da API de Agregados (pesquisa CD, período 2022, sem classificação). Gravado em `apps/api/ibge_reference.json`.
+- 2026-11-05 | etapa 1 | Claim de "ano atual" usa o ano corrente se existir na série, senão o último ano | A revisão cobre 2000–2070, então 2026 está na tabela.
+- 2026-11-05 | etapa 1 | Tolerância das somas de contagem é 1 pessoa | Nascimentos da ds4 oficial divergem em até 4 pessoas; o relatório marca essa regra como falha e guarda a diferença.
+- 2026-11-05 | etapa 2 | React 18.3, Vite 8 e Tailwind 4 | O template atual do Vite é o 8; os tokens continuam variáveis HSL em `:root` e `.dark`.
+- 2026-11-05 | etapa 2 | Proxy `/api` do Vite para `127.0.0.1:8000` | O browser fala com a mesma origem; a API não precisa de CORS.
+- 2026-11-05 | etapa 2 | `HealthOut` no `/health` | O retorno `dict` não gerava tipo no OpenAPI.
+- 2026-11-05 | etapa 2 | TanStack Table 8 | A v9 trocou `useReactTable`; a v8 mantém o contrato de colunas, ordenação e paginação.
+- 2026-11-05 | etapa 2 | Rótulos curtos dos datasets na navegação | O nome oficial fica no título da página.
+- 2026-11-05 | etapa 2 | `ChartCard` aceita `onRetry` | O estado de erro precisa da ação "Tentar novamente".
+- 2026-11-05 | etapa 2 | Gráficos com saturação ≤ 28% e luminosidade distinta | Continua um único acento e os tons se separam também para daltonismo.
+- 2026-11-05 | etapa 3 | Pirâmide sem `ano` devolve todos os anos | O slider troca o ano no cliente e precisa ficar abaixo de 100 ms.
+- 2026-11-05 | etapa 3 | Busca e ordenação no `/data` | O DataTable da etapa 2 já envia `q`, `sort` e `desc`.
+- 2026-11-05 | etapa 3 | Upload devolve a prévia de 10 linhas | A validação de colunas fica no servidor e o browser não lê xlsx.
+- 2026-11-05 | etapa 3 | Qualidade permanece em `/qualidade` | A navegação da etapa 2 já usa esse caminho.
+- 2026-11-05 | geral | A API lê `.env` na raiz do repositório | O arquivo fica ao lado do compose; o caminho relativo ao cwd falhava ao subir a API de `apps/api`.
+- 2026-11-05 | geral | `env_file` do compose é opcional | O `.env` é local e o `docker compose up` do README falhava quando o arquivo ainda não existia.
+- 2026-11-05 | etapa 4 | Percentual em `formatValue` é proporção de 0 a 1 | A visão completa já usa o estilo percent do Intl, que multiplica por 100.
+- 2026-11-05 | etapa 4 | A pirâmide simples mantém 6 faixas e o eixo numérico fica com 5 marcas | As faixas de R3.4 são o dado; o limite de R3.3 vale para as marcas numéricas.
+- 2026-11-05 | etapa 4 | A regra de formatação fica no oxlint e num teste de varredura | O app já usa oxlint; o teste cobre o mesmo conjunto fora de `lib/format.ts`.
+- 2026-11-05 | etapa 4 | O teste de vazamento olha cada nó de texto e cada aria/title | O textContent do container cola anos vizinhos do seletor e geraria falso positivo.
+- 2026-11-05 | etapa 5 | Bônus demográfico = anos contíguos com RDT65 abaixo de 50 (ou 0,5 se a série for razão) que contêm o mínimo | O IBGE publica dependentes por 100 pessoas de 15–64; 50 é o limiar clássico de mais gente em idade ativa. O ponto de virada é o ano do mínimo.
+- 2026-11-05 | etapa 5 | Malha em GeoJSON de qualidade mínima, coordenadas com 3 casas | A resposta da API de Malhas já fica em 88 KB; TopoJSON não era necessário para o teto de 150 KB.
+- 2026-11-05 | etapa 6 | Perfil de longo prazo não foi gravado no Chrome DevTools neste ambiente | As animações usam só `transform`, `opacity` e `stroke-dashoffset`, o stagger para em 400 ms e listas acima de 30 itens não escalonam; a revisão com Modo leve fica no `MotionConfig` (`always`) e em `data-reduced-motion`.
+- 2026-11-05 | etapa 6 | A página `/dev/motion` só entra no router quando `import.meta.env.DEV` | O laboratório não vai para o build de produção.
+- 2026-11-05 | etapa 6 | `plural` usa `formatValue` | O teste da etapa 4 barra `Intl.NumberFormat` fora de `lib/format.ts`.
+- 2026-11-06 | etapa 7 | E2E usa `DATA_DIR` do repositório | O `.env` aponta `DATA_DIR=/data` do compose; sem override a API não lê os parquet locais.
+- 2026-11-06 | etapa 7 | Linha de base Playwright: 41 falhas, 43 ok, 6 skip | Rolagem horizontal já na página, sem overlay: 375 px chega a 398–562 e 768 px a 818. Fumaça sem marca em ds3 (1º gráfico), ds4 (7 gráficos) e ds5 (4º), com e sem Modo leve. Um timeout de título na visão geral a 768 px.
+- 2026-11-06 | etapa 7 | O header quebra linha em vez de esticar a página | Os botões da barra (visão, busca, tema, Modo leve) passavam da largura em 375 e 768 px.
+- 2026-11-06 | etapa 7 | Linhas somem porque o shape do Recharts 3 não traz `d` | O `DrawingPath` descartava o traço sem `d`; a curva nasce dos `points`. Vale com e sem Modo leve. O `pathLength` junto de `strokeDasharray` também apagaria o tracejado. O domínio do eixo não era a causa: a linha do hoje e os marcadores continuavam.
+- 2026-11-06 | etapa 9 | Censo 2022 é a tabela 4709, variável 93, período 2022, níveis N1, N2 e N3 | Os metadados da API confirmam “População residente” em pessoas, só em 2022. O Brasil recenseado é 203.080.756, +3,8% abaixo da projeção de 210.862.983. A resposta fica em `data/cache/censo2022.json`.
+- 2026-11-06 | ajustes | Fatos e bônus usam um parágrafo de 3 a 5 frases, com largura de 46 caracteres | O card estreito e a visão geral larga quebram o mesmo texto em 3 a 5 linhas. A barra de rolagem usa fundo e muted; a seleção usa o primário.

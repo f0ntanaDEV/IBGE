@@ -1,0 +1,98 @@
+defaults:
+  null_threshold: 0.6
+  outlier: { method: iqr_delta, factor: 3.0, strategy: flag }
+
+datasets:
+  - id: ds1
+    name: "População por sexo e idade simples"
+    file: tab1_idade_simples.xlsx
+    sheet: "1) POP_IDADE SIMPLES"
+    header_row: 5
+    reshape:
+      wide_to_long:
+        id_vars: [IDADE, SEXO, CÓD., SIGLA, LOCAL]
+        var_name: ano
+        value_name: populacao
+    table: ds1_populacao_idade
+    key: [idade, sexo, cod, ano]
+    series_by: [cod, sexo, idade]
+    metrics: [populacao]
+    news_keywords: ["projeção da população", "pirâmide etária"]
+    claims:
+      - id: pico_populacional
+        label: "Ano de pico da população brasileira"
+        compute: "argmax(sum(populacao) where cod=0, sexo='Ambos') by ano"
+        news_terms: ["população", "2041"]
+
+  - id: ds2
+    name: "População por grupo quinquenal"
+    file: tab2_grupo_quinquenal.xlsx
+    sheet: "2) POP_GRUPO QUINQUENAL"
+    header_row: 5
+    reshape:
+      wide_to_long:
+        id_vars: [GRUPO ETÁRIO, SEXO, CÓD., SIGLA, LOCAL]
+        var_name: ano
+        value_name: populacao
+    derive:
+      idade_inicio: "int(grupo_etario[:2])"
+    table: ds2_populacao_quinquenal
+    key: [grupo_etario, sexo, cod, ano]
+    series_by: [cod, sexo, grupo_etario]
+    metrics: [populacao]
+    news_keywords: ["envelhecimento", "idosos"]
+
+  - id: ds3
+    name: "Grupos etários específicos"
+    file: tab3_grupos_etarios_especificos.xlsx
+    sheet: "3) POP_GRUPO ETÁRIO ESPECÍFICO"
+    header_row: 6
+    table: ds3_grupos_etarios
+    key: [cod, ano]
+    series_by: [cod]
+    metrics: auto
+    news_keywords: ["idosos", "crianças", "população em idade de trabalhar"]
+    claims:
+      - id: idosos_superam_jovens
+        label: "Ano em que a população 60+ supera a de 0–14 anos (Brasil)"
+        compute: "min(ano) where cod=0 and pop_60mais_t > pop_0_14_t"
+        news_terms: ["idosos", "crianças"]
+
+  - id: ds4
+    name: "Indicadores demográficos"
+    file: tab4_indicadores.xlsx
+    sheet: "4) INDICADORES"
+    header_row: 6
+    table: ds4_indicadores
+    key: [cod, ano]
+    series_by: [cod]
+    metrics: auto
+    structural_nulls:
+      - columns: [tcg_t, tcg_h, tcg_m]
+        when: "ano == min(ano)"
+    news_keywords: ["esperança de vida", "fecundidade", "mortalidade infantil"]
+    claims:
+      - id: fecundidade_abaixo_reposicao
+        label: "Taxa de fecundidade total (Brasil, ano atual) vs. reposição (2,1)"
+        compute: "tft where cod=0 and ano=current_year"
+        news_terms: ["fecundidade"]
+      - id: esperanca_vida
+        label: "Esperança de vida ao nascer (Brasil, ano atual)"
+        compute: "e0_t where cod=0 and ano=current_year"
+        news_terms: ["esperança de vida"]
+
+  - id: ds5
+    name: "Tábuas de mortalidade"
+    file: tab5_tabuas_mortalidade.xlsx
+    sheet: "5) TÁBUAS DE MORTALIDADE"
+    header_row: 5
+    engine: calamine
+    table: ds5_tabuas_mortalidade
+    key: [idade, sexo, cod, ano]
+    series_by: [cod, sexo, idade]
+    metrics: [nmx, nax, nqx, lx, ndx, nlx, sx, tx, ex]
+    domain_rules:
+      - "0 <= nqx <= 1"
+      - "lx non_increasing by idade within (cod, sexo, ano)"
+      - "ex >= 0"
+    news_keywords: ["tábuas de mortalidade", "esperança de vida"]

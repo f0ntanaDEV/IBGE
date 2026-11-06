@@ -1,0 +1,30 @@
+---
+description: Princípios de economia de tokens (sempre ativos)
+alwaysApply: true
+---
+
+# Economia de tokens
+
+## Contexto
+- As specs em `specs/` são a fonte da verdade. Leia somente a spec da etapa atual e os arquivos citados com @.
+- Não varra o repositório inteiro. Faça uma busca direcionada (nome de arquivo ou símbolo) antes de abrir qualquer arquivo.
+- Nunca abra arquivos de `data/raw/`, `data/processed/`, lockfiles ou `node_modules/`. Os datasets já estão descritos em `specs/DATA_PROFILE.md`; consulte-o primeiro. Só se precisar de algo que não esteja lá, rode `python -m app.tools.profile <arquivo>`.
+- Nos testes, use as fixtures pequenas de `tests/fixtures/`, nunca as planilhas completas (a ds5 tem 24 MB).
+- Não releia arquivos que você acabou de editar.
+
+## Execução
+- Execute **uma tarefa do `tasks.md` por vez**, na ordem. Ao concluir, marque `[x]` e pare.
+- Edite por trechos (diff). Não reescreva arquivos inteiros para mudar poucas linhas.
+- Reaproveite componentes, funções e tipos existentes. Não crie abstrações, arquivos ou dependências que a tarefa não exija.
+- Rode apenas os testes afetados (`pytest -k <nome>`, `vitest run <arquivo>`). A suíte completa só roda na última tarefa da etapa.
+- Em caso de erro, corrija a causa raiz. Após 2 falhas na mesma tarefa, pare e descreva o bloqueio em até 3 linhas.
+
+## Respostas
+- Não repita no chat código que já está nos arquivos.
+- Ao fim de cada tarefa, responda em até 5 linhas: o que mudou, arquivos tocados e como validar.
+- Sem introduções, elogios, recapitulações ou explicações não solicitadas.
+- Pergunte só diante de um bloqueio real. Nos demais casos, siga a spec e registre a decisão em uma linha em `specs/DECISIONS.md`.
+
+## Código
+- Comentários apenas onde a intenção não é óbvia; docstrings de uma linha.
+- Sem código morto, exemplos comentados ou TODOs genéricos.

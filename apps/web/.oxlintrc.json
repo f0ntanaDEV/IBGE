@@ -1,0 +1,28 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.property.name='toLocaleString']",
+        "message": "Use formatValue em lib/format.ts."
+      },
+      {
+        "selector": "CallExpression[callee.property.name='toFixed']",
+        "message": "Use formatValue em lib/format.ts."
+      },
+      {
+        "selector": "NewExpression[callee.property.name='NumberFormat']",
+        "message": "Use formatValue em lib/format.ts."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/lib/format.ts"],
+      "rules": {
+        "no-restricted-syntax": "off"
+      }
+    }
+  ]
+}

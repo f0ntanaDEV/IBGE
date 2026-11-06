@@ -1,0 +1,13 @@
+---
+description: Contexto fixo do projeto (sempre ativo)
+alwaysApply: true
+---
+
+# Projeto: Dashboard analítico com dados públicos do IBGE
+
+- Monorepo: `apps/api` (FastAPI), `apps/web` (React + Vite + TS), `packages/shared` (tipos gerados do OpenAPI).
+- React Native não faz parte do escopo web. `packages/shared` existe para permitir um app Expo no futuro.
+- Idioma da interface: pt-BR. Números e datas sempre formatados com `Intl` pt-BR.
+- Arquitetura limpa: routers finos → services (casos de uso) → repositories/integrations. Regra de negócio nunca fica em router ou componente de UI.
+- Visual: neutro e sóbrio (zinc/slate + um único acento dessaturado). Proibido usar cores vibrantes, gradientes chamativos ou sombras pesadas.
+- Toda animação precisa respeitar o "Modo leve" (`data-reduced-motion` no `<html>`).

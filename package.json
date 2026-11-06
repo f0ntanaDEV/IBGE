@@ -1,0 +1,11 @@
+{
+  "name": "ibge-dashboard",
+  "private": true,
+  "workspaces": ["apps/web", "packages/shared"],
+  "scripts": {
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}

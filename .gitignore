@@ -1,0 +1,17 @@
+.venv/
+node_modules/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+.env
+data/processed/
+data/cache/
+data/raw/uploads/
+data/raw/*_sujo.xlsx
+apps/api/.venv/
+dist/
+*.egg-info/
+.mypy_cache/
+/test-results/
+/playwright-report/
+/blob-report/
