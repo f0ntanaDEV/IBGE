@@ -1,6 +1,7 @@
 # Dashboard IBGE
 
 Painel das Projeções da População (revisão 2024): API FastAPI, frontend React e pacote compartilhado.
+AL: https://ibge-eight.vercel.app/
 
 ```bash
 docker compose up --build
