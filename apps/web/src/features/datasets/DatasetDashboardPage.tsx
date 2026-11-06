@@ -378,6 +378,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
                 summary={item.introducao ?? ""}
                 date={item.data_publicacao ?? ""}
                 url={item.link ?? "https://agenciadenoticias.ibge.gov.br/"}
+                image={item.imagem ?? undefined}
               />
               </div>
             ))}

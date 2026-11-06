@@ -86,6 +86,8 @@ export function formatDate(value: string | Date) {
   if (value instanceof Date) return dateFmt.format(value)
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
   if (match) return dateFmt.format(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])))
+  const brazilian = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(value)
+  if (brazilian) return dateFmt.format(new Date(Number(brazilian[3]), Number(brazilian[2]) - 1, Number(brazilian[1])))
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return "—"
   return dateFmt.format(parsed)

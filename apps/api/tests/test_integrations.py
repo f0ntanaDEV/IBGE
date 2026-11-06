@@ -48,10 +48,30 @@ def test_cache_e_retry(tmp_path, monkeypatch):
         ["projeção da população"],
         settings,
         cache,
-        httpx.Client(transport=httpx.MockTransport(lambda _request: httpx.Response(200, json={"items": [{"id": 1, "titulo": "A", "introducao": "", "data_publicacao": "", "link": "", "editorias": ""}]}))),
+        httpx.Client(
+            transport=httpx.MockTransport(
+                lambda _request: httpx.Response(
+                    200,
+                    json={
+                        "items": [
+                            {
+                                "id": 1,
+                                "titulo": "A",
+                                "introducao": "",
+                                "data_publicacao": "",
+                                "link": "",
+                                "editorias": "",
+                                "imagens": "{\"image_intro\":\"images/agenciadenoticias/foto.jpg\"}",
+                            }
+                        ]
+                    },
+                )
+            )
+        ),
     )
     assert news["available"] is True
     assert news["items"][0]["titulo"] == "A"
+    assert news["items"][0]["imagem"] == "https://agenciadenoticias.ibge.gov.br/images/agenciadenoticias/foto.jpg"
     get_settings.cache_clear()
 
 

@@ -26,8 +26,7 @@ from app.services.analytics import (
 from app.services.cleaning.reader import read_upload
 from app.services.etl import catalog_or_404, process_dataset, validate_upload
 from app.services.store import ParquetStore
-from app.integrations.cache import ResponseCache
-from app.integrations.ibge_news import fetch_news
+from app.integrations.ibge_news import fetch_news, news_cache
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
 
@@ -243,7 +242,7 @@ def dataset_slope(dataset_id: str, metric: str, ano_a: int, ano_b: int) -> dict:
 def claims(dataset_id: str) -> list[dict]:
     cfg = catalog_or_404(dataset_id)
     settings = get_settings()
-    cache = ResponseCache(settings.data_dir / "cache", settings.cache_ttl_s)
+    cache = news_cache(settings)
     results = []
     for item in compute_claims(_store().get(dataset_id), cfg):
         terms = item.pop("news_terms")
@@ -258,8 +257,7 @@ def claims(dataset_id: str) -> list[dict]:
 def news(dataset_id: str) -> dict:
     cfg = catalog_or_404(dataset_id)
     settings = get_settings()
-    cache = ResponseCache(settings.data_dir / "cache", settings.cache_ttl_s)
-    return fetch_news(cfg.news_keywords, settings, cache)
+    return fetch_news(cfg.news_keywords, settings, news_cache(settings))
 
 
 @router.get("/{dataset_id}/download")

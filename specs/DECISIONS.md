@@ -46,3 +46,4 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-06 | etapa 9 | Censo 2022 é a tabela 4709, variável 93, período 2022, níveis N1, N2 e N3 | Os metadados da API confirmam “População residente” em pessoas, só em 2022. O Brasil recenseado é 203.080.756, +3,8% abaixo da projeção de 210.862.983. A resposta fica em `data/cache/censo2022.json`.
 - 2026-11-06 | ajustes | Fatos e bônus usam um parágrafo de 3 a 5 frases, com largura de 46 caracteres | O card estreito e a visão geral larga quebram o mesmo texto em 3 a 5 linhas. A barra de rolagem usa fundo e muted; a seleção usa o primário.
 - 2026-11-06 | deploy | API e MySQL no Railway; a Vercel só encaminha `/api` | A Vercel não hospeda MySQL. A API lê Parquet no disco e carrega o banco na subida.
+- 2026-11-06 | notícias | Snapshot das matérias vai na imagem da API e vale 7 dias | No Railway a consulta ao IBGE passa de 40 s e a tela fica vazia.

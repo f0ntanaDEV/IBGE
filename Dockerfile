@@ -19,6 +19,8 @@ ENV DATA_DIR=/data \
     MYSQL_REQUIRED=false
 RUN python -m app.tools.load_originals
 
+COPY apps/api/news_snapshot /data/cache
+
 ENV MYSQL_REQUIRED=true \
     LOAD_MYSQL_ON_START=true
 

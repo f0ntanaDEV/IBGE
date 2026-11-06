@@ -35,6 +35,7 @@ export type NewsItem = {
   data_publicacao?: string | null
   link?: string | null
   editorias?: string | null
+  imagem?: string | null
 }
 
 export type Claim = {

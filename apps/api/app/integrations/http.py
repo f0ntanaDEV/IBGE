@@ -15,14 +15,16 @@ def fetch_json(
     cache: ResponseCache,
     client: httpx.Client | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    timeout: float | None = None,
+    retries: int | None = None,
 ) -> tuple[object | None, bool]:
     cached = cache.fresh(url)
     if cached is not None:
         return cached, True
     owns_client = client is None
-    http = client or httpx.Client(timeout=settings.ibge_timeout_s)
+    http = client or httpx.Client(timeout=settings.ibge_timeout_s if timeout is None else timeout)
     try:
-        for attempt in range(settings.ibge_retries + 1):
+        for attempt in range((settings.ibge_retries if retries is None else retries) + 1):
             try:
                 response = http.get(url)
                 response.raise_for_status()
