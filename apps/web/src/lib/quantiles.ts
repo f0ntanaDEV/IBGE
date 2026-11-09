@@ -12,6 +12,15 @@ export function quantileBreaks(values: number[], classes = 5) {
   return edges
 }
 
+export function quantizeBreaks(values: number[], classes = 5) {
+  const sorted = values.filter((value) => Number.isFinite(value))
+  if (sorted.length === 0) return []
+  const min = Math.min(...sorted)
+  const max = Math.max(...sorted)
+  const step = (max - min) / classes || 1
+  return Array.from({ length: classes - 1 }, (_, index) => min + step * (index + 1))
+}
+
 export function classOf(value: number, edges: number[]) {
   let index = 0
   for (const edge of edges) {

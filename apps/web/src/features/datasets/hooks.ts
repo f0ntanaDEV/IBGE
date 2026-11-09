@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 import {
   fetchCenso,
@@ -8,13 +8,16 @@ import {
   fetchDatasetNews,
   fetchDatasets,
   fetchMetrics,
+  fetchFacts,
   fetchPyramid,
+  fetchQualityReport,
   fetchRuns,
   fetchSummary,
   fetchTerritories,
   type DataQuery,
 } from "@/features/datasets/api"
 import { calendarYear, clampYear } from "@/features/datasets/derive"
+import { useCrossFilter } from "@/stores/crossfilter"
 import { STALE_TIME } from "@/lib/queryClient"
 
 export function useDashboardFilters() {
@@ -37,7 +40,17 @@ export function useDashboardFilters() {
     cod: Number.isFinite(parsed) ? parsed : 0,
     sexo,
     setAno: (value: number) => setFilter("ano", String(clampYear(value))),
-    setCod: (value: number) => setFilter("cod", String(value)),
+    setCod: (value: number) => {
+      const next = new URLSearchParams(params)
+      next.set("cod", String(value))
+      next.delete("sel_uf")
+      next.delete("sel_regiao")
+      for (const key of [...next.keys()]) {
+        if (key.startsWith("d_")) next.delete(key)
+      }
+      setParams(next, { replace: true })
+      useCrossFilter.getState().clear()
+    },
     setSexo: (value: string) => setFilter("sexo", value),
   }
 }
@@ -108,6 +121,33 @@ export function useRows(id: string, query: DataQuery, enabled = true) {
     queryFn: () => fetchData(id, { ...query, page: 1, pageSize: query.pageSize ?? 200 }),
     staleTime: STALE_TIME,
     enabled,
+  })
+}
+
+const REGION = new Set([0, 1, 2, 3, 4, 5])
+
+export function useLastValidFactsCod(cod: number) {
+  const last = useRef(0)
+  if (REGION.has(cod)) last.current = cod
+  return last.current
+}
+
+export function useFacts(pageId: string) {
+  const filters = useDashboardFilters()
+  const factsCod = useLastValidFactsCod(filters.cod)
+  const query = useQuery({
+    queryKey: ["facts", pageId, factsCod],
+    queryFn: () => fetchFacts(pageId, factsCod),
+    staleTime: STALE_TIME,
+  })
+  return { ...query, factsCod, territoryCod: filters.cod }
+}
+
+export function useQualityReport(id: string, source: "original" | "sujo") {
+  return useQuery({
+    queryKey: ["quality-report", id, source],
+    queryFn: () => fetchQualityReport(id, source),
+    staleTime: STALE_TIME,
   })
 }
 

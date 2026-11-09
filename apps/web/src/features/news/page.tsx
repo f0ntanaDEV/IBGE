@@ -59,7 +59,7 @@ export function NewsPage() {
       {visible.length === 0 && queries.some((query) => query.isSuccess) ? (
         <EmptyState title="Nenhuma notícia" description="Tente outro dataset." />
       ) : null}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid items-stretch gap-3 md:grid-cols-3">
         {visible.map((item) => (
           <NewsCard
             key={`${item.datasetId}-${item.id ?? item.link}`}

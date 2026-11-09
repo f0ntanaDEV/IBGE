@@ -4,7 +4,8 @@ import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { datasetById } from "@/app/navigation"
 import { ChartCard } from "@/components/common/ChartCard"
-import { StatText } from "@/components/common/StatText"
+import { ErrorState } from "@/components/common/ErrorState"
+import { FactsCard } from "@/features/facts/FactsCard"
 import { DataTable } from "@/components/common/DataTable"
 import { ObservationsCard } from "@/components/common/NarrativeText"
 import { KpiCard } from "@/components/common/KpiCard"
@@ -32,7 +33,6 @@ import { ProjectionLine, type LinePoint } from "@/features/datasets/components/P
 import { RankingBars, type RankRow } from "@/features/datasets/components/RankingBars"
 import { UploadDialog } from "@/features/datasets/components/UploadDialog"
 import { packRows } from "@/features/datasets/board"
-import { factsStatText } from "@/features/datasets/statisticalCopy"
 import { EnrichmentChart, isEnrichment } from "@/features/datasets/components/EnrichmentChart"
 import { SERIES_LABELS, type ChartSpec, type DashboardSpec, type MetricFormat } from "@/features/datasets/dashboards.config"
 import {
@@ -55,6 +55,7 @@ import { useEffectiveFilters } from "@/stores/crossfilter"
 import type { NarrativeContext } from "@/lib/narratives/types"
 import {
   useCenso,
+  useFacts,
   useClaims,
   useDashboardFilters,
   useDatasetList,
@@ -94,9 +95,12 @@ function asFormat(format: MetricFormat): NumberFormat {
   return format
 }
 
-function cellText(value: unknown) {
+function cellText(value: unknown, key?: string) {
   if (value == null || value === "") return "—"
   if (typeof value === "boolean") return value ? "Sim" : "Não"
+  if (typeof value === "number" && (key === "ano" || key === "year" || key?.startsWith("ano_"))) {
+    return formatValue(value, { key: key ?? "ano", kind: "year" })
+  }
   if (typeof value === "number") return Number.isInteger(value) ? formatBy("integer", value) : formatBy("decimal", value)
   return String(value)
 }
@@ -145,6 +149,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const claims = useClaims(spec.id, spec.id === "ds1" || spec.id === "ds3" || spec.id === "ds4")
   const news = useDatasetNews(spec.id)
   const censo = useCenso(effective.cod, spec.showCensoReference)
+  const facts = useFacts(spec.id)
   const pyramidEnabled = spec.id === "ds1" || spec.id === "ds2"
   const pyramid = usePyramid(spec.id, effective.cod, effective.sexo, pyramidEnabled)
   const series = useRows(spec.id, { cod: effective.cod, pageSize: 200 }, spec.id === "ds3" || spec.id === "ds4")
@@ -227,7 +232,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         accessorFn: (row) => row[key],
         header: COLUMN_LABELS[key] ?? dictionary.get(key)?.rotulo_original ?? key,
         meta: index >= 2 ? { priority: "low" } : undefined,
-        cell: (context) => (key === "is_outlier" ? (isOutlier(context.getValue()) ? "Sim" : "Não") : cellText(context.getValue())),
+        cell: (context) => (key === "is_outlier" ? (isOutlier(context.getValue()) ? "Sim" : "Não") : cellText(context.getValue(), key)),
       })),
     [dictionary, spec.tableColumns],
   )
@@ -281,6 +286,16 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         }
       />
       <FilterChipsBar />
+      {pyramid.isError || series.isError || life.isError ? (
+        <ErrorState
+          message="Não foi possível carregar os dados deste território."
+          onRetry={() => {
+            void pyramid.refetch()
+            void series.refetch()
+            void life.refetch()
+          }}
+        />
+      ) : null}
       <FilterBar
         territories={territories.data ?? []}
         filters={spec.filters}
@@ -316,13 +331,14 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           const span = packRows(activeCharts.map((item) => item.span ?? 6))[index]
           return (
             <div key={chart.title} className={`span-${span}`}>
-              {chart.kind === "context" ? (
+              {chart.kind === "facts" ? (
+                <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
+              ) : chart.kind === "context" ? (
                 <ContextCard
                   hasCenso={spec.showCensoReference}
                   loading={censo.isLoading || claims.isLoading}
                   error={censo.error}
                   data={censo.data}
-                  claims={claims.data ?? []}
                   onRetry={() => {
                     void censo.refetch()
                     void claims.refetch()
@@ -370,7 +386,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         {confirming.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma notícia associada ainda.</p>
         ) : (
-          <div className="chart-board">
+          <div className="chart-board grid items-stretch">
             {confirming.map((item, index) => (
               <div key={String(item.id ?? item.link)} className={`span-${packRows(confirming.map(() => 4))[index]}`}>
               <NewsCard
@@ -454,14 +470,12 @@ function ContextCard({
   loading,
   error,
   data,
-  claims,
   onRetry,
 }: {
   hasCenso: boolean
   loading: boolean
   error: unknown
   data?: { available: boolean; projecao: number | null; censo: number | null; diff_pct: number | null; nota: string }
-  claims: { id: string; label: string; value: number | string | null }[]
   onRetry: () => void
 }) {
   const censoReady = Boolean(data?.available && data.censo != null)
@@ -484,15 +498,7 @@ function ContextCard({
             )}
           </section>
         ) : null}
-        {hasCenso ? <div className="my-3 border-t border-border" /> : null}
-        <section aria-label="Fatos">
-          <h3 className="text-sm font-medium">Fatos</h3>
-          {claims.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">Nenhum fato para este recorte.</p>
-          ) : (
-            <StatText text={factsStatText(claims)} />
-          )}
-        </section>
+        {hasCenso ? null : <p className="text-sm text-muted-foreground">Sem referência do Censo 2022 nesta página.</p>}
       </div>
     </ChartCard>
   )
@@ -533,7 +539,7 @@ function chartMetricKey(spec: ChartSpec) {
 
 function ChartSlot(props: SlotProps) {
   const spec = props.spec
-  if (!spec || spec.kind === "context") return null
+  if (!spec || spec.kind === "context" || spec.kind === "facts") return null
   const narrative = lineNarrative(spec, props.seriesItems, props.cod, props.placeName ?? "Brasil", props.year)
   if (isEnrichment(spec)) {
     return <EnrichmentChart spec={spec} datasetId={props.page.id} cod={props.cod} year={props.year} sexo={props.sexo} />

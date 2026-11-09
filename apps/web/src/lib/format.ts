@@ -1,4 +1,5 @@
 export type NumberFormat = "integer" | "number" | "decimal" | "percent" | "permil" | "years"
+export type Mode = "technical" | "simple"
 export type MetricKind = "count" | "percent" | "permil" | "years" | "rate" | "index" | "delta" | "year" | "raw"
 export type MetricMeta = { key: string; kind: MetricKind; unitSimple?: string }
 
@@ -59,8 +60,23 @@ export function formatAgeBand(raw: string | number) {
   return text
 }
 
-export function formatValue(v: number | null, metric: MetricMeta): string {
+function formatSimple(v: number, metric: MetricMeta) {
+  if (metric.kind === "year") return String(Math.trunc(v))
+  if (metric.kind === "count") return formatCompact(v)
+  if (metric.kind === "percent") return `${normalize(percent0.format(v * 100))}%`
+  if (metric.kind === "permil") return `${normalize(percent0.format(v))} a cada mil`
+  if (metric.kind === "years") return `${normalize(percent0.format(v))} anos`
+  if (metric.kind === "rate" || metric.kind === "index") {
+    const text = normalize(onePlace.format(v))
+    return metric.unitSimple ? `${text} ${metric.unitSimple}` : text
+  }
+  return formatFull(v, metric)
+}
+
+export function formatValue(v: number | null, metric: MetricMeta, mode: Mode = "technical"): string {
   if (v == null || Number.isNaN(v)) return "—"
+  if (metric.kind === "year") return String(Math.trunc(v))
+  if (mode === "simple") return formatSimple(v, metric)
   return formatFull(v, metric)
 }
 
@@ -73,8 +89,8 @@ export function metricFromFormat(format: NumberFormat, key = "valor"): MetricMet
   return { key, kind: "count" }
 }
 
-export function formatBy(format: NumberFormat, value: number | null, key = "valor") {
-  return formatValue(value, metricFromFormat(format, key))
+export function formatBy(format: NumberFormat, value: number | null, key = "valor", mode: Mode = "technical") {
+  return formatValue(value, metricFromFormat(format, key), mode)
 }
 
 export function formatLoose(value: number) {

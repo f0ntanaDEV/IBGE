@@ -41,7 +41,7 @@ function ProjectionLineView({
   band,
   markYear,
 }: ProjectionLineProps) {
-  const { colors, isAnimationActive } = useChartTheme()
+  const { colors, isAnimationActive, strokeWidth, dash, highContrast } = useChartTheme()
   const [hidden, setHidden] = useState<Set<string>>(() => new Set())
   const [inside, setInside] = useState(false)
   const simple = false
@@ -189,7 +189,9 @@ function ProjectionLineView({
                 isAnimationActive={false}
                 connectNulls={false}
                 legendType="none"
-                shape={(props: DrawShapeProps) => <SeriesShape {...props} />}
+                shape={(props: DrawShapeProps) => (
+                  <SeriesShape {...props} strokeWidth={strokeWidth} dash={highContrast ? dash[index % dash.length] : undefined} marker={highContrast} />
+                )}
               />
             )
           })}
@@ -205,7 +207,9 @@ function ProjectionLineView({
                   isAnimationActive={false}
                   connectNulls={false}
                   legendType="none"
-                  shape={(props: DrawShapeProps) => <SeriesShape {...props} dashed />}
+                  shape={(props: DrawShapeProps) => (
+                    <SeriesShape {...props} strokeWidth={strokeWidth} dash={highContrast ? dash[(index + 1) % dash.length] : "6 4"} />
+                  )}
                   label={
                     directLabels
                       ? (props: { index?: number; x?: number; y?: number }) =>
@@ -296,10 +300,19 @@ function pathFromPoints(points?: readonly CurvePoint[]) {
   return path
 }
 
-function SeriesShape({ points, stroke, strokeWidth = 1.5, d, dashed }: DrawShapeProps & { dashed?: boolean }) {
+function SeriesShape({ points, stroke, strokeWidth = 1.5, d, dash, marker }: DrawShapeProps & { dash?: string; marker?: boolean }) {
   const path = d || pathFromPoints(points)
   if (!path) return <g />
-  return <path d={path} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={dashed ? "4 4" : undefined} />
+  return (
+    <g data-series="">
+      <path d={path} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={dash && dash !== "0" ? dash : undefined} />
+      {marker
+        ? points?.map((point, index) =>
+            point.x == null || point.y == null ? null : <circle key={index} cx={point.x} cy={point.y} r={2.5} fill={stroke} />,
+          )
+        : null}
+    </g>
+  )
 }
 
 function CovidNote() {

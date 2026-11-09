@@ -99,6 +99,7 @@ export function paintMatrix(
   min: number,
   max: number,
   stops: string[],
+  discrete = false,
 ) {
   const span = max - min || 1
   ages.forEach((age, ageIndex) => {
@@ -106,7 +107,8 @@ export function paintMatrix(
     years.forEach((year, yearIndex) => {
       const value = lookup.get(`${age}:${year}`)
       if (value == null) return
-      const [r, g, b] = mixSequential(stops, (value - min) / span)
+      const t = (value - min) / span
+      const [r, g, b] = discrete ? parseHsl(stops[Math.min(stops.length - 1, Math.floor(t * stops.length))] ?? stops[0]) ?? [0, 0, 0] : mixSequential(stops, t)
       const row = ages.length - 1 - ageIndex
       const offset = (row * width + yearIndex) * 4
       data[offset] = r
@@ -154,7 +156,7 @@ export function AgeYearHeatmap({
   highlightAges?: number[]
   onSelectAge?: (idade: number) => void
 }) {
-  const { sequential } = useChartTheme()
+  const { sequential, highContrast } = useChartTheme()
   const stops = sequential.filter(Boolean)
   const palette = stops.length ? stops : FALLBACK_STOPS
   const host = useRef<HTMLDivElement>(null)
@@ -196,7 +198,7 @@ export function AgeYearHeatmap({
     const offCtx = off.getContext("2d")
     if (!offCtx) return
     const image = offCtx.createImageData(years.length, ages.length)
-    paintMatrix(image.data, years.length, years, ages, lookup, min, max, palette)
+    paintMatrix(image.data, years.length, years, ages, lookup, min, max, palette, highContrast)
     offCtx.putImageData(image, 0, 0)
     const bw = Math.max(1, Math.round(width * dpr))
     const bh = Math.max(1, Math.round(height * dpr))
@@ -207,7 +209,7 @@ export function AgeYearHeatmap({
     ctx.imageSmoothingEnabled = false
     ctx.clearRect(0, 0, bw, bh)
     ctx.drawImage(off, 0, 0, bw, bh)
-  }, [ages, layout.plot.h, layout.plot.w, lookup, max, min, palette, years])
+  }, [ages, highContrast, layout.plot.h, layout.plot.w, lookup, max, min, palette, years])
 
   function hit(event: MouseEvent<HTMLCanvasElement>) {
     const rect = event.currentTarget.getBoundingClientRect()

@@ -344,6 +344,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Facts */
+        get: operations["facts_api_v1_facts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -364,6 +381,45 @@ export interface components {
             /** Outlier Strategy */
             outlier_strategy?: string | null;
         };
+        /** DetailPoint */
+        DetailPoint: {
+            /** Ano */
+            ano: number;
+            /** Valor */
+            valor: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw";
+        };
+        /** DuplicatesReport */
+        DuplicatesReport: {
+            /** Exact */
+            exact: number;
+            /** By Key */
+            by_key: number;
+        };
+        /** Fact */
+        Fact: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number | string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw";
+            /** Detail */
+            detail?: string | null;
+            /** Detail Values */
+            detail_values?: components["schemas"]["DetailPoint"][] | null;
+            /** Reference Year */
+            reference_year?: number | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -371,7 +427,7 @@ export interface components {
         };
         /**
          * HealthOut
-         * @description Estado da API e do MySQL.
+         * @description Estado da API, do MySQL e da semeadura.
          */
         HealthOut: {
             /** Api */
@@ -380,6 +436,36 @@ export interface components {
             mysql: string;
             /** Mysql Required */
             mysql_required: boolean;
+            /** Seeding */
+            seeding: boolean;
+        };
+        /** NullsReport */
+        NullsReport: {
+            /** By Column */
+            by_column: {
+                [key: string]: components["schemas"]["StepCount"];
+            };
+            /** Structural */
+            structural: {
+                [key: string]: number;
+            };
+            /** Total Imputed */
+            total_imputed: number;
+        };
+        /** OutliersReport */
+        OutliersReport: {
+            /** By Column */
+            by_column: {
+                [key: string]: number;
+            };
+            /** By Reason */
+            by_reason: {
+                [key: string]: number;
+            };
+            /** Strategy */
+            strategy: string;
+            /** Method */
+            method: string;
         };
         /** ProcessIn */
         ProcessIn: {
@@ -394,6 +480,57 @@ export interface components {
              * @default false
              */
             confirm: boolean;
+        };
+        /** QualityReport */
+        QualityReport: {
+            /** Dataset Id */
+            dataset_id: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "original" | "sujo" | "upload";
+            /** Run Id */
+            run_id: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /** Duration S */
+            duration_s: number;
+            /** Rows In */
+            rows_in: number;
+            /** Rows Out */
+            rows_out: number;
+            /** Dropped Columns */
+            dropped_columns: string[];
+            nulls: components["schemas"]["NullsReport"];
+            duplicates: components["schemas"]["DuplicatesReport"];
+            outliers: components["schemas"]["OutliersReport"];
+            /** Validations */
+            validations: components["schemas"]["Validation"][];
+        };
+        /** StepCount */
+        StepCount: {
+            /** Before */
+            before: number;
+            /** After */
+            after: number;
+        };
+        /** Validation */
+        Validation: {
+            /** Rule */
+            rule: string;
+            /** Ok */
+            ok: boolean;
+            /** Max Diff */
+            max_diff: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -590,7 +727,9 @@ export interface operations {
     };
     quality_report_api_v1_datasets__dataset_id__quality_report_get: {
         parameters: {
-            query?: never;
+            query?: {
+                source?: "original" | "sujo";
+            };
             header?: never;
             path: {
                 dataset_id: string;
@@ -605,9 +744,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["QualityReport"] | null;
                 };
             };
             /** @description Validation Error */
@@ -704,8 +841,8 @@ export interface operations {
         parameters: {
             query?: {
                 ano?: number | null;
-                cod?: number | null;
                 sexo?: string | null;
+                cod?: number | null;
             };
             header?: never;
             path: {
@@ -741,8 +878,8 @@ export interface operations {
         parameters: {
             query?: {
                 ano?: number | null;
-                cod?: number | null;
                 compare_ano?: number | null;
+                cod?: number | null;
             };
             header?: never;
             path: {
@@ -813,8 +950,8 @@ export interface operations {
     dataset_heatmap_api_v1_datasets__dataset_id__heatmap_get: {
         parameters: {
             query?: {
-                cod?: number | null;
                 sexo?: string | null;
+                cod?: number | null;
             };
             header?: never;
             path: {
@@ -1020,7 +1157,7 @@ export interface operations {
     dataset_milestones_api_v1_milestones_get: {
         parameters: {
             query?: {
-                cod?: number;
+                cod?: number | null;
             };
             header?: never;
             path?: never;
@@ -1053,7 +1190,7 @@ export interface operations {
     censo_api_v1_reference_censo_2022_get: {
         parameters: {
             query?: {
-                cod?: number;
+                cod?: number | null;
             };
             header?: never;
             path?: never;
@@ -1070,6 +1207,38 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    facts_api_v1_facts_get: {
+        parameters: {
+            query: {
+                page: string;
+                cod?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Fact"][];
                 };
             };
             /** @description Validation Error */

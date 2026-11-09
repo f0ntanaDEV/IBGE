@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     mysql_database: str = "ibge"
     mysql_required: bool = False
     load_mysql_on_start: bool = False
+    auto_seed: bool = True
     data_dir: Path = Path("data")
     datasets_path: Path = API_ROOT / "datasets.yaml"
     max_upload_mb: int = 50

@@ -5,21 +5,22 @@ import { datasetNav } from "@/app/navigation"
 import { ChartCard } from "@/components/common/ChartCard"
 import { KpiCard } from "@/components/common/KpiCard"
 import { PageHeader } from "@/components/common/PageHeader"
-import { StatText } from "@/components/common/StatText"
-import { fetchClaims, fetchData, fetchPyramid } from "@/features/datasets/api"
+import { fetchData, fetchPyramid } from "@/features/datasets/api"
 import { EnrichmentChart } from "@/features/datasets/components/EnrichmentChart"
 import { ProjectionLine } from "@/features/datasets/components/ProjectionLine"
 import { ObservationsCard } from "@/components/common/NarrativeText"
 import { buildNarratives, finalObservations } from "@/lib/narratives/engine"
 import { calendarYear, deltaValue, num, peakPoint } from "@/features/datasets/derive"
-import { factsStatText } from "@/features/datasets/statisticalCopy"
-import { useDatasetList } from "@/features/datasets/hooks"
+import { useDatasetList, useFacts } from "@/features/datasets/hooks"
+import { FactsCard } from "@/features/facts/FactsCard"
+import { SimplePage } from "@/features/simple/SimplePage"
 import { formatValue } from "@/lib/format"
+import { useMode } from "@/stores/preferences"
 import { queryClient, STALE_TIME } from "@/lib/queryClient"
 
-const CLAIM_DATASETS = ["ds1", "ds3", "ds4"]
-
 export function OverviewPage() {
+  const mode = useMode()
+  const facts = useFacts("overview")
   const { search } = useLocation()
   const year = calendarYear()
   const datasets = useDatasetList()
@@ -31,13 +32,6 @@ export function OverviewPage() {
         staleTime: STALE_TIME,
       },
     ],
-  })
-  const claims = useQueries({
-    queries: CLAIM_DATASETS.map((id) => ({
-      queryKey: ["dataset", id, "claims"],
-      queryFn: () => fetchClaims(id),
-      staleTime: STALE_TIME,
-    })),
   })
   const series = rows[0]?.data?.items ?? []
   const current = series.find((row) => Number(row.ano) === year)
@@ -85,7 +79,7 @@ export function OverviewPage() {
     { key: "ie60", label: "Índice de envelhecimento", format: "decimal" as const, hint: "Idosos de 60 anos ou mais para cada 100 jovens." },
   ]
 
-  const confirmed = claims.flatMap((query) => query.data ?? [])
+  if (mode === "simple") return <SimplePage pageId="overview" />
 
   return (
     <div className="page-stack">
@@ -123,6 +117,7 @@ export function OverviewPage() {
           summary={peak ? `A população chega a ${formatValue(peak.valor, { key: "pop_t", kind: "count" })} em ${peak.ano}.` : "Série da população brasileira."}
         />
       </ChartCard>
+      <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
       <ObservationsCard insights={insights} />
       <EnrichmentChart
         datasetId="ds4"
@@ -151,17 +146,9 @@ export function OverviewPage() {
           )
         })}
       </section>
-      <section data-card className="flex h-[var(--card-h-chart)] min-h-0 flex-col overflow-y-auto rounded-lg border border-border p-4" aria-label="Contexto">
-        <h2 className="text-sm font-medium">Contexto</h2>
-        <div className="my-3 border-t border-border" />
-        <div aria-label="Fatos">
-          <h3 className="text-sm font-medium">Fatos</h3>
-          {confirmed.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">Os fatos aparecem depois que a API responde.</p>
-          ) : (
-            <StatText text={factsStatText(confirmed)} />
-          )}
-        </div>
+      <section data-card className="rounded-lg border border-border p-4" aria-label="Censo 2022">
+        <h2 className="text-sm font-medium">Censo 2022</h2>
+        <p className="mt-2 text-sm text-muted-foreground">A referência do Censo aparece nas páginas de população, grupos etários e indicadores.</p>
       </section>
     </div>
   )

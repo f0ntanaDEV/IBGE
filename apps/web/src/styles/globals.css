@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant hc (&:where([data-contrast="high"], [data-contrast="high"] *));
 
 :root {
   --background: 0 0% 100%;
@@ -75,6 +76,71 @@
   --chart-seq-3: 215 18% 52%;
   --chart-seq-4: 215 20% 64%;
   --chart-seq-5: 215 22% 78%;
+}
+
+:root[data-contrast="high"] {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --muted-foreground: 0 0% 15%;
+  --border: 0 0% 0%;
+  --ring: 220 100% 30%;
+  --primary: 220 100% 28%;
+  --card: 0 0% 100%;
+  --hc-chart-1: #000000;
+  --hc-chart-2: #0039a6;
+  --hc-chart-3: #8a2b00;
+  --hc-chart-4: #00663d;
+  --hc-chart-5: #5b0a91;
+  --hc-chart-6: #4d4d4d;
+  --border-width: 2px;
+  --focus-width: 3px;
+}
+
+.dark[data-contrast="high"] {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 0 0% 88%;
+  --border: 0 0% 100%;
+  --ring: 50 100% 60%;
+  --primary: 50 100% 60%;
+  --card: 0 0% 0%;
+  --hc-chart-1: #ffffff;
+  --hc-chart-2: #ffd400;
+  --hc-chart-3: #5ce1ff;
+  --hc-chart-4: #ff9ec7;
+  --hc-chart-5: #9cff8a;
+  --hc-chart-6: #c8c8c8;
+}
+
+[data-contrast="high"] a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+[data-contrast="high"] :focus-visible {
+  outline: var(--focus-width) solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+[data-contrast="high"] .border,
+[data-contrast="high"] [data-card] {
+  border-width: var(--border-width);
+}
+
+[data-contrast="high"] .text-muted-foreground\/60,
+[data-contrast="high"] .opacity-50,
+[data-contrast="high"] .opacity-35 {
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  svg [data-series] {
+    stroke: CanvasText;
+  }
+
+  :focus-visible {
+    outline: 3px solid Highlight;
+  }
 }
 
 html[data-density="compact"] {

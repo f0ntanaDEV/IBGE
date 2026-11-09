@@ -19,21 +19,52 @@ function readSequential() {
   return readScale("--chart-seq-", 5)
 }
 
+const DASH = ["0", "6 4", "2 3", "10 4 2 4"]
+const MARKERS = ["circle", "square", "triangle", "diamond"] as const
+
+function readHighContrast() {
+  if (typeof document === "undefined") return false
+  return document.documentElement.dataset.contrast === "high"
+}
+
+function readHcColors() {
+  if (typeof document === "undefined") return []
+  const styles = getComputedStyle(document.documentElement)
+  return Array.from({ length: 6 }, (_, index) => styles.getPropertyValue(`--hc-chart-${index + 1}`).trim())
+}
+
 export function useChartTheme() {
   const theme = usePreferences((state) => state.theme)
+  const contrast = usePreferences((state) => state.contrast)
   const [colors, setColors] = useState<string[]>(readColors)
   const [sequential, setSequential] = useState<string[]>(readSequential)
+  const [highContrast, setHighContrast] = useState(readHighContrast)
 
   useEffect(() => {
     const read = () => {
-      setColors(readColors())
+      const hc = readHighContrast()
+      setHighContrast(hc)
+      setColors(hc ? readHcColors() : readColors())
       setSequential(readSequential())
     }
     read()
     const media = window.matchMedia("(prefers-color-scheme: dark)")
+    const contrastMedia = window.matchMedia("(prefers-contrast: more)")
     media.addEventListener("change", read)
-    return () => media.removeEventListener("change", read)
-  }, [theme])
+    contrastMedia.addEventListener("change", read)
+    return () => {
+      media.removeEventListener("change", read)
+      contrastMedia.removeEventListener("change", read)
+    }
+  }, [theme, contrast])
 
-  return { colors, sequential, isAnimationActive: chartDefaults.isAnimationActive }
+  return {
+    colors,
+    sequential,
+    highContrast,
+    strokeWidth: highContrast ? 2.5 : 1.5,
+    dash: DASH,
+    markers: MARKERS,
+    isAnimationActive: chartDefaults.isAnimationActive,
+  }
 }

@@ -3,12 +3,17 @@
 import json
 from pathlib import Path
 
-from fastapi import APIRouter, File, Query, UploadFile
+from typing import Literal
+
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from app.api.deps import assert_nivel_compativel, known_territory_codes, territory_params
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.domain.published_report import QualityReport as PublishedQualityReport
+from app.domain.published_report import publish_report
 from app.domain.dataset import load_catalog
 from app.services.analytics import (
     apply_filters,
@@ -69,8 +74,8 @@ def list_datasets() -> list[dict]:
                 if last is None
                 else {
                     "source": last.get("source"),
-                    "rows_in": last.get("rows_before"),
-                    "rows_out": last.get("rows_after"),
+                    "rows_in": last.get("rows_in", last.get("rows_before")),
+                    "rows_out": last.get("rows_out", last.get("rows_after")),
                     "duration_s": last.get("duration_s"),
                 },
             }
@@ -131,13 +136,25 @@ def process(dataset_id: str, body: ProcessIn) -> dict:
     return report.model_dump()
 
 
-@router.get("/{dataset_id}/quality-report")
-def quality_report(dataset_id: str) -> dict:
+def _decode_report(payload: object) -> dict | None:
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload)
+        except json.JSONDecodeError:
+            return None
+    return payload if isinstance(payload, dict) else None
+
+
+@router.get("/{dataset_id}/quality-report", response_model=PublishedQualityReport | None)
+def quality_report(
+    dataset_id: str,
+    source: Literal["original", "sujo"] = "original",
+) -> PublishedQualityReport | None:
     catalog_or_404(dataset_id)
-    reports = _reports(dataset_id)
+    reports = [item for item in _reports(dataset_id) if (item.get("source") or "original") == source]
     if not reports:
-        raise AppError("not_found", "Nenhum relatório disponível", 404)
-    return reports[-1]
+        return None
+    return publish_report(reports[-1])
 
 
 @router.get("/{dataset_id}/runs")
@@ -150,7 +167,14 @@ def runs(dataset_id: str) -> list[dict]:
         with get_engine().connect() as connection:
             rows = list_runs(connection, dataset_id)
         if rows:
-            return rows
+            normalized = []
+            for row in rows:
+                item = dict(row)
+                parsed = _decode_report(item.get("report_json"))
+                if parsed is not None:
+                    item["report_json"] = parsed
+                normalized.append(item)
+            return normalized
     except Exception:
         pass
     return _reports(dataset_id)
@@ -172,11 +196,19 @@ def data(
     sort: str | None = None,
     desc: bool = False,
 ) -> dict:
+    codes = parse_int_list(cod, "cod")
+    known = known_territory_codes()
+    if codes is not None:
+        missing = [code for code in codes if code not in known]
+        if missing:
+            raise AppError("unknown_territory", f"Território {missing[0]} não existe", 422, {"cod": missing[0]})
+        if len(codes) == 1:
+            assert_nivel_compativel(codes[0], nivel)
     frame = apply_filters(
         _store().get(dataset_id),
         ano=ano,
         anos=parse_int_list(anos, "anos"),
-        cod=parse_int_list(cod, "cod"),
+        cod=codes,
         faixa=parse_faixa_list(faixa),
         nivel=nivel,
         sexo=sexo,
@@ -194,22 +226,27 @@ def data(
 def dataset_summary(
     dataset_id: str,
     ano: int | None = None,
-    cod: int | None = None,
+    cod: int | None = Depends(territory_params),
     sexo: str | None = None,
 ) -> dict:
     cfg = catalog_or_404(dataset_id)
-    return summary(_store().get(dataset_id), cfg, ano=ano, cod=cod, sexo=sexo)
+    if cod is None:
+        code = None
+    else:
+        code = cod
+    return summary(_store().get(dataset_id), cfg, ano=ano, cod=code, sexo=sexo)
 
 
 @router.get("/{dataset_id}/pyramid")
 def dataset_pyramid(
     dataset_id: str,
     ano: int | None = None,
-    cod: int | None = None,
+    cod: int | None = Depends(territory_params),
     compare_ano: int | None = None,
 ) -> list[dict]:
     cfg = catalog_or_404(dataset_id)
-    return pyramid(_store().get(dataset_id), cfg, ano, cod, compare_ano)
+    code = None if cod is None else cod
+    return pyramid(_store().get(dataset_id), cfg, ano, code, compare_ano)
 
 
 @router.get("/{dataset_id}/map")
@@ -219,7 +256,7 @@ def dataset_map(dataset_id: str, metric: str, ano: int) -> dict:
 
 
 @router.get("/{dataset_id}/heatmap")
-def dataset_heatmap(dataset_id: str, cod: int | None = None, sexo: str | None = None) -> dict:
+def dataset_heatmap(dataset_id: str, cod: int | None = Depends(territory_params), sexo: str | None = None) -> dict:
     if dataset_id != "ds1":
         raise AppError("not_applicable", "Mapa de calor disponível apenas para ds1", 422)
     return heatmap(_store().get(dataset_id), cod, sexo)

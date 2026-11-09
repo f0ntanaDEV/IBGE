@@ -4,6 +4,7 @@ import { unidadeKpi } from "@/features/glossary/glossary"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatValue, type NumberFormat } from "@/lib/format"
+import { useMode } from "@/stores/preferences"
 
 type KpiCardProps = {
   label: string
@@ -15,12 +16,13 @@ type KpiCardProps = {
   loading?: boolean
 }
 
-function bareNumber(value: number, format: NumberFormat) {
-  if (format === "percent") return formatValue(value, { key: "kpi", kind: "percent" })
-  if (format === "integer") return formatValue(value, { key: "kpi", kind: "count" })
-  if (format === "number") return formatValue(value, { key: "kpi", kind: "raw" })
-  const text = formatValue(value, { key: "kpi", kind: "rate" })
-  return text
+function bareNumber(value: number, format: NumberFormat, mode: "technical" | "simple") {
+  if (format === "percent") return formatValue(value, { key: "kpi", kind: "percent" }, mode)
+  if (format === "integer") return formatValue(value, { key: "kpi", kind: "count" }, mode)
+  if (format === "permil") return formatValue(value, { key: "kpi", kind: "permil" }, mode)
+  if (format === "years") return formatValue(value, { key: "kpi", kind: "years" }, mode)
+  if (format === "number") return formatValue(value, { key: "kpi", kind: "raw" }, mode)
+  return formatValue(value, { key: "kpi", kind: "rate" }, mode)
 }
 
 function KpiDelta({ value }: { value: number | null | undefined }) {
@@ -31,6 +33,7 @@ function KpiDelta({ value }: { value: number | null | undefined }) {
 }
 
 export function KpiCard({ label, value, format, metricKey, display, delta, loading }: KpiCardProps) {
+  const mode = useMode()
   const cardRef = useRef<HTMLDivElement>(null)
   const unit = display || format === "percent" ? null : unidadeKpi(metricKey ?? "", value)
 
@@ -44,7 +47,7 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
     )
   }
 
-  const shown = display ?? (value == null ? "—" : bareNumber(value, format))
+  const shown = display ?? (value == null ? "—" : bareNumber(value, format, mode))
 
   return (
     <Card ref={cardRef} className="flex h-full min-h-[7rem] flex-col gap-1 p-4">

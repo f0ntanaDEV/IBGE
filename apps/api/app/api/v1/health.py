@@ -9,11 +9,12 @@ router = APIRouter(tags=["health"])
 
 
 class HealthOut(BaseModel):
-    """Estado da API e do MySQL."""
+    """Estado da API, do MySQL e da semeadura."""
 
     api: str
     mysql: str
     mysql_required: bool
+    seeding: bool
 
 
 @router.get("/health", response_model=HealthOut)
@@ -25,4 +26,6 @@ def health() -> HealthOut:
         mysql = "ok"
     except Exception:
         mysql = "down"
-    return HealthOut(api="ok", mysql=mysql, mysql_required=get_settings().mysql_required)
+    from app.core.startup import is_seeding
+
+    return HealthOut(api="ok", mysql=mysql, mysql_required=get_settings().mysql_required, seeding=is_seeding())

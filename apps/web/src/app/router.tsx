@@ -8,6 +8,7 @@ const DatasetPage = lazy(() => import("@/features/datasets/page").then((mod) => 
 const QualityPage = lazy(() => import("@/features/quality/page").then((mod) => ({ default: mod.QualityPage })))
 const NewsPage = lazy(() => import("@/features/news/page").then((mod) => ({ default: mod.NewsPage })))
 const SettingsPage = lazy(() => import("@/features/settings/page").then((mod) => ({ default: mod.SettingsPage })))
+const InsightsPage = lazy(() => import("@/features/insights/InsightsPage").then((mod) => ({ default: mod.InsightsPage })))
 
 function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando…</p>}>{children}</Suspense>
@@ -39,6 +40,14 @@ export const router = createBrowserRouter([
         element: (
           <Lazy>
             <QualityPage />
+          </Lazy>
+        ),
+      },
+      {
+        path: "insights",
+        element: (
+          <Lazy>
+            <InsightsPage />
           </Lazy>
         ),
       },

@@ -25,6 +25,8 @@ describe("tema", () => {
     expect(readStoredPreferences("{")).toEqual({
       theme: "system",
       density: "comfortable",
+      contrast: null,
+      mode: "technical",
     })
   })
 

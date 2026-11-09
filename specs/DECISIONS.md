@@ -47,3 +47,7 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-06 | ajustes | Fatos e bônus usam um parágrafo de 3 a 5 frases, com largura de 46 caracteres | O card estreito e a visão geral larga quebram o mesmo texto em 3 a 5 linhas. A barra de rolagem usa fundo e muted; a seleção usa o primário.
 - 2026-11-06 | deploy | API e MySQL no Railway; a Vercel só encaminha `/api` | A Vercel não hospeda MySQL. A API lê Parquet no disco e carrega o banco na subida.
 - 2026-11-06 | notícias | Snapshot das matérias vai na imagem da API e vale 7 dias | No Railway a consulta ao IBGE passa de 40 s e a tela fica vazia.
+- 2026-11-09 | etapa 10 | `cod=0` permanece Brasil e `nivel` incompatível responde 422 | O código 0 é valor válido; ausência do parâmetro é `None`. Misturar Brasil com `nivel=uf` esvaziava a consulta.
+- 2026-11-09 | etapa 10 | Relatório de qualidade publicado no contrato novo; o pipeline interno guarda o formato antigo | A página lia `/runs` (`rows_in` ou `report_json` string) e o arquivo usa `rows_before`. Original e sujo no mesmo segundo compartilhavam o nome do arquivo e o segundo apagava o primeiro.
+- 2026-11-09 | etapa 10 | Sem banco, a semeadura só roda se ainda não houver parquet das cinco bases | Sem `etl_runs` não dá para saber se já houve sucesso; reprocessar a ds5 a cada subida seria o caminho pesado.
+- 2026-11-09 | etapa 10 | Fatos de qualidade registram 103 de 113 validações, não "todas" | Dez regras de soma da base oficial ficam acima da tolerância de 1 pessoa.

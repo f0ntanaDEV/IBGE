@@ -2,7 +2,7 @@ import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo"
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { formatValue, type MetricMeta } from "@/lib/format"
-import { classOf, quantileBreaks } from "@/lib/quantiles"
+import { classOf, quantileBreaks, quantizeBreaks } from "@/lib/quantiles"
 
 export type BrazilMapItem = {
   cod: number
@@ -42,14 +42,17 @@ export function BrazilMap({
   selected?: number[]
   onSelect?: (cod: number, multi: boolean) => void
 }) {
-  const { sequential } = useChartTheme()
+  const { sequential, highContrast } = useChartTheme()
   const host = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ w: WIDTH, h: HEIGHT })
   const [mesh, setMesh] = useState<Mesh | null>(null)
   const byCod = useMemo(() => new Map(items.map((item) => [item.cod, item])), [items])
   const edges = useMemo(
-    () => quantileBreaks(items.map((item) => item.valor).filter((value): value is number => value != null)),
-    [items],
+    () => {
+      const values = items.map((item) => item.valor).filter((value): value is number => value != null)
+      return highContrast ? quantizeBreaks(values) : quantileBreaks(values)
+    },
+    [highContrast, items],
   )
   const paths = useMemo(() => {
     if (!mesh) return []

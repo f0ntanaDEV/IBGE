@@ -2,7 +2,11 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#334155" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Projeções da população · IBGE</title>
     <script>
@@ -10,17 +14,24 @@
         try {
           var theme = "system"
           var density = "comfortable"
+          var contrast = null
+          var mode = "technical"
           var raw = localStorage.getItem("ibge-preferences")
           if (raw) {
             var state = JSON.parse(raw).state || {}
             if (state.theme === "light" || state.theme === "dark" || state.theme === "system") theme = state.theme
             if (state.density === "compact" || state.density === "comfortable") density = state.density
+            if (state.contrast === "high" || state.contrast === "normal" || state.contrast === null) contrast = state.contrast
+            if (state.mode === "simple" || state.mode === "technical") mode = state.mode
           }
           var dark =
             theme === "dark" ||
             (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+          var high = contrast === "high" || (contrast == null && window.matchMedia("(prefers-contrast: more)").matches)
           if (dark) document.documentElement.classList.add("dark")
+          if (high) document.documentElement.dataset.contrast = "high"
           document.documentElement.dataset.density = density
+          document.documentElement.dataset.mode = mode
           document.documentElement.style.colorScheme = dark ? "dark" : "light"
         } catch (e) {}
       })()

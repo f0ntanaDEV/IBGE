@@ -9,7 +9,7 @@ from openpyxl import Workbook
 
 def export_table(frame: pd.DataFrame, dataset_id: str, directory: Path) -> dict[str, Path]:
     directory.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now().strftime("%Y%m%dT%H%M%S%f")
     stem = directory / f"{dataset_id}_{stamp}"
     csv_path = stem.with_suffix(".csv")
     xlsx_path = stem.with_suffix(".xlsx")

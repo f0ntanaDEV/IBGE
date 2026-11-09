@@ -1,4 +1,4 @@
-import { Activity, HeartPulse, Layers, LayoutDashboard, Newspaper, Settings, ShieldCheck, Users, UsersRound, type LucideIcon } from "lucide-react"
+import { Activity, HeartPulse, Layers, LayoutDashboard, Lightbulb, Newspaper, Settings, ShieldCheck, Users, UsersRound, type LucideIcon } from "lucide-react"
 
 export type NavItem = {
   to: string
@@ -20,6 +20,7 @@ export const mainNav: NavItem[] = [
   { to: "/", label: "Visão geral", title: "Visão geral", icon: LayoutDashboard, end: true },
   ...datasetNav,
   { to: "/qualidade", label: "Qualidade de dados", title: "Qualidade de dados", icon: ShieldCheck },
+  { to: "/insights", label: "Insights", title: "Insights", icon: Lightbulb },
   { to: "/noticias", label: "Notícias IBGE", title: "Notícias IBGE", icon: Newspaper },
   { to: "/configuracoes", label: "Configurações", title: "Configurações", icon: Settings },
 ]

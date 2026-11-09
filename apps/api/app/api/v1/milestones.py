@@ -1,7 +1,8 @@
 """Marcos demográficos calculados das bases tratadas."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import territory_params
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.services.analytics import milestones
@@ -11,7 +12,7 @@ router = APIRouter(tags=["milestones"])
 
 
 @router.get("/milestones")
-def dataset_milestones(cod: int = 0) -> dict:
+def dataset_milestones(cod: int | None = Depends(territory_params)) -> dict:
     store = ParquetStore(get_settings().processed_dir)
     frames = {}
     for dataset_id in ("ds1", "ds3", "ds4"):
@@ -22,4 +23,5 @@ def dataset_milestones(cod: int = 0) -> dict:
                 raise
     if not frames:
         raise AppError("not_found", "Nenhuma base tratada para calcular os marcos", 404)
-    return milestones(frames, cod)
+    code = 0 if cod is None else cod
+    return milestones(frames, code)

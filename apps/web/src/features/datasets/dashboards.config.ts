@@ -25,6 +25,7 @@ export type ChartSpec =
   | { kind: "diverging"; title: string; description: string; span?: 4 | 6 | 8 | 12 }
   | { kind: "milestones"; title: string; description: string; span?: 4 | 6 | 8 | 12 }
   | { kind: "context"; title: string; description: string; span?: 4 | 6 | 8 | 12 }
+  | { kind: "facts"; title: string; description: string; span?: 4 | 6 | 8 | 12 }
 
 export type DashboardSpec = {
   id: "ds1" | "ds2" | "ds3" | "ds4" | "ds5"
@@ -59,7 +60,8 @@ export const dashboards: DashboardSpec[] = [
         description: "Homens à esquerda e mulheres à direita, por idade simples. O contorno compara outro ano.",
         span: 8,
       },
-      { kind: "context", title: "Contexto", description: "Censo 2022 e fatos do território.", span: 4 },
+      { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "heatmap",
         title: "Idade por ano",
@@ -86,9 +88,9 @@ export const dashboards: DashboardSpec[] = [
         granularity: "quinquenal",
         compare: true,
         description: "Comparação de 2000, do ano escolhido e de 2070.",
-        span: 8,
+        span: 12,
       },
-      { kind: "context", title: "Contexto", description: "Fatos do território.", span: 4 },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "area100",
         title: "Composição por grandes faixas",
@@ -121,7 +123,8 @@ export const dashboards: DashboardSpec[] = [
         description: "Proporções de jovens e de idosos, com o ano em que 60+ ultrapassa 0–14.",
         span: 8,
       },
-      { kind: "context", title: "Contexto", description: "Censo 2022 e fatos do território.", span: 4 },
+      { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "ranking",
         title: "UFs por % de 60+",
@@ -176,7 +179,8 @@ export const dashboards: DashboardSpec[] = [
         description: "Quantos anos homens e mulheres vivem, em média",
         span: 8,
       },
-      { kind: "context", title: "Contexto", description: "Censo 2022 e fatos do território.", span: 4 },
+      { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "line",
         title: "Taxa de fecundidade total",
@@ -251,8 +255,8 @@ export const dashboards: DashboardSpec[] = [
       { key: "lx_80", format: "int", label: "Sobreviventes aos 80", hint: "lx: sobreviventes aos 80 anos para cada 100 mil nascimentos da tábua.", unit: "por 100 mil" },
     ],
     charts: [
-      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 8 },
-      { kind: "context", title: "Contexto", description: "Fatos do território.", span: 4 },
+      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 12 },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       { kind: "lifeTable", title: "Probabilidade de morte", metric: "nqx", logY: true, compareYears: true, description: "nqx por idade em escala logarítmica, em dois anos." },
       { kind: "lifeTable", title: "Esperança de vida por idade", metric: "ex", description: "ex de homens e mulheres por idade." },
       {

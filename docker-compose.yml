@@ -26,6 +26,7 @@ services:
       MYSQL_HOST: mysql
       DATA_DIR: /data
       MYSQL_REQUIRED: "true"
+      AUTO_SEED: "true"
     ports:
       - "8001:8000"
     depends_on:

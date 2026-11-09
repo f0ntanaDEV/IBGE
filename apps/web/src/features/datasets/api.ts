@@ -126,10 +126,10 @@ async function send<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T
 }
 
-function queryString(params: Record<string, string | number | boolean | undefined>) {
+function queryString(params: Record<string, string | number | boolean | null | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== "") search.set(key, String(value))
+    if (value != null) search.set(key, String(value))
   }
   const text = search.toString()
   return text ? `?${text}` : ""
@@ -241,6 +241,37 @@ export function fetchScatter(anos?: string) {
 
 export function fetchSlope(id: string, metric: string, anoA: number, anoB: number) {
   return send<{ items: SlopeItem[] }>(`/api/v1/datasets/${id}/slope${queryString({ metric, ano_a: anoA, ano_b: anoB })}`)
+}
+
+export type FactItem = {
+  id: string
+  label: string
+  value: number | string
+  kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw"
+  detail?: string | null
+  detail_values?: { ano: number; valor: number; kind: FactItem["kind"] }[] | null
+  reference_year?: number | null
+}
+
+export function fetchFacts(page: string, cod: number) {
+  return send<FactItem[]>(`/api/v1/facts${queryString({ page, cod })}`)
+}
+
+export type PublishedQuality = {
+  dataset_id: string
+  source: "original" | "sujo" | "upload"
+  rows_in: number
+  rows_out: number
+  dropped_columns: string[]
+  duration_s: number
+  nulls: { by_column: Record<string, { before: number; after: number }>; structural: Record<string, number>; total_imputed: number }
+  duplicates: { exact: number; by_key: number }
+  outliers: { by_column: Record<string, number>; by_reason: Record<string, number>; strategy: string; method: string }
+  validations: { rule: string; ok: boolean; max_diff: number }[]
+}
+
+export function fetchQualityReport(id: string, source: "original" | "sujo") {
+  return send<PublishedQuality | null>(`/api/v1/datasets/${id}/quality-report${queryString({ source })}`)
 }
 
 export function fetchMilestones(cod: number) {
