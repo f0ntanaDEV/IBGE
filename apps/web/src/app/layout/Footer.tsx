@@ -25,7 +25,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="flex items-center justify-between gap-4 border-t px-[var(--space-page-x,var(--density-pad))] py-3 text-sm">
+    <footer className="flex items-center justify-between gap-4 border-t border-border px-[var(--space-page-x,var(--density-pad))] py-3 text-sm">
       <p aria-live="polite">{label}</p>
       <a
         href="https://github.com/f0ntanaDEV"
