@@ -52,3 +52,4 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-09 | etapa 10 | Sem banco, a semeadura só roda se ainda não houver parquet das cinco bases | Sem `etl_runs` não dá para saber se já houve sucesso; reprocessar a ds5 a cada subida seria o caminho pesado.
 - 2026-11-09 | etapa 10 | Fatos de qualidade registram 103 de 113 validações, não "todas" | Dez regras de soma da base oficial ficam acima da tolerância de 1 pessoa.
 - 2026-11-09 | etapa 10 | Modo Simples mostra cada categoria em um card próprio | O bloco único juntava indicadores, fatos e notícias no mesmo texto e dificultava a leitura.
+- 2026-11-09 | fatos | Cada página de dados lista de 6 a 10 fatos, um por linha | A grade de duas colunas e o corte de 4 itens no modo Simples deixavam o bloco com menos de 6 linhas.

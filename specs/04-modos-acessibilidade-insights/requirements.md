@@ -73,7 +73,7 @@ Conteúdo pronto (não reescrever, apenas transcrever):
 
 ## R4. Fatos (modo Técnico)
 - R4.1 **Todas** as páginas de dados têm fatos: Visão Geral, os 5 datasets e Qualidade. O catálogo completo está em `conteudo/fatos.md`.
-- R4.2 Cada página exibe **de 6 a 10 fatos** (uma linha por fato: rótulo, valor e, se houver, referência), em um card próprio **"Fatos"** de largura total (12 colunas), com 2 colunas de fatos em ≥ 1280 px e 1 coluna abaixo disso.
+- R4.2 Cada página exibe **de 6 a 10 fatos**, um por linha (rótulo, valor e, se houver, referência na mesma linha), em uma única coluna. O bloco fica no card **"Fatos"** de largura total (12 colunas). O modo Simples usa a mesma lista, sem cortar em 4 itens.
 - R4.3 O antigo card "Contexto" passa a conter **apenas** a Referência Censo 2022 nas páginas que a têm (Visão Geral, ds1, ds3, ds4). Nas páginas sem Censo (ds2, ds5), o gráfico principal ocupa 12 colunas.
 - R4.4 **Fatos por território** (detalhe na Parte B, R7): com Território = Brasil ou uma região, os fatos refletem esse território. Com uma UF selecionada, os fatos **não mudam** (permanecem os do último território válido), e o card mostra a nota "Fatos de: Nordeste" (o território a que se referem).
 - R4.5 Ano e Sexo **não alteram** os fatos (o ano de referência é 2026; marcos são anos fixos).

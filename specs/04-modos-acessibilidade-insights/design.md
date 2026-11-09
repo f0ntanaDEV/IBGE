@@ -69,7 +69,7 @@ features/simple/
   - **Para onde vamos**: "A população cresce até 2041, quando chega a 220 mi. Depois começa a diminuir e chega a 199 mi em 2070."
 
 ## 5. Fatos (frontend)
-- `features/facts/FactsCard.tsx`: card 12 colunas; `ul` em grid de 2 colunas (≥ 1280 px); cada item com rótulo (`font-medium`), valor (`tabular-nums`) e referência opcional em texto secundário.
+- `features/facts/FactsCard.tsx`: card 12 colunas; lista de uma coluna com 6 a 10 linhas; cada linha traz rótulo, valor (`tabular-nums`) e referência opcional na mesma linha. O modo Simples reutiliza `FactList`.
 - `useFacts(pageId)`:
   ```ts
   const territory = useFilters().cod;                    // pode ser UF

@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { FilterBar } from "@/features/datasets/components/FilterBar"
 import { useDashboardFilters, useFacts, useSummary, useTerritories, useDatasetNews } from "@/features/datasets/hooks"
 import { formatValue, type MetricKind, type NumberFormat } from "@/lib/format"
-import type { FactItem } from "@/features/datasets/api"
+import { FactList, visibleFacts } from "@/features/facts/FactsCard"
 
 const COPY: Record<string, { title: string; what: string; daily: string }> = {
   overview: {
@@ -59,11 +59,6 @@ function kpiFormat(unidade: string): NumberFormat {
   return "integer"
 }
 
-function factText(fact: FactItem) {
-  if (typeof fact.value === "string") return fact.value
-  return formatValue(fact.value, { key: fact.id, kind: fact.kind }, "simple")
-}
-
 function SectionCard({ id, title, wide, children }: { id: string; title: string; wide?: boolean; children: ReactNode }) {
   return (
     <Card id={id} className={`flex h-full flex-col p-4 ${wide ? "md:col-span-2" : ""}`}>
@@ -87,7 +82,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const at = (year: number) => series.find((point) => point.ano === year)?.valor
   const value2000 = formatValue(at(2000) ?? null, { key: "serie", kind: "count" }, "simple")
   const value2070 = formatValue(at(2070) ?? null, { key: "serie", kind: "count" }, "simple")
-  const shownFacts = (facts.data ?? []).slice(0, 4)
+  const shownFacts = visibleFacts(facts.data)
   const sections = [
     { id: "o-que", title: "O que esta página mostra" },
     { id: "hoje", title: "Como está hoje" },
@@ -160,14 +155,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
           </SectionCard>
           <SectionCard id="fatos" title="Fatos em destaque" wide>
             {shownFacts.length ? (
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {shownFacts.map((fact) => (
-                  <li key={fact.id} className="rounded-md border border-border p-3">
-                    <p className="text-muted-foreground">{fact.label}</p>
-                    <p className="mt-1 font-medium tabular-nums">{factText(fact)}</p>
-                  </li>
-                ))}
-              </ul>
+              <FactList facts={shownFacts} />
             ) : (
               <p>Os fatos aparecem quando a base termina de carregar.</p>
             )}
