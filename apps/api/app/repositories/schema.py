@@ -68,7 +68,7 @@ def _fact(name: str, columns: list[str], unique: list[str]) -> Table:
 dim_territorio = Table(
     "dim_territorio",
     Base.metadata,
-    Column("cod", Integer, primary_key=True),
+    Column("cod", Integer, primary_key=True, autoincrement=False),
     Column("sigla", String(8), nullable=False),
     Column("local", String(80), nullable=False),
     Column("nivel", String(16), nullable=False),

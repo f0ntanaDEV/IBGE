@@ -124,6 +124,12 @@ def _replace_dimensions(connection, frame: pd.DataFrame, dataset_id: str, metric
             current["nivel"] = row["nivel"]
             current["regiao_cod"] = regiao_cod_de(code)
             territories[code] = current
+    if connection.dialect.name == "mysql":
+        connection.execute(text("SET SESSION sql_mode = CONCAT(@@SESSION.sql_mode, ',NO_AUTO_VALUE_ON_ZERO')"))
+        try:
+            connection.execute(text("ALTER TABLE dim_territorio MODIFY COLUMN cod INT NOT NULL"))
+        except Exception:
+            pass
     connection.execute(delete(dim_territorio))
     connection.execute(insert(dim_territorio), list(territories.values()))
     connection.execute(delete(dim_metrica).where(dim_metrica.c.dataset_id == dataset_id))

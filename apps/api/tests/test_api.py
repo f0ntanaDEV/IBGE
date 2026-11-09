@@ -110,6 +110,70 @@ def test_claims_e_piramide_ds2():
     assert totals["kpis"][0]["value"] == 20
 
 
+def test_brasil_permanece_se_o_banco_nao_tem_cod_zero(monkeypatch):
+    class _Rows:
+        def scalars(self):
+            return self
+
+        def all(self):
+            return [11, 33]
+
+    class _Conn:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def execute(self, _statement):
+            return _Rows()
+
+    class _Engine:
+        def connect(self):
+            return _Conn()
+
+    monkeypatch.setattr("app.db.get_engine", lambda: _Engine())
+    from app.api.deps import known_territory_codes
+
+    codes = known_territory_codes()
+    assert 0 in codes
+    assert {11, 33} <= codes
+
+
+def test_territorio_fantasma_do_brasil_nao_entra_na_lista(monkeypatch):
+    class _Rows:
+        def mappings(self):
+            return self
+
+        def all(self):
+            return [
+                {"cod": 133, "sigla": "BR", "local": "Brasil", "nivel": "brasil", "regiao_cod": None},
+                {"cod": 11, "sigla": "RO", "local": "Rondônia", "nivel": "uf", "regiao_cod": 1},
+            ]
+
+    class _Conn:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def execute(self, _statement):
+            return _Rows()
+
+    class _Engine:
+        def connect(self):
+            return _Conn()
+
+    monkeypatch.setattr("app.api.v1.territories.get_engine", lambda: _Engine())
+    from app.api.v1.territories import territories
+
+    rows = territories()
+    assert [row["cod"] for row in rows if row["sigla"] == "BR"] == [0]
+    assert any(row["cod"] == 11 and row["local"] == "Rondônia" for row in rows)
+    assert all(row["cod"] != 133 for row in rows)
+
+
 def _xlsx_without_local() -> bytes:
     frame = pd.DataFrame({"IDADE": [0], "SEXO": ["Ambos"], "CÓD.": [0], "SIGLA": ["BR"], "2024": [1]})
     buffer = BytesIO()

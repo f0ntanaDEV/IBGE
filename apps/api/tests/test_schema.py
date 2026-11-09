@@ -11,6 +11,6 @@ def test_schema_e_lotes():
         "ds4_indicadores",
         "ds5_tabuas_mortalidade",
     }
-    assert "cod" in dim_territorio.c
+    assert dim_territorio.c.cod.autoincrement is False
     assert "report_json" in etl_runs.c
     assert "coluna" in dim_metrica.c

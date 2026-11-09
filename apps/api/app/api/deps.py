@@ -7,7 +7,8 @@ from app.domain.territory import nivel_de, territorios_padrao
 
 
 def known_territory_codes() -> set[int]:
-    """Códigos de dim_territorio, ou o cadastro padrão se o banco não responder."""
+    """Cadastro padrão mais o que estiver em dim_territorio. O Brasil (0) nunca sai."""
+    codes = {int(row["cod"]) for row in territorios_padrao()}
     try:
         from sqlalchemy import select
 
@@ -16,11 +17,10 @@ def known_territory_codes() -> set[int]:
 
         with get_engine().connect() as connection:
             rows = connection.execute(select(dim_territorio.c.cod)).scalars().all()
-        if rows:
-            return {int(code) for code in rows}
+        codes.update(int(code) for code in rows)
     except Exception:
         pass
-    return {int(row["cod"]) for row in territorios_padrao()}
+    return codes
 
 
 def territory_params(cod: int | None = Query(None, ge=0)) -> int | None:
