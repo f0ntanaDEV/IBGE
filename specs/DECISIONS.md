@@ -74,3 +74,4 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-11 | etapa 13 | As cinco URLs curadas da Agência IBGE foram confirmadas manualmente | A spec pede validação humana antes de fechar a lista de notícias.
 - 2026-11-11 | etapa 13 | A manchete destaca os números em negrito, no mesmo tamanho da frase | O `text-3xl` quebrava a linha e não seguia o exemplo visual pedido.
 - 2026-11-11 | railway | A imagem só pré-calcula as bases oficiais | Incluir a base suja e o cache de contexto no build estourou o prazo do Railway depois de `context overview 2000`. A suja segue na subida do processo e o contexto restante continua sob demanda.
+- 2026-11-11 | etapa 14 | A série projetada não usa a animação de desenho do Recharts; entra com fade nos últimos 20% da janela | O traço é `strokeDasharray` estático. A animação nativa mexe em `stroke-dashoffset` e, nas versões anteriores, apagava a linha tracejada. As séries sólidas continuam com a animação nativa.

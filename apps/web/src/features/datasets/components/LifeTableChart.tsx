@@ -14,7 +14,7 @@ type LifeTableChartProps = {
 }
 
 function LifeTableChartView({ data, series, logY = false, summary }: LifeTableChartProps) {
-  const { colors, isAnimationActive } = useChartTheme()
+  const { colors, chartAnim } = useChartTheme()
   const simple = false
   const shown = simple ? series.slice(0, 3) : series
   const log = logY && !simple
@@ -64,7 +64,7 @@ function LifeTableChartView({ data, series, logY = false, summary }: LifeTableCh
               stroke={colors[index] || "var(--color-chart-1)"}
               dot={false}
               strokeWidth={1.5}
-              isAnimationActive={isAnimationActive}
+              {...chartAnim}
               connectNulls={false}
               label={
                 simple

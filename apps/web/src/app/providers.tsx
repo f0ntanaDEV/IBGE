@@ -10,8 +10,9 @@ export function PreferencesSync() {
   const density = usePreferences((state) => state.density)
   const contrast = usePreferences((state) => state.contrast)
   const mode = usePreferences((state) => state.mode)
+  const motion = usePreferences((state) => state.motion)
 
-  applyDocumentPreferences({ theme, density, contrast, mode })
+  applyDocumentPreferences({ theme, density, contrast, mode, motion })
 
   useEffect(() => {
     const themeMedia = window.matchMedia("(prefers-color-scheme: dark)")
@@ -23,7 +24,7 @@ export function PreferencesSync() {
       themeMedia.removeEventListener("change", onChange)
       contrastMedia.removeEventListener("change", onChange)
     }
-  }, [theme, density, contrast, mode])
+  }, [theme, density, contrast, mode, motion])
 
   return null
 }

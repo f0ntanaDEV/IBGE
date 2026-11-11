@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { Status } from "@/content/kpi-rules"
 import { metricById } from "@/content/metricas"
 import { formatDelta, formatValue, type NumberFormat } from "@/lib/format"
+import { CountUp, EndFade } from "@/motion/CountUp"
+import { Reveal } from "@/motion/useMotion"
 import { useMode } from "@/stores/preferences"
 
 type KpiCardProps = {
@@ -50,7 +52,9 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
   const shown = display ?? (value == null ? "—" : bareNumber(value, format, mode, metricKey))
   const deltaText = metricKey ? formatDelta(delta ?? null, metricKey) : ""
 
+  const numeric = typeof value === "number" && display == null
   return (
+    <Reveal className="h-full">
     <Card
       ref={cardRef}
       data-kpi={metricKey}
@@ -60,16 +64,31 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
       <div className="flex items-start justify-between gap-2">
         <span className="truncate text-sm text-muted-foreground">{label}</span>
         <span className="flex items-center gap-1">
-          {status ? <StatusBadge status={status} /> : null}
+          {status ? (
+            <EndFade>
+              <StatusBadge status={status} />
+            </EndFade>
+          ) : null}
           {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}
         </span>
       </div>
       <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className="text-2xl font-semibold tabular-nums">{shown}</span>
+        {numeric ? (
+          <CountUp
+            className="text-2xl font-semibold tabular-nums"
+            value={value}
+            metricKey={metricKey}
+            format={format}
+            renderValue={(current) => bareNumber(current, format, mode, metricKey)}
+          />
+        ) : (
+          <span className="text-2xl font-semibold tabular-nums">{shown}</span>
+        )}
         {unit ? <span className="truncate text-sm text-muted-foreground">{unit}</span> : null}
       </div>
       {reference ? <p className="truncate text-xs text-muted-foreground">{reference}</p> : null}
       <p className="truncate text-sm text-muted-foreground">{deltaText || "\u00a0"}</p>
     </Card>
+    </Reveal>
   )
 }

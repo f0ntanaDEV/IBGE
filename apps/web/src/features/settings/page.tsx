@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/common/PageHeader"
+import { motionEmergency } from "@/motion/tokens"
 import { usePreferences, type ThemeChoice } from "@/stores/preferences"
 
 export function SettingsPage() {
@@ -9,7 +11,17 @@ export function SettingsPage() {
   const setTheme = usePreferences((state) => state.setTheme)
   const setContrast = usePreferences((state) => state.setContrast)
   const setMode = usePreferences((state) => state.setMode)
+  const motion = usePreferences((state) => state.motion)
+  const setMotion = usePreferences((state) => state.setMotion)
   const high = contrast === "high"
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const apply = () => setReduced(media.matches)
+    apply()
+    media.addEventListener("change", apply)
+    return () => media.removeEventListener("change", apply)
+  }, [])
 
   return (
     <div className="page-stack">
@@ -52,6 +64,23 @@ export function SettingsPage() {
             />
             Alto contraste
           </label>
+          {motionEmergency() ? null : (
+            <label className="grid gap-1 text-sm">
+              <span className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={motion === "on"}
+                  onChange={() => {
+                    setMotion(motion === "on" ? "off" : "on")
+                    toast(motion === "on" ? "Animações desligadas" : "Animações ligadas")
+                  }}
+                />
+                Animações
+              </span>
+              <span className="text-muted-foreground">Números contam, gráficos se desenham e o conteúdo aparece ao rolar a página</span>
+              {reduced ? <span className="text-muted-foreground">Seu sistema pede menos movimento</span> : null}
+            </label>
+          )}
         </fieldset>
       </div>
       <fieldset className="grid gap-3 rounded-lg border border-border p-4">

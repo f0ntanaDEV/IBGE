@@ -1,4 +1,6 @@
 import { STATUS_LABEL, type Status } from "@/content/kpi-rules"
+import { EndFade } from "@/motion/CountUp"
+import { Reveal } from "@/motion/useMotion"
 
 export type ActionItem = { id: string; label: string; action: string; status: Status }
 
@@ -6,6 +8,8 @@ export function ActionStrip({ items }: { items: ActionItem[] }) {
   const ranked = [...items].filter((item) => item.status !== "good").sort((a, b) => (a.status === b.status ? 0 : a.status === "bad" ? -1 : 1))
   const shown = ranked.slice(0, 3)
   return (
+    <Reveal fade={false}>
+    <EndFade>
     <section aria-label="O que fazer" className="rounded-lg border border-border px-4 py-3 text-sm">
       <h2 className="font-medium">O que fazer</h2>
       {shown.length === 0 ? (
@@ -25,5 +29,7 @@ export function ActionStrip({ items }: { items: ActionItem[] }) {
         </ul>
       )}
     </section>
+    </EndFade>
+    </Reveal>
   )
 }

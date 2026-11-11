@@ -30,7 +30,7 @@ export function AnimatedScatter({
   selected?: number[]
   onSelect?: (cod: number) => void
 }) {
-  const { colors } = useChartTheme()
+  const { colors, chartAnim } = useChartTheme()
   const years = useMemo(() => [...new Set(points.map((point) => point.ano))].sort((a, b) => a - b), [points])
   const [year, setYear] = useState(years[0] ?? 0)
   const [playing, setPlaying] = useState(false)
@@ -90,7 +90,7 @@ export function AnimatedScatter({
             data={shown}
             fill={colors[0] || "hsl(var(--chart-1))"}
             fillOpacity={0.85}
-            isAnimationActive={false}
+            {...chartAnim}
             onClick={(point: ScatterPoint) => onSelect?.(point.cod)}
             shape={(props: { cx?: number; cy?: number; size?: number; payload?: ScatterPoint }) => {
               const payload = props.payload

@@ -74,6 +74,7 @@ import {
   useTerritories,
 } from "@/features/datasets/hooks"
 import { chartId, focusChart } from "@/lib/chartId"
+import { useMotionFilters, usePageReady } from "@/motion/usePageReady"
 import { formatBy, formatValue, type NumberFormat } from "@/lib/format"
 import { queryClient } from "@/lib/queryClient"
 
@@ -260,6 +261,9 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
     return selectNews(spec.id, [...fromClaims, ...fromFeed])
   }, [claims.data, news.data?.items, spec.id])
 
+  const essential = pyramidEnabled ? pyramid : spec.id === "ds5" ? life : series
+  usePageReady(essential.isSuccess || essential.isError)
+  useMotionFilters(`${effective.cod}|${effective.ano}|${effective.sexo}`)
   const copy = pageCopy(spec.id)
   const processedAt = info?.last_run?.finished_at
   const yearBefore = tableItems.find((row) => Number(row.ano) === effective.ano - 1)

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { chartDefaults } from "@/lib/chartDefaults"
+import { chartMotion } from "@/motion/chartMotion"
+import { useMotionClock } from "@/motion/useMotion"
 import { usePreferences } from "@/stores/preferences"
 
 function readScale(prefix: string, count: number) {
@@ -36,6 +37,8 @@ function readHcColors() {
 export function useChartTheme() {
   const theme = usePreferences((state) => state.theme)
   const contrast = usePreferences((state) => state.contrast)
+  const { motion, live } = useMotionClock(true)
+  const chartAnim = chartMotion(live ? motion : { animate: false, delayMs: 0, durationMs: motion.durationMs })
   const [colors, setColors] = useState<string[]>(readColors)
   const [sequential, setSequential] = useState<string[]>(readSequential)
   const [highContrast, setHighContrast] = useState(readHighContrast)
@@ -65,6 +68,7 @@ export function useChartTheme() {
     strokeWidth: highContrast ? 2.5 : 1.5,
     dash: DASH,
     markers: MARKERS,
-    isAnimationActive: chartDefaults.isAnimationActive,
+    isAnimationActive: chartAnim.isAnimationActive,
+    chartAnim,
   }
 }

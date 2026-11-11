@@ -22,7 +22,7 @@ function asFormat(format: string): NumberFormat {
 }
 
 function RankingBarsView({ rowsByMetric, options, selectedCod, summary }: RankingBarsProps) {
-  const { colors, isAnimationActive } = useChartTheme()
+  const { colors, chartAnim } = useChartTheme()
   const simple = false
   const [metric, setMetric] = useState(options[0]?.key ?? "")
   const format = asFormat(options.find((item) => item.key === metric)?.format ?? "decimal")
@@ -70,7 +70,7 @@ function RankingBarsView({ rowsByMetric, options, selectedCod, summary }: Rankin
           <XAxis type="number" stroke="hsl(var(--muted-foreground))" tickCount={simple ? 5 : undefined} tickFormatter={(value) => formatTick(Number(value))} />
           <YAxis type="category" dataKey="label" width={108} interval={0} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
           <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatTick(value)} />} />
-          <Bar dataKey="value" barSize={barSize} isAnimationActive={isAnimationActive}>
+          <Bar dataKey="value" barSize={barSize} {...chartAnim}>
             {rows.map((row) => (
               <Cell key={row.cod} fill={row.cod === selectedCod ? accent : muted} />
             ))}

@@ -31,7 +31,7 @@ export function SlopeChart({
   selected?: number[]
   onSelect?: (cod: number) => void
 }) {
-  const { colors, isAnimationActive } = useChartTheme()
+  const { colors, chartAnim } = useChartTheme()
   const usable = items.filter((item) => item.valor_a != null && item.valor_b != null)
   const rows = useMemo(
     () => [
@@ -71,7 +71,7 @@ export function SlopeChart({
                 strokeOpacity={faded ? 0.35 : 1}
                 dot={{ r: 3, cursor: "pointer", onClick: () => onSelect?.(item.cod) }}
                 strokeWidth={1.5}
-                isAnimationActive={isAnimationActive}
+                {...chartAnim}
               />
             )
           })}

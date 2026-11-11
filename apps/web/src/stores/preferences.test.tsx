@@ -27,6 +27,7 @@ describe("tema", () => {
       density: "comfortable",
       contrast: null,
       mode: "technical",
+      motion: "off",
     })
   })
 

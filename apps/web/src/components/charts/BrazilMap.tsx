@@ -1,6 +1,7 @@
 import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo"
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import { motionVars, useMotion } from "@/motion/useMotion"
 import { formatValue, type MetricMeta } from "@/lib/format"
 import { classOf, quantileBreaks, quantizeBreaks } from "@/lib/quantiles"
 
@@ -47,6 +48,17 @@ export function BrazilMap({
   highlight?: number
 }) {
   const { sequential, highContrast } = useChartTheme()
+  const motion = useMotion()
+  const [neutral, setNeutral] = useState(false)
+  useLayoutEffect(() => {
+    if (!motion.animate) {
+      setNeutral(false)
+      return
+    }
+    setNeutral(true)
+    const frame = requestAnimationFrame(() => setNeutral(false))
+    return () => cancelAnimationFrame(frame)
+  }, [motion.animate, motion.groupId])
   const host = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ w: WIDTH, h: HEIGHT })
   const [mesh, setMesh] = useState<Mesh | null>(null)
@@ -110,12 +122,18 @@ export function BrazilMap({
   return (
     <div role="img" aria-label={summary} className="flex h-full min-h-0 flex-col gap-3">
       <div ref={host} className="min-h-0 flex-1">
-      <svg viewBox={`0 0 ${Math.max(size.w, 1)} ${Math.max(size.h, 1)}`} className="h-full w-full">
+      <svg
+        viewBox={`0 0 ${Math.max(size.w, 1)} ${Math.max(size.h, 1)}`}
+        className="h-full w-full"
+        data-anim={motion.animate ? "map" : undefined}
+        style={motion.animate ? motionVars(motion) : undefined}
+      >
         {paths.map((shape) => {
           const item = byCod.get(shape.cod)
           const value = item?.valor
           const faded = highlight != null ? shape.cod !== highlight : selected.length > 0 && !selected.includes(shape.cod)
-          const fill = faded || value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
+          const painted = faded || value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
+          const fill = neutral ? "hsl(var(--muted))" : painted
           const label = item ? `${item.local}: ${formatValue(item.valor, metric)}` : shape.sigla
           const shared = {
             d: shape.d,
@@ -130,7 +148,15 @@ export function BrazilMap({
               if (event.key === "Enter") onSelect?.(shape.cod, false)
             },
           }
-          return <path key={shape.cod} {...shared} fillOpacity={faded ? 0.35 : 1} />
+          return (
+            <path
+              key={shape.cod}
+              {...shared}
+              data-allow-motion={motion.animate ? "fill" : undefined}
+              style={motion.animate ? { transitionDuration: `${motion.durationMs}ms` } : undefined}
+              fillOpacity={faded ? 0.35 : 1}
+            />
+          )
         })}
       </svg>
       </div>

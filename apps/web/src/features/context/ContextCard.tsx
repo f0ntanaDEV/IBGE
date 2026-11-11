@@ -1,4 +1,5 @@
 import { ChartCard } from "@/components/common/ChartCard"
+import { CountUp } from "@/motion/CountUp"
 import type { ContextItem } from "@/features/datasets/api"
 import { focusChart } from "@/lib/chartId"
 import { formatValue, type MetricKind, type Mode } from "@/lib/format"
@@ -52,7 +53,13 @@ export function ContextCard({
           <li key={item.id} className="py-2.5">
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm text-muted-foreground">{item.label}</span>
-              <span className="font-semibold tabular-nums">{showValue(item, mode)}</span>
+              <span className="font-semibold tabular-nums">
+                {typeof item.value === "number" ? (
+                  <CountUp value={item.value} metricKey={item.id} metric={{ key: item.id, kind: kindOf(item.kind) }} className="font-semibold tabular-nums" />
+                ) : (
+                  showValue(item, mode)
+                )}
+              </span>
             </div>
             {item.note ? <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{renderNote(item, mode)}</p> : null}
             {showCharts ? (

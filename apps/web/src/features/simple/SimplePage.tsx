@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { Reveal } from "@/motion/useMotion"
 import { Link } from "react-router-dom"
 import { Headline } from "@/components/common/Headline"
 import { PageHeader } from "@/components/common/PageHeader"
@@ -11,6 +12,9 @@ import { FilterBar } from "@/features/datasets/components/FilterBar"
 import { useContext, useDashboardFilters, useFacts, useSummary, useTerritories, useDatasetNews } from "@/features/datasets/hooks"
 import { formatValue, type MetricKind, type NumberFormat } from "@/lib/format"
 import { FactList, visibleFacts } from "@/features/facts/FactsCard"
+import { useMotionApi } from "@/motion/MotionProvider"
+import { useMotionFilters, usePageReady } from "@/motion/usePageReady"
+import { WordReveal, WordRevealControl, useWordRevealControl } from "@/motion/WordReveal"
 
 const COPY: Record<string, { title: string; what: string; daily: string }> = {
   overview: {
@@ -68,18 +72,32 @@ function RelatedNews({ item }: { item?: { titulo?: string | null; link?: string 
   return (
     <p className="mt-3">
       <a href={item.link ?? "https://agenciadenoticias.ibge.gov.br/"} className="underline" target="_blank" rel="noreferrer">
-        {item.titulo}
+        <WordReveal as="span" text={item.titulo} />
       </a>
     </p>
   )
 }
 
-function SectionCard({ id, title, wide, children }: { id: string; title: string; wide?: boolean; children: ReactNode }) {
+function ShowAll() {
+  const { enabled } = useMotionApi()
+  const { finishAll } = useWordRevealControl()
+  if (!enabled) return null
   return (
-    <Card id={id} className={`flex h-full flex-col p-4 ${wide ? "md:col-span-2" : ""}`}>
+    <button type="button" className="h-8 rounded-md border border-border px-3 text-sm" onClick={finishAll}>
+      Mostrar tudo
+    </button>
+  )
+}
+
+function SectionCard({ id, title, wide, children }: { id: string; title: string; wide?: boolean; children: ReactNode }) {
+  const { enabled } = useMotionApi()
+  return (
+    <Reveal className={wide ? "h-full md:col-span-2" : "h-full"}>
+    <Card id={id} className={`flex h-full flex-col p-4 ${enabled ? "" : wide ? "md:col-span-2" : ""}`}>
       <h3 className="text-sm font-medium">{title}</h3>
       <div className="mt-3 text-sm leading-6 [&_p]:max-w-[72ch]">{children}</div>
     </Card>
+    </Reveal>
   )
 }
 
@@ -99,6 +117,8 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const value2000 = formatValue(at(2000) ?? null, { key: "serie", kind: "count" }, "simple")
   const value2070 = formatValue(at(2070) ?? null, { key: "serie", kind: "count" }, "simple")
   const shownFacts = visibleFacts(facts.data)
+  usePageReady(summary.isSuccess || summary.isError)
+  useMotionFilters(`${filters.cod}|${filters.ano}`)
   const related = news.data?.items ?? []
   const sections = [
     { id: "o-que", title: "O que esta página mostra" },
@@ -128,9 +148,13 @@ export function SimplePage({ pageId }: { pageId: string }) {
           <KpiCard key={kpi.id} metricKey={kpi.id} label={kpi.label} value={kpi.value} format={kpiFormat(kpi.unidade)} loading={summary.isLoading} />
         ))}
       </section>
+      <WordRevealControl>
       <section className="grid gap-4" aria-label="Entenda os dados">
         <Headline pageId={pageId} input={{ cod: filters.cod, place, ano: filters.ano, pop: kpis.find((item) => item.id === "pop_t")?.value ?? null }} />
-        <h2 className="text-base font-medium">Entenda os dados</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-medium">Entenda os dados</h2>
+          <ShowAll />
+        </div>
         <Card className="p-4">
           <nav className="flex flex-wrap gap-2" aria-label="Categorias">
             {sections.map((section) => (
@@ -142,17 +166,15 @@ export function SimplePage({ pageId }: { pageId: string }) {
         </Card>
         <div className="grid items-stretch gap-4 md:grid-cols-2">
           <SectionCard id="o-que" title="O que esta página mostra">
-            <p>{copy.what}</p>
+            <WordReveal text={copy.what} />
             <RelatedNews item={related[0]} />
           </SectionCard>
           <SectionCard id="dia" title="O que isso significa no dia a dia">
-            <p>{copy.daily}</p>
+            <WordReveal text={copy.daily} />
             <RelatedNews item={related[1] ?? related[0]} />
           </SectionCard>
           <SectionCard id="hoje" title="Como está hoje" wide>
-            <p>
-              {place} em {filters.ano}.
-            </p>
+            <WordReveal text={`${place} em ${filters.ano}.`} />
             <ul className="mt-3 divide-y divide-border border-y border-border">
               {context.data?.length
                 ? context.data.map((item) => (
@@ -176,23 +198,23 @@ export function SimplePage({ pageId }: { pageId: string }) {
           </SectionCard>
           <SectionCard id="ano-2000" title="Como era em 2000">
             <p className="text-2xl font-semibold tabular-nums">{value2000}</p>
-            <p className="mt-2 text-muted-foreground">Indicador principal no início da série.</p>
+            <WordReveal className="mt-2 text-muted-foreground" text="Indicador principal no início da série." />
             <RelatedNews item={related[3] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2070" title="Para onde vamos (2070)">
             <p className="text-2xl font-semibold tabular-nums">{value2070}</p>
-            <p className="mt-2 text-muted-foreground">Projeção no fim da série.</p>
+            <WordReveal className="mt-2 text-muted-foreground" text="Projeção no fim da série." />
             <RelatedNews item={related[4] ?? related[1] ?? related[0]} />
           </SectionCard>
           <SectionCard id="territorios" title="Comparando territórios" wide>
-            <p>{filters.cod === 0 ? "O Brasil reúne as cinco regiões." : `${place} é comparado com o Brasil nos fatos e nos indicadores.`}</p>
+            <WordReveal text={filters.cod === 0 ? "O Brasil reúne as cinco regiões." : `${place} é comparado com o Brasil nos fatos e nos indicadores.`} />
             <RelatedNews item={related[5] ?? related[2] ?? related[0]} />
           </SectionCard>
           <SectionCard id="fatos" title="Fatos em destaque" wide>
             {shownFacts.length ? (
               <FactList facts={shownFacts} />
             ) : (
-              <p>Os fatos aparecem quando a base termina de carregar.</p>
+              <WordReveal text="Os fatos aparecem quando a base termina de carregar." />
             )}
             <RelatedNews item={related[6] ?? related[0]} />
           </SectionCard>
@@ -201,7 +223,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
               {selectNews(pageId === "quality" ? "overview" : pageId, news.data?.items ?? []).map((item) => (
                 <li key={String(item.id ?? item.link)} className="rounded-md border border-border px-3 py-2">
                   <a href={item.link ?? "https://agenciadenoticias.ibge.gov.br/"} className="underline" target="_blank" rel="noreferrer">
-                    {item.titulo}
+                    <WordReveal as="span" text={item.titulo ?? ""} />
                   </a>
                   {item.data_publicacao ? <p className="text-muted-foreground">{item.data_publicacao}</p> : null}
                 </li>
@@ -210,6 +232,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
           </SectionCard>
         </div>
       </section>
+      </WordRevealControl>
       <p className="text-sm">
         <Link to="/insights" className="underline">
           Ver perguntas da página Insights

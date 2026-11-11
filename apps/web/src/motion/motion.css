@@ -1,0 +1,103 @@
+html:not([data-motion="on"]) *,
+html:not([data-motion="on"]) *::before,
+html:not([data-motion="on"]) *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-motion="on"] *,
+html[data-motion="on"] *::before,
+html[data-motion="on"] *::after {
+  transition: none !important;
+}
+
+html[data-motion="on"] [data-allow-motion="fill"] {
+  transition: fill var(--anim-duration, 800ms) var(--anim-ease, cubic-bezier(0.22, 1, 0.36, 1)) !important;
+}
+
+@media print {
+  [data-anim],
+  [data-anim-state] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    animation: none !important;
+  }
+}
+
+[data-motion="on"] [data-anim-state="pending"] {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+[data-motion="on"] [data-anim-state="run"] {
+  animation: motion-fade-up var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+}
+
+[data-motion="on"] [data-anim="sweep"] {
+  animation: motion-sweep var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+}
+
+[data-motion="on"] [data-anim="grow-left"] {
+  animation: motion-grow-x-left var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: right center;
+}
+
+[data-motion="on"] [data-anim="grow-right"] {
+  animation: motion-grow-x-right var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+[data-motion="on"] [data-anim="fade"],
+[data-motion="on"] .motion-end {
+  animation: motion-fade calc(var(--anim-duration) * 0.2) var(--anim-ease) calc(var(--anim-delay, 0ms) + var(--anim-duration) * 0.8) both;
+}
+
+[data-motion="on"] [data-anim="pop"] {
+  animation: motion-pop calc(var(--anim-duration) * 0.2) var(--anim-ease) calc(var(--anim-delay, 0ms) + var(--anim-duration) * 0.8) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-motion="on"] [data-anim="map"] {
+  animation: motion-map var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes motion-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes motion-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-sweep {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes motion-grow-x-left {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes motion-grow-x-right {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes motion-pop {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes motion-map {
+  from { transform: scale(0.98); }
+  to { transform: scale(1); }
+}

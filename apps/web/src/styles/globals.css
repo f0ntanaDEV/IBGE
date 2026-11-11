@@ -315,10 +315,16 @@ html.dark {
   }
 }
 
-*,
-*::before,
-*::after {
+html:not([data-motion="on"]) *,
+html:not([data-motion="on"]) *::before,
+html:not([data-motion="on"]) *::after {
   animation: none !important;
+  transition: none !important;
+}
+
+html[data-motion="on"] *,
+html[data-motion="on"] *::before,
+html[data-motion="on"] *::after {
   transition: none !important;
 }
 

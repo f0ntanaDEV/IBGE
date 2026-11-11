@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Outlet } from "react-router-dom"
 import { Footer } from "@/app/layout/Footer"
+import { MotionProvider } from "@/motion/MotionProvider"
 import { Header } from "@/app/layout/Header"
 import { Sidebar } from "@/app/layout/Sidebar"
 import { MobileDrawer } from "@/app/layout/MobileDrawer"
@@ -37,7 +38,9 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Header onOpenMenu={() => setMenuOpen(true)} />
         <main id="conteudo" className="page-pad min-w-0 flex-1">
-          <Outlet />
+          <MotionProvider>
+            <Outlet />
+          </MotionProvider>
         </main>
         <Footer />
       </div>

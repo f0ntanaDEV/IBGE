@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useState } from "react"
 import type { PyramidRow } from "@/features/datasets/api"
 import { YEAR_MAX, YEAR_MIN, calendarYear, countOf, startAge, toPyramidChart } from "@/features/datasets/derive"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import { motionVars, useMotion } from "@/motion/useMotion"
 import { useFormatter } from "@/hooks/useFormatter"
 import { formatAgeBand } from "@/lib/format"
 
@@ -23,6 +24,8 @@ const PLAY_STEP_MS = 140
 
 function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear, animate = false, summary }: PopulationPyramidProps) {
   const { colors } = useChartTheme()
+  const motion = useMotion()
+  const grow = motion.animate ? motionVars(motion) : undefined
   const simple = false
   const formatCount = useFormatter({ key: "populacao", kind: "count" })
   const [playing, setPlaying] = useState(false)
@@ -139,7 +142,7 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
             const height = Math.max(1, slot * 0.7)
             const showAge = granularity !== "idade" || startAge(row.faixa) % 10 === 0
             return (
-              <g key={String(row.faixa)} onPointerEnter={() => setHover(index)} onPointerLeave={() => setHover(null)}>
+              <g key={`meta-${String(row.faixa)}`}>
                 {showAge ? (
                   <text x={pad.l - 6} y={y + height / 2} textAnchor="end" dominantBaseline="middle" fill="hsl(var(--muted-foreground))" fontSize={11}>
                     {formatAgeBand(row.faixa)}
@@ -160,19 +163,31 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
                     dashed={id === "futuro"}
                   />
                 ))}
-                <BarPair
-                  y={y}
-                  height={height}
-                  mid={mid}
-                  maxBar={maxBar}
-                  men={Math.abs(row.homens) / max}
-                  women={Math.abs(row.mulheres) / max}
-                  menColor={men}
-                  womenColor={women}
-                />
               </g>
             )
           })}
+          <g data-anim={grow ? "grow-left" : undefined} style={grow}>
+            {bars.map((row, index) => {
+              const y = VB_H - pad.b - (index + 1) * slot + slot * 0.15
+              const height = Math.max(1, slot * 0.7)
+              return (
+                <g key={`h-${String(row.faixa)}`} onPointerEnter={() => setHover(index)} onPointerLeave={() => setHover(null)}>
+                  <PyramidBar x={mid - maxBar} y={y} width={maxBar} height={height} ratio={Math.abs(row.homens) / max} origin="right center" color={men} outline={false} dashed={false} />
+                </g>
+              )
+            })}
+          </g>
+          <g data-anim={grow ? "grow-right" : undefined} style={grow}>
+            {bars.map((row, index) => {
+              const y = VB_H - pad.b - (index + 1) * slot + slot * 0.15
+              const height = Math.max(1, slot * 0.7)
+              return (
+                <g key={`m-${String(row.faixa)}`} onPointerEnter={() => setHover(index)} onPointerLeave={() => setHover(null)}>
+                  <PyramidBar x={mid} y={y} width={maxBar} height={height} ratio={Math.abs(row.mulheres) / max} origin="left center" color={women} outline={false} dashed={false} />
+                </g>
+              )
+            })}
+          </g>
         </svg>
       </div>
       {simple ? <p className="text-sm">Homens à esquerda · Mulheres à direita</p> : null}

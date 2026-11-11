@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react"
+import { Reveal } from "@/motion/useMotion"
 import { formatDate } from "@/lib/format"
 
 type NewsCardProps = {
@@ -12,6 +13,7 @@ type NewsCardProps = {
 
 export function NewsCard({ title, summary, date, url, image, relatedMetric }: NewsCardProps) {
   return (
+    <Reveal className="h-full">
     <article className="flex h-full flex-col rounded-lg border border-border bg-card p-4">
       {image ? <img src={image} alt="" className="mb-3 h-32 w-full rounded-md object-cover" /> : null}
       <h3 className="text-sm font-medium">{title}</h3>
@@ -26,5 +28,6 @@ export function NewsCard({ title, summary, date, url, image, relatedMetric }: Ne
         </a>
       </div>
     </article>
+    </Reveal>
   )
 }

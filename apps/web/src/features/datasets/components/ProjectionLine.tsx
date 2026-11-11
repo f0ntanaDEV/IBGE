@@ -1,7 +1,9 @@
-import { memo, useEffect, useMemo, useState, type Ref } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceDot, ReferenceLine, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { calendarYear, crossingYear, peakPoint } from "@/features/datasets/derive"
+import { EndFade } from "@/motion/CountUp"
+import { motionVars, useMotion } from "@/motion/useMotion"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { decadeDomain, decadeTicks, formatAxis, labelSide, niceDomain, niceTicks, yAxisWidth, YEAR_TICKS, YEAR_TICKS_MOBILE } from "@/lib/chart-axes"
 import { formatValue, metricFromFormat, type NumberFormat } from "@/lib/format"
@@ -45,7 +47,11 @@ function ProjectionLineView({
   reference,
   referenceKey,
 }: ProjectionLineProps) {
-  const { colors, isAnimationActive, strokeWidth, dash, highContrast } = useChartTheme()
+  const { colors, strokeWidth, dash, highContrast, chartAnim } = useChartTheme()
+  const motion = useMotion()
+  const seriesAnim = variant === "area100" ? { isAnimationActive: false as const } : chartAnim
+  const late = motion.animate ? "motion-end" : undefined
+  const sweep = variant === "area100" && motion.animate
   const [hidden, setHidden] = useState<Set<string>>(() => new Set())
   const [inside, setInside] = useState(false)
   const simple = false
@@ -129,6 +135,7 @@ function ProjectionLineView({
 
   return (
     <div role="img" aria-label={summary} className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1" data-anim={sweep ? "sweep" : undefined} style={sweep ? motionVars(motion) : undefined}>
       <ChartContainer config={config} className={compact ? "aspect-auto h-36 w-full" : "h-full min-h-0 w-full flex-1"}>
         <ComposedChart
           data={chartData}
@@ -160,18 +167,19 @@ function ProjectionLineView({
           />
           <ReferenceLine
             x={current}
+            className={late}
             stroke="hsl(var(--muted-foreground))"
             strokeOpacity={0.45}
-            label={{ value: "Projeção →", position: "insideTopRight", fill: "hsl(var(--muted-foreground))" }}
+            label={{ value: "Projeção →", position: "insideTopRight", fill: "hsl(var(--muted-foreground))", className: late }}
           />
           {life ? <CovidNote /> : null}
-          {band ? <ReferenceArea x1={band.x1} x2={band.x2} /> : null}
-          {markYear != null ? <ReferenceLine x={markYear} stroke={colors[1] || "hsl(var(--chart-2))"} /> : null}
-          {refLine ? <ReferenceLine y={refLine.y} stroke={colors[2] || "var(--color-chart-3)"} label={refLine.label} /> : null}
+          {band ? <ReferenceArea className={late} x1={band.x1} x2={band.x2} /> : null}
+          {markYear != null ? <ReferenceLine className={late} x={markYear} stroke={colors[1] || "hsl(var(--chart-2))"} /> : null}
+          {refLine ? <ReferenceLine className={late} y={refLine.y} stroke={colors[2] || "var(--color-chart-3)"} label={refLine.label} /> : null}
           {variant === "area" && shown.length === 2 && !simple ? (
             <>
-              <Area dataKey="bandaBase" stackId="banda" stroke="none" fill="transparent" isAnimationActive={isAnimationActive} legendType="none" />
-              <Area dataKey="banda" stackId="banda" stroke="none" fill={colors[2] || "var(--color-chart-3)"} fillOpacity={0.35} isAnimationActive={isAnimationActive} name="Crescimento vegetativo" />
+              <Area dataKey="bandaBase" stackId="banda" stroke="none" fill="transparent" isAnimationActive={false} legendType="none" />
+              <Area className={late} dataKey="banda" stackId="banda" stroke="none" fill={colors[2] || "var(--color-chart-3)"} fillOpacity={0.35} isAnimationActive={false} name="Crescimento vegetativo" />
             </>
           ) : null}
           {shown.map((item, index) => {
@@ -186,24 +194,23 @@ function ProjectionLineView({
                   stroke={color}
                   fill={color}
                   fillOpacity={0.55}
-                  isAnimationActive={isAnimationActive}
+                  isAnimationActive={false}
                 />
               )
             }
+            const observedDash = highContrast ? dash[index % dash.length] : undefined
             return (
               <Line
                 key={`${item.key}-obs`}
                 dataKey={`${item.key}:observado`}
                 name={item.label}
                 stroke={color}
-                dot={false}
-                strokeWidth={1.5}
-                isAnimationActive={false}
+                dot={highContrast ? { r: 2.5 } : false}
+                strokeWidth={strokeWidth}
+                strokeDasharray={observedDash}
                 connectNulls={false}
                 legendType="none"
-                shape={(props: DrawShapeProps) => (
-                  <SeriesShape {...props} strokeWidth={strokeWidth} dash={highContrast ? dash[index % dash.length] : undefined} marker={highContrast} />
-                )}
+                {...(observedDash ? { isAnimationActive: false, className: late } : seriesAnim)}
               />
             )
           })}
@@ -216,6 +223,7 @@ function ProjectionLineView({
               dot={false}
               strokeWidth={1.5}
               isAnimationActive={false}
+              className={late}
               connectNulls
               label={(props: { index?: number; x?: number; y?: number }) =>
                 props.index === chartData.length - 1 ? <EndLabel x={Number(props.x)} y={Number(props.y)} text="Brasil" /> : <g />
@@ -230,13 +238,12 @@ function ProjectionLineView({
                   name={item.label}
                   stroke={colors[index] || "hsl(215 24% 62%)"}
                   dot={false}
-                  strokeWidth={1.5}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={highContrast ? dash[(index + 1) % dash.length] : "6 4"}
                   isAnimationActive={false}
+                  className={late}
                   connectNulls={false}
                   legendType="none"
-                  shape={(props: DrawShapeProps) => (
-                    <SeriesShape {...props} strokeWidth={strokeWidth} dash={highContrast ? dash[(index + 1) % dash.length] : "6 4"} />
-                  )}
                   label={
                     directLabels
                       ? (props: { index?: number; x?: number; y?: number }) =>
@@ -257,6 +264,11 @@ function ProjectionLineView({
               r={3}
               fill={colors[0] || "var(--color-chart-1)"}
               stroke="none"
+              shape={(props: { cx?: number; cy?: number }) => (
+                <EndFade svg>
+                  <circle cx={props.cx} cy={props.cy} r={3} fill={colors[0] || "var(--color-chart-1)"} />
+                </EndFade>
+              )}
               label={{
                 value: `Pico: ${formatAxis(peak.valor, axisMetric, 1)} (${peak.ano})`,
                 position: labelSide(peak.ano, [2000, 2070]),
@@ -270,11 +282,16 @@ function ProjectionLineView({
               x={cross}
               y={crossValue}
               r={0}
-              shape={(props: { cx?: number; cy?: number }) => <CrossingMark cx={props.cx} cy={props.cy} stroke={colors[3] || "var(--color-chart-4)"} />}
+              shape={(props: { cx?: number; cy?: number }) => (
+                <EndFade svg>
+                  <CrossingMark cx={props.cx} cy={props.cy} stroke={colors[3] || "var(--color-chart-4)"} />
+                </EndFade>
+              )}
             />
           ) : null}
         </ComposedChart>
       </ChartContainer>
+      </div>
       {!directLabels && candidates.length > 1 ? (
         <div className="mt-2 flex flex-wrap gap-2">
           {candidates.map((item) => (
@@ -299,46 +316,6 @@ function ProjectionLineView({
       ) : null}
       {simple && variant === "area100" ? <p className="text-sm">{shown.map((item) => item.label).join(" · ")}</p> : null}
     </div>
-  )
-}
-
-type CurvePoint = { x?: number | null; y?: number | null }
-
-type DrawShapeProps = {
-  d?: string
-  points?: readonly CurvePoint[]
-  stroke?: string
-  strokeWidth?: number | string
-  pathRef?: Ref<SVGPathElement>
-}
-
-function pathFromPoints(points?: readonly CurvePoint[]) {
-  if (!points?.length) return ""
-  let path = ""
-  let open = false
-  for (const point of points) {
-    if (point.x == null || point.y == null) {
-      open = false
-      continue
-    }
-    path += `${open ? "L" : "M"}${point.x},${point.y}`
-    open = true
-  }
-  return path
-}
-
-function SeriesShape({ points, stroke, strokeWidth = 1.5, d, dash, marker }: DrawShapeProps & { dash?: string; marker?: boolean }) {
-  const path = d || pathFromPoints(points)
-  if (!path) return <g />
-  return (
-    <g data-series="">
-      <path d={path} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={dash && dash !== "0" ? dash : undefined} />
-      {marker
-        ? points?.map((point, index) =>
-            point.x == null || point.y == null ? null : <circle key={index} cx={point.x} cy={point.y} r={2.5} fill={stroke} />,
-          )
-        : null}
-    </g>
   )
 }
 

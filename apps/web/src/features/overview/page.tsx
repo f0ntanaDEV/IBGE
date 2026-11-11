@@ -25,6 +25,7 @@ import { FactsCard } from "@/features/facts/FactsCard"
 import { SimplePage } from "@/features/simple/SimplePage"
 import { chartId, focusChart } from "@/lib/chartId"
 import { formatValue } from "@/lib/format"
+import { useMotionFilters, usePageReady } from "@/motion/usePageReady"
 import { useMode } from "@/stores/preferences"
 import { queryClient, STALE_TIME } from "@/lib/queryClient"
 
@@ -97,6 +98,8 @@ export function OverviewPage() {
     { key: "tft", label: "Filhos por mulher", format: "decimal" as const },
     { key: "ie60", label: "Idosos para cada 100 crianças", format: "decimal" as const },
   ]
+  usePageReady(Boolean(rows[0]?.isSuccess || rows[0]?.isError))
+  useMotionFilters(`${cod}|${year}`)
   const copy = pageCopy("overview")
   const processed = datasets.data?.map((item) => item.last_run?.finished_at).filter((item): item is string => Boolean(item)).sort().at(-1)
   const previous = series.find((row) => Number(row.ano) === year - 1)

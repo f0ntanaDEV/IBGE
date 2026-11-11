@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import { calendarYear } from "@/features/datasets/derive"
+import { motionVars, useMotion } from "@/motion/useMotion"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { formatAxisValue } from "@/lib/format"
 
@@ -157,6 +158,8 @@ export function AgeYearHeatmap({
   onSelectAge?: (idade: number) => void
 }) {
   const { sequential, highContrast } = useChartTheme()
+  const motion = useMotion()
+  const sweep = motion.animate ? motionVars(motion) : undefined
   const stops = sequential.filter(Boolean)
   const palette = stops.length ? stops : FALLBACK_STOPS
   const host = useRef<HTMLDivElement>(null)
@@ -174,6 +177,7 @@ export function AgeYearHeatmap({
   const max = values.length ? Math.max(...values) : 1
   const layout = axisLayout(box.w, box.h)
   const today = calendarYear()
+  const yearDelay = motion.animate ? motion.delayMs + (motion.durationMs * (today - HEAT_YEAR_MIN)) / (HEAT_YEAR_MAX - HEAT_YEAR_MIN) : 0
 
   useEffect(() => {
     const node = host.current
@@ -228,12 +232,16 @@ export function AgeYearHeatmap({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div ref={host} className="relative min-h-0 flex-1">
+        <div
+          data-anim={sweep ? "sweep" : undefined}
+          className="absolute"
+          style={{ left: HEAT_MARGIN.left, top: HEAT_MARGIN.top, width: layout.plot.w, height: layout.plot.h, ...sweep }}
+        >
         <canvas
           ref={canvasRef}
           role="img"
           aria-label={summary}
-          className="absolute"
-          style={{ left: HEAT_MARGIN.left, top: HEAT_MARGIN.top, width: layout.plot.w, height: layout.plot.h }}
+          className="h-full w-full"
           onMouseMove={(event) => setTip(hit(event))}
           onMouseLeave={() => setTip(null)}
           onClick={(event) => {
@@ -241,6 +249,7 @@ export function AgeYearHeatmap({
             if (found) onSelectAge?.(found.idade)
           }}
         />
+        </div>
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
           <text
             x={layout.title.x}
@@ -263,7 +272,7 @@ export function AgeYearHeatmap({
             </text>
           ))}
           {today >= HEAT_YEAR_MIN && today <= HEAT_YEAR_MAX ? (
-            <g>
+            <g data-anim={sweep ? "fade" : undefined} style={sweep ? { ...sweep, animationDelay: `${yearDelay}ms`, animationDuration: `${motion.durationMs * 0.2}ms` } : undefined}>
               <line
                 x1={layout.plot.x + xOf(today, layout.plot.w)}
                 x2={layout.plot.x + xOf(today, layout.plot.w)}

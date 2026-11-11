@@ -16,6 +16,7 @@
           var density = "comfortable"
           var contrast = null
           var mode = "technical"
+          var motion = "off"
           var raw = localStorage.getItem("ibge-preferences")
           if (raw) {
             var state = JSON.parse(raw).state || {}
@@ -23,6 +24,7 @@
             if (state.density === "compact" || state.density === "comfortable") density = state.density
             if (state.contrast === "high" || state.contrast === "normal" || state.contrast === null) contrast = state.contrast
             if (state.mode === "simple" || state.mode === "technical") mode = state.mode
+            if (state.motion === "on" || state.motion === "off") motion = state.motion
           }
           var dark =
             theme === "dark" ||
@@ -32,6 +34,7 @@
           if (high) document.documentElement.dataset.contrast = "high"
           document.documentElement.dataset.density = density
           document.documentElement.dataset.mode = mode
+          document.documentElement.dataset.motion = motion
           document.documentElement.style.colorScheme = dark ? "dark" : "light"
         } catch (e) {}
       })()

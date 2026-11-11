@@ -30,7 +30,7 @@ export function DivergingBars({
   selected?: number[]
   onSelect?: (cod: number) => void
 }) {
-  const { colors, isAnimationActive } = useChartTheme()
+  const { colors, chartAnim } = useChartTheme()
   const simple = false
   const rows = items.map((item) => ({
     ...item,
@@ -51,7 +51,7 @@ export function DivergingBars({
           <YAxis type="category" dataKey="sigla" stroke="hsl(var(--muted-foreground))" width={36} />
           <ReferenceLine x={0} stroke="hsl(var(--foreground))" />
           <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatValue(value, { key: "e0", kind: "years" })} />} />
-          <Bar dataKey="e0" fill={colors[0] || "hsl(var(--chart-1))"} isAnimationActive={isAnimationActive} onClick={(row) => onSelect?.(Number(row.cod))}>
+          <Bar dataKey="e0" fill={colors[0] || "hsl(var(--chart-1))"} {...chartAnim} onClick={(row) => onSelect?.(Number(row.cod))}>
             {rows.map((row) => (
               <Cell
                 key={row.cod}
@@ -60,7 +60,7 @@ export function DivergingBars({
             ))}
           </Bar>
           {simple ? null : (
-            <Bar dataKey="e60" fill={colors[1] || "hsl(var(--chart-2))"} isAnimationActive={isAnimationActive} onClick={(row) => onSelect?.(Number(row.cod))}>
+            <Bar dataKey="e60" fill={colors[1] || "hsl(var(--chart-2))"} {...chartAnim} onClick={(row) => onSelect?.(Number(row.cod))}>
               {rows.map((row) => (
                 <Cell
                 key={row.cod}

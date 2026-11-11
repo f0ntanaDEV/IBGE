@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom"
+import { Reveal } from "@/motion/useMotion"
 import { formatValue } from "@/lib/format"
 import type { Insight } from "@/lib/narratives/types"
 
@@ -52,6 +53,7 @@ function NarrativeNumber({ text }: { text: string }) {
 export function ObservationsCard({ insights }: { insights: Insight[] }) {
   if (!insights.length) return null
   return (
+    <Reveal>
     <section aria-label="Observações finais" className="rounded-lg border border-border p-4">
       <h2 className="text-base font-medium">Observações finais</h2>
       <div className="mt-2 grid gap-2">
@@ -62,5 +64,6 @@ export function ObservationsCard({ insights }: { insights: Insight[] }) {
         ))}
       </div>
     </section>
+    </Reveal>
   )
 }

@@ -2,6 +2,8 @@ import { useTerritories } from "@/features/datasets/hooks"
 import type { FactItem } from "@/features/datasets/api"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { formatValue, type MetricKind } from "@/lib/format"
+import { Reveal } from "@/motion/useMotion"
+import { WordReveal } from "@/motion/WordReveal"
 import { useMode } from "@/stores/preferences"
 
 const NAMES: Record<number, string> = {
@@ -48,12 +50,11 @@ export function FactList({ facts }: { facts: FactItem[] }) {
         return (
           <li key={fact.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5 text-sm leading-5">
             <span className="inline-flex items-center gap-2">
-              {fact.label}
+              <WordReveal as="span" text={fact.label} />
               {fact.status ? <StatusBadge status={fact.status} /> : null}
             </span>
             <span className="font-medium tabular-nums">
-              {textValue(fact, mode)}
-              {detail ? <span className="font-normal text-muted-foreground"> · {detail}</span> : null}
+              <WordReveal as="span" text={`${textValue(fact, mode)}${detail ? ` · ${detail}` : ""}`} />
             </span>
           </li>
         )
@@ -68,6 +69,7 @@ export function FactsCard({ facts, factsCod, territoryCod, loading }: { facts: F
   const note = territoryCod !== factsCod ? " (fatos disponíveis para Brasil e regiões)" : ""
   const shown = visibleFacts(facts)
   return (
+    <Reveal>
     <section data-card className="rounded-lg border border-border p-4" aria-label="Fatos">
       <h2 className="text-sm font-medium">Fatos</h2>
       <p className="mt-1 text-sm text-muted-foreground">
@@ -81,5 +83,6 @@ export function FactsCard({ facts, factsCod, territoryCod, loading }: { facts: F
         </div>
       ) : null}
     </section>
+    </Reveal>
   )
 }

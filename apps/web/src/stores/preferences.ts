@@ -7,12 +7,14 @@ export type ThemeChoice = "light" | "dark" | "system"
 export type Density = "comfortable" | "compact"
 export type ContrastChoice = "normal" | "high" | null
 export type NavigationMode = "technical" | "simple"
+export type MotionChoice = "on" | "off"
 
 export type PreferenceValues = {
   theme: ThemeChoice
   density: Density
   contrast: ContrastChoice
   mode: NavigationMode
+  motion: MotionChoice
 }
 
 export const initialPreferences: PreferenceValues = {
@@ -20,6 +22,7 @@ export const initialPreferences: PreferenceValues = {
   density: "comfortable",
   contrast: null,
   mode: "technical",
+  motion: "off",
 }
 
 type PreferencesState = PreferenceValues & {
@@ -27,6 +30,7 @@ type PreferencesState = PreferenceValues & {
   setDensity: (density: Density) => void
   setContrast: (contrast: ContrastChoice) => void
   setMode: (mode: NavigationMode) => void
+  setMotion: (motion: MotionChoice) => void
 }
 
 export function readStoredPreferences(raw: string | null): PreferenceValues {
@@ -40,6 +44,7 @@ export function readStoredPreferences(raw: string | null): PreferenceValues {
       density: state.density === "compact" ? "compact" : "comfortable",
       contrast,
       mode: state.mode === "simple" ? "simple" : "technical",
+      motion: state.motion === "on" ? "on" : "off",
     }
   } catch {
     return initialPreferences
@@ -78,6 +83,7 @@ export function applyDocumentPreferences(state: PreferenceValues) {
   root.dataset.mode = state.mode
   if (resolveContrast(state.contrast)) root.dataset.contrast = "high"
   else delete root.dataset.contrast
+  root.dataset.motion = state.motion === "on" && import.meta.env.VITE_MOTION_ENABLED !== "false" ? "on" : "off"
   root.style.colorScheme = dark ? "dark" : "light"
 }
 
@@ -93,6 +99,7 @@ export const usePreferences = create<PreferencesState>()(
       setDensity: (density) => set({ density }),
       setContrast: (contrast) => set({ contrast }),
       setMode: (mode) => set({ mode }),
+      setMotion: (motion) => set({ motion }),
     }),
     {
       name: PREFERENCES_KEY,
@@ -102,6 +109,7 @@ export const usePreferences = create<PreferencesState>()(
         density: state.density,
         contrast: state.contrast,
         mode: state.mode,
+        motion: state.motion,
       }),
     },
   ),

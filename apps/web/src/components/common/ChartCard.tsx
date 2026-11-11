@@ -1,4 +1,6 @@
 import { toPng } from "html-to-image"
+import { MotionBoundary } from "@/motion/MotionBoundary"
+import { Reveal } from "@/motion/useMotion"
 import { Download } from "lucide-react"
 import { type ReactNode, useRef } from "react"
 import { ErrorState } from "@/components/common/ErrorState"
@@ -36,6 +38,8 @@ export function ChartCard({ title, description, metricKey, chartId, actions, loa
   }
 
   return (
+    <Reveal className="h-full min-h-0">
+    <MotionBoundary fallback={<div className="flex min-h-0 flex-1 flex-col">{children}</div>}>
     <Card
       ref={cardRef}
       id={chartId ? `chart-${chartId}` : undefined}
@@ -81,5 +85,7 @@ export function ChartCard({ title, description, metricKey, chartId, actions, loa
         )}
       </CardContent>
     </Card>
+    </MotionBoundary>
+    </Reveal>
   )
 }
