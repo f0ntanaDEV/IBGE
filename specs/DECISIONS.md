@@ -72,4 +72,5 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-11 | etapa 13 | A manchete de população usa o formato compacto | O valor cheio em pessoas estourava a primeira linha.
 - 2026-11-11 | etapa 13 | Carimbo sem fuso é exibido como America/Sao_Paulo | O pipeline grava hora local sem offset; o Brasil não tem horário de verão.
 - 2026-11-11 | etapa 13 | As cinco URLs curadas da Agência IBGE foram confirmadas manualmente | A spec pede validação humana antes de fechar a lista de notícias.
+- 2026-11-11 | etapa 13 | A manchete destaca os números em negrito, no mesmo tamanho da frase | O `text-3xl` quebrava a linha e não seguia o exemplo visual pedido.
 - 2026-11-11 | railway | A imagem só pré-calcula as bases oficiais | Incluir a base suja e o cache de contexto no build estourou o prazo do Railway depois de `context overview 2000`. A suja segue na subida do processo e o contexto restante continua sob demanda.
