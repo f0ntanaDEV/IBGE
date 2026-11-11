@@ -44,7 +44,7 @@ function NarrativeNumber({ text }: { text: string }) {
   }
   return (
     <strong className="font-medium tabular-nums">
-      {formatValue(value, { key: "narrativa", kind: Number.isInteger(value) ? "count" : "raw" })}
+      {formatValue(value, { key: "narrativa", kind: Number.isInteger(value) && value >= 1900 && value <= 2100 ? "year" : Number.isInteger(value) ? "count" : "raw" })}
     </strong>
   )
 }

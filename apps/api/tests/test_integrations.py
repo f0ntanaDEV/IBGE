@@ -56,7 +56,7 @@ def test_cache_e_retry(tmp_path, monkeypatch):
                         "items": [
                             {
                                 "id": 1,
-                                "titulo": "A",
+                                "titulo": "Projeção da população",
                                 "introducao": "",
                                 "data_publicacao": "",
                                 "link": "",
@@ -70,7 +70,7 @@ def test_cache_e_retry(tmp_path, monkeypatch):
         ),
     )
     assert news["available"] is True
-    assert news["items"][0]["titulo"] == "A"
+    assert news["items"][0]["titulo"] == "Projeção da população"
     assert news["items"][0]["imagem"] == "https://agenciadenoticias.ibge.gov.br/images/agenciadenoticias/foto.jpg"
     wider = fetch_news(
         ["projeção da população"],

@@ -17,5 +17,6 @@ export function renderTemplate(rule: string, ctx: NarrativeContext, slots: Recor
   const options = TEMPLATES[rule] ?? []
   const seed = stableHash(`${ctx.datasetId}|${ctx.chartId ?? ""}|${rule}|${ctx.territorio.cod}|${ctx.ano}`)
   const chosen = options[seed % Math.max(options.length, 1)] ?? ""
-  return chosen.replace(/\{(\w+)\}/g, (_, key: string) => slots[key] ?? "")
+  const text = chosen.replace(/\{(\w+)\}/g, (_, key: string) => slots[key] ?? "").trim()
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : ""
 }

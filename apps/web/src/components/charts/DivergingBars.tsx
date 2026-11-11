@@ -1,6 +1,7 @@
 import { Bar, BarChart, Cell, ReferenceLine, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import { formatAxis } from "@/lib/chart-axes"
 import { formatValue } from "@/lib/format"
 
 export type GapItem = {
@@ -46,7 +47,7 @@ export function DivergingBars({
     <div role="img" aria-label={summary} className="flex h-full min-h-0 flex-col">
       <ChartContainer config={config} className="h-full min-h-0 flex-1">
         <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 8, top: 8 }}>
-          <XAxis type="number" domain={[-extent, extent]} stroke="hsl(var(--muted-foreground))" />
+          <XAxis type="number" domain={[-extent, extent]} stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => formatAxis(Number(value), { key: "e0", kind: "years" })} />
           <YAxis type="category" dataKey="sigla" stroke="hsl(var(--muted-foreground))" width={36} />
           <ReferenceLine x={0} stroke="hsl(var(--foreground))" />
           <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatValue(value, { key: "e0", kind: "years" })} />} />

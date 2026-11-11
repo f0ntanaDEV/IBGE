@@ -21,7 +21,7 @@ function renderNote(item: ContextItem, mode: Mode) {
       typeof part.value === "string"
         ? part.value
         : formatValue(part.value, { key: part.key, kind: kindOf(part.kind) }, mode)
-    const signed = typeof part.value === "number" && part.value > 0 && (part.key === "delta" || part.key === "pct") ? `+${formatted}` : formatted
+    const signed = typeof part.value === "number" && part.value > 0 && part.key === "delta" ? `+${formatted}` : formatted
     text = text.replaceAll(`{${part.key}}`, signed)
   }
   return text
@@ -44,7 +44,10 @@ export function ContextCard({
 }) {
   return (
     <ChartCard title="Contexto" chartId="contexto" loading={loading} error={error} onRetry={onRetry}>
-      <ul className="flex h-full flex-col divide-y overflow-y-auto">
+      <ul className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto">
+        {!loading && !error && (items ?? []).length === 0 ? (
+          <li className="py-2 text-sm text-muted-foreground">Sem indicadores de contexto para este recorte.</li>
+        ) : null}
         {(items ?? []).map((item) => (
           <li key={item.id} className="py-2.5">
             <div className="flex items-baseline justify-between gap-3">

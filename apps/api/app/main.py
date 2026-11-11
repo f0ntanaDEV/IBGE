@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.v1 import context, datasets, facts, health, milestones, news, territories
+from app.api.v1 import context, datasets, facts, health, metrics, milestones, news, territories
 from app.core.errors import AppError, error_body
 from app.core.logging import setup_logging
 
@@ -45,6 +45,12 @@ def create_app() -> FastAPI:
     app.include_router(news.router, prefix="/api/v1")
     app.include_router(facts.router, prefix="/api/v1")
     app.include_router(context.router, prefix="/api/v1")
+    app.include_router(metrics.router, prefix="/api/v1")
+    from app.domain.kpi_rules import load_rules
+    from app.domain.metricas import load_metricas
+
+    load_metricas()
+    load_rules()
 
     @app.exception_handler(AppError)
     def _app_error(_request, exc: AppError) -> JSONResponse:

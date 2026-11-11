@@ -1,3 +1,5 @@
+import { metricById } from "@/content/metricas"
+
 export type NumberFormat = "integer" | "number" | "decimal" | "percent" | "permil" | "years"
 export type Mode = "technical" | "simple"
 export type MetricKind = "count" | "percent" | "permil" | "years" | "rate" | "index" | "delta" | "year" | "raw"
@@ -73,11 +75,62 @@ function formatSimple(v: number, metric: MetricMeta) {
   return formatFull(v, metric)
 }
 
-export function formatValue(v: number | null, metric: MetricMeta, mode: Mode = "technical"): string {
+export function formatValue(v: number | null, metric: MetricMeta | string, mode: Mode = "technical"): string {
+  if (typeof metric === "string") return formatFromCatalog(v, metric, mode)
   if (v == null || Number.isNaN(v)) return "—"
   if (metric.kind === "year") return String(Math.trunc(v))
   if (mode === "simple") return formatSimple(v, metric)
   return formatFull(v, metric)
+}
+
+function formatFromCatalog(v: number | null, metricId: string, mode: Mode) {
+  const found = metricById(metricId)
+  if (!found) return formatValue(v, { key: metricId, kind: "raw" }, mode)
+  if (found.kind === "percent" || found.kind === "count" || found.kind === "year") {
+    return formatValue(v, { key: found.id, kind: found.kind }, mode)
+  }
+  if (v == null || Number.isNaN(v)) return "—"
+  const formatted = normalize(
+    new Intl.NumberFormat("pt-BR", { minimumFractionDigits: found.casas, maximumFractionDigits: found.casas }).format(v),
+  )
+  if (found.kind === "permil") return `${formatted} por mil`
+  if (found.kind === "years") return `${formatted} ${Math.abs(v) === 1 ? "ano" : "anos"}`
+  return formatted
+}
+
+export function deltaForMetric(current: number | null, previous: number | null, metricId: string) {
+  if (current == null || previous == null) return null
+  const metric = metricById(metricId)
+  if (!metric || metric.variacao === "relativa") return previous === 0 ? null : current / previous - 1
+  if (metric.variacao === "pontos") return (current - previous) * (metric.kind === "percent" ? 100 : 1)
+  return current - previous
+}
+
+export function formatDelta(delta: number | null, metricId: string) {
+  if (delta == null || Number.isNaN(delta)) return ""
+  const metric = metricById(metricId)
+  const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "→"
+  const abs = Math.abs(delta)
+  if (!metric || metric.variacao === "relativa") return `${arrow} ${formatValue(abs, { key: "variacao", kind: "percent" })} em 10 anos`
+  if (metric.variacao === "pontos") return `${arrow} ${normalize(onePlace.format(abs))} p.p. em 10 anos`
+  const unit = metric.unidade === "anos" ? (abs === 1 ? "ano" : "anos") : metric.unidade
+  const text = normalize(new Intl.NumberFormat("pt-BR", { minimumFractionDigits: metric.casas, maximumFractionDigits: metric.casas }).format(abs))
+  return `${arrow} ${text}${unit ? ` ${unit}` : ""} em 10 anos`
+}
+
+const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+})
+
+export function formatDateTime(value: string | Date) {
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return "—"
+  return dateTimeFmt.format(date).replace(",", "")
 }
 
 export function metricFromFormat(format: NumberFormat, key = "valor"): MetricMeta {

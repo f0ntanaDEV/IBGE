@@ -15,7 +15,7 @@ describe("KpiCard", () => {
     expect(screen.getByText("Esperança de vida")).toBeInTheDocument()
     expect(screen.getByText("77,03")).toBeInTheDocument()
     expect(screen.getByText("anos")).toBeInTheDocument()
-    expect(screen.getByText("↑ 5,1% em 10 anos")).toBeInTheDocument()
+    expect(screen.getByText("↑ 5,10 anos em 10 anos")).toBeInTheDocument()
     expect(screen.queryByText("Variação em relação a 10 anos antes")).not.toBeInTheDocument()
   })
 

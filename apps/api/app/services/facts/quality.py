@@ -5,7 +5,9 @@ from datetime import datetime
 
 from app.core.config import get_settings
 from app.domain.published_report import publish_report
+from app.domain.kpi_rules import evaluate
 from app.services.facts.models import Fact
+from app.services.quality_summary import summarize_validations
 
 
 def _finished(path) -> datetime:
@@ -39,19 +41,31 @@ def build(_cod: int) -> list[Fact]:
     structural = sum(sum(item.nulls.structural.values()) for item in original)
     imputed = sum(item.nulls.total_imputed for item in original)
     checks = [check for item in original for check in item.validations]
-    approved = sum(1 for check in checks if check.ok)
+    summary = summarize_validations(checks)
+    approved = summary["approved"]
     outliers = sum(sum(item.outliers.by_column.values()) for item in original)
+    outlier_pct = outliers / rows * 100 if rows else 0
+    validation_pct = (approved / len(checks) * 100) if checks else 100
+    validation_status = evaluate("validacoes", {"value": validation_pct})["status"]
+    outlier_status = evaluate("atipicos", {"value": outlier_pct})["status"]
     demo_dup = sum(item.duplicates.exact + item.duplicates.by_key for item in dirty)
     demo_imputed = sum(item.nulls.total_imputed for item in dirty)
     finished = [item.finished_at for item in original if isinstance(item.finished_at, datetime)]
-    last = max(finished).date().isoformat() if finished else ""
+    last = max(finished).strftime("%d/%m/%Y %H:%M") if finished else ""
     return [
         Fact(id="linhas", label="Linhas tratadas nas 5 bases", value=rows, kind="count"),
         Fact(id="duplicatas", label="Duplicatas removidas", value=duplicates, kind="count"),
         Fact(id="nulos_estruturais", label="Nulos estruturais mantidos", value=structural, kind="count"),
         Fact(id="nulos_imputados", label="Nulos imputados", value=imputed, kind="count"),
-        Fact(id="validacoes", label="Validações de consistência aprovadas", value=approved, kind="count", detail=f"{approved}/{len(checks)}"),
-        Fact(id="outliers", label="Valores sinalizados como atípicos", value=outliers, kind="count"),
+        Fact(
+            id="validacoes",
+            label="Validações aprovadas",
+            value=approved,
+            kind="count",
+            detail=summary["text"],
+            status=validation_status,
+        ),
+        Fact(id="outliers", label="Valores atípicos", value=outliers, kind="count", status=outlier_status),
         Fact(id="demo", label="Base de demonstração (suja)", value=demo_dup, kind="count", detail=f"nulos imputados: {demo_imputed}"),
         Fact(id="ultima", label="Última execução bem-sucedida", value=last, kind="raw"),
     ]

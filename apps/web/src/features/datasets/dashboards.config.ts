@@ -1,3 +1,5 @@
+import { metricLabel } from "@/content/metricas"
+
 export type MetricFormat = "int" | "decimal" | "percent" | "permil" | "years"
 
 export type Metric = { key: string; format: MetricFormat }
@@ -46,10 +48,10 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano", "sexo"],
     showCensoReference: true,
     kpis: [
-      { key: "populacao", format: "int", label: "População total", hint: "Pessoas no território, ano e sexo selecionados.", unit: "pessoas", deltaYears: 10 },
-      { key: "p_0_14", format: "percent", label: "0–14 anos", hint: "Parcela da população com até 14 anos.", unit: "proporção", deltaYears: 10 },
-      { key: "p_60", format: "percent", label: "60 anos ou mais", hint: "Parcela da população com 60 anos ou mais.", unit: "proporção", deltaYears: 10 },
-      { key: "idade_mediana", format: "years", label: "Idade mediana", hint: "Idade que divide a população em duas metades.", unit: "anos", deltaYears: 10 },
+      { key: "populacao", format: "int", label: metricLabel("populacao"), hint: "Pessoas no território, ano e sexo selecionados.", unit: "pessoas", deltaYears: 10 },
+      { key: "p_0_14", format: "percent", label: metricLabel("p_0_14"), hint: "Parcela da população com até 14 anos.", unit: "proporção", deltaYears: 10 },
+      { key: "p_60", format: "percent", label: metricLabel("p_60"), hint: "Parcela da população com 60 anos ou mais.", unit: "proporção", deltaYears: 10 },
+      { key: "idade_mediana", format: "years", label: metricLabel("idade_mediana"), hint: "Idade que divide a população em duas metades.", unit: "anos", deltaYears: 10 },
     ],
     charts: [
       {
@@ -62,13 +64,13 @@ export const dashboards: DashboardSpec[] = [
         span: 8,
       },
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
-      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "heatmap",
         title: "Idade por ano",
         description: "Densidade da população por idade ao longo de 2000–2070.",
         span: 12,
       },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
     ],
     tableColumns: ["ano", "idade", "sexo", "local", "sigla", "populacao", "is_outlier"],
   },
@@ -92,7 +94,6 @@ export const dashboards: DashboardSpec[] = [
         span: 8,
       },
       { kind: "context", title: "Contexto", description: "Indicadores do território no ano selecionado.", span: 4 },
-      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "area100",
         title: "Composição por grandes faixas",
@@ -103,6 +104,7 @@ export const dashboards: DashboardSpec[] = [
         ],
         description: "Participação de 0–14, 15–59 e 60+ ao longo do tempo.",
       },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
     ],
     tableColumns: ["ano", "grupo_etario", "sexo", "local", "populacao", "is_outlier"],
   },
@@ -111,7 +113,7 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano"],
     showCensoReference: true,
     kpis: [
-      { key: "p_0_14_t", format: "percent", label: "0–14 anos", hint: "Proporção de crianças e adolescentes até 14 anos.", unit: "proporção", deltaYears: 10 },
+      { key: "p_0_14_t", format: "percent", label: metricLabel("p_0_14_t"), hint: "Proporção de crianças e adolescentes até 14 anos.", unit: "proporção", deltaYears: 10 },
       { key: "p_15_64_t", format: "percent", label: "15–64 anos", hint: "Proporção da população em idade potencialmente ativa.", unit: "proporção", deltaYears: 10 },
       { key: "p_65_mais_t", format: "percent", label: "65 anos ou mais", hint: "Proporção de pessoas com 65 anos ou mais.", unit: "proporção", deltaYears: 10 },
       { key: "p_80_mais_t", format: "percent", label: "80 anos ou mais", hint: "Proporção de pessoas com 80 anos ou mais.", unit: "proporção", deltaYears: 10 },
@@ -127,7 +129,6 @@ export const dashboards: DashboardSpec[] = [
         refBrazil: true,
       },
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
-      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "ranking",
         title: "UFs por % de 60+",
@@ -158,6 +159,7 @@ export const dashboards: DashboardSpec[] = [
         description: "Razão de dependência total e a janela em que ela é mínima.",
         span: 6,
       },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
     ],
     tableColumns: ["ano", "local", "sigla", "pop_t", "n_0_14_t", "n_60_mais_t", "p_60_mais_t", "is_outlier"],
   },
@@ -166,10 +168,10 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano"],
     showCensoReference: true,
     kpis: [
-      { key: "e0_t", format: "years", label: "e0", hint: "e0: anos que se espera viver ao nascer.", unit: "anos", deltaYears: 10 },
-      { key: "tft", format: "decimal", label: "TFT", hint: "TFT: número médio de filhos por mulher.", unit: "filhos por mulher", deltaYears: 10 },
-      { key: "tmi_t", format: "permil", label: "TMI", hint: "TMI: óbitos de menores de 1 ano para cada mil nascidos vivos.", unit: "por mil", deltaYears: 10 },
-      { key: "ie60", format: "decimal", label: "IE60", hint: "IE60: índice de envelhecimento, idosos de 60+ para cada 100 jovens de 0–14.", unit: "índice", deltaYears: 10 },
+      { key: "e0_t", format: "years", label: metricLabel("e0_t", true), hint: "Anos que se espera viver ao nascer.", unit: "anos", deltaYears: 10 },
+      { key: "tft", format: "decimal", label: metricLabel("tft", true), hint: "Número médio de filhos por mulher.", unit: "filhos por mulher", deltaYears: 10 },
+      { key: "tmi_t", format: "permil", label: metricLabel("tmi_t", true), hint: "Óbitos de menores de 1 ano para cada mil nascidos vivos.", unit: "por mil", deltaYears: 10 },
+      { key: "ie60", format: "decimal", label: metricLabel("ie60", true), hint: "Idosos de 60 anos ou mais para cada 100 pessoas de 0 a 14 anos.", unit: "índice", deltaYears: 10 },
     ],
     charts: [
       {
@@ -184,7 +186,6 @@ export const dashboards: DashboardSpec[] = [
         refBrazil: true,
       },
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
-      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "line",
         title: "Taxa de fecundidade total",
@@ -237,15 +238,16 @@ export const dashboards: DashboardSpec[] = [
         title: "Ranking de UFs",
         level: "uf",
         metricOptions: [
-          { key: "e0_t", format: "years", label: "e0" },
-          { key: "tft", format: "decimal", label: "TFT" },
-          { key: "tmi_t", format: "permil", label: "TMI" },
-          { key: "ie60", format: "decimal", label: "IE60" },
+          { key: "e0_t", format: "years", label: metricLabel("e0_t") },
+          { key: "tft", format: "decimal", label: metricLabel("tft") },
+          { key: "tmi_t", format: "permil", label: metricLabel("tmi_t") },
+          { key: "ie60", format: "decimal", label: metricLabel("ie60") },
           { key: "id_med", format: "years", label: "Idade mediana" },
         ],
         description: "As 27 UFs ordenadas pelo indicador escolhido.",
         span: 6,
       },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
     ],
     tableColumns: ["ano", "local", "sigla", "pop_t", "e0_t", "tft", "tmi_t", "ie60", "is_outlier"],
   },
@@ -254,16 +256,15 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano", "sexo"],
     showCensoReference: false,
     kpis: [
-      { key: "e0", format: "years", label: "e0", hint: "e0: esperança de vida ao nascer (ex na idade 0).", unit: "anos" },
-      { key: "e60", format: "years", label: "e60", hint: "e60: esperança de vida aos 60 anos.", unit: "anos" },
-      { key: "nqx_0", format: "decimal", label: "nqx na idade 0", hint: "nqx: probabilidade de morrer antes de completar 1 ano.", unit: "probabilidade" },
-      { key: "lx_80", format: "int", label: "Sobreviventes aos 80", hint: "lx: sobreviventes aos 80 anos para cada 100 mil nascimentos da tábua.", unit: "por 100 mil" },
+      { key: "e0", format: "years", label: metricLabel("e0"), hint: "Esperança de vida ao nascer (ex na idade 0).", unit: "anos" },
+      { key: "e60", format: "years", label: metricLabel("e60"), hint: "Anos de vida que restam aos 60 anos.", unit: "anos" },
+      { key: "nqx_0", format: "permil", label: metricLabel("nqx_0"), hint: "Óbitos por mil antes de completar 1 ano.", unit: "por mil" },
+      { key: "lx_80", format: "decimal", label: metricLabel("lx_80"), hint: "De cada 100 nascidos, quantos chegam aos 80 anos.", unit: "de cada 100" },
     ],
     charts: [
       { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 8 },
       { kind: "context", title: "Contexto", description: "Indicadores da tábua no ano e sexo selecionados.", span: 4 },
-      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
-      { kind: "lifeTable", title: "Probabilidade de morte", metric: "nqx", logY: true, compareYears: true, description: "nqx por idade em escala logarítmica, em dois anos." },
+      { kind: "lifeTable", title: "Probabilidade de morte", metric: "nqx", logY: true, compareYears: true, description: "Risco de morrer por idade, em escala logarítmica, em dois anos." },
       { kind: "lifeTable", title: "Esperança de vida por idade", metric: "ex", description: "ex de homens e mulheres por idade." },
       {
         kind: "diverging",
@@ -271,6 +272,7 @@ export const dashboards: DashboardSpec[] = [
         description: "Anos a mais de vida das mulheres ao nascer e aos 60, por UF.",
         span: 12,
       },
+      { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
     ],
     tableColumns: ["ano", "idade", "sexo", "local", "nqx", "lx", "ex", "is_outlier"],
   },
@@ -288,9 +290,9 @@ export const SERIES_LABELS: Record<string, string> = {
   p_60_mais_t: "60+",
   e0_h: "Homens",
   e0_m: "Mulheres",
-  tft: "TFT",
-  tbn: "TBN",
-  tbm: "TBM",
+  tft: "Filhos por mulher",
+  tbn: "Natalidade",
+  tbm: "Mortalidade",
   pop_t: "População",
   populacao: "População",
 }

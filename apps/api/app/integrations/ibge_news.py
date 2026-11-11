@@ -45,7 +45,6 @@ def fetch_news(
     def one(term: str) -> tuple[bool, list[dict]]:
         needles = _needles(term)
         matched: list[dict] = []
-        loose: list[dict] = []
         ok_any = False
         for page in range(1, _MAX_PAGES + 1):
             payload, ok = fetch_json(
@@ -62,12 +61,11 @@ def fetch_news(
                 break
             for raw in rows:
                 item = _item(raw)
-                loose.append(item)
                 if _related(item, needles):
                     matched.append(item)
             if len(matched) >= _PER_TERM:
                 break
-        return ok_any, matched or loose
+        return ok_any, matched
 
     if len(terms) <= 1 or client is not None:
         parts = [one(term) for term in terms]

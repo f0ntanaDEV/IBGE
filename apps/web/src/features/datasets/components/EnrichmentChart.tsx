@@ -159,7 +159,7 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
           data={(bonusSeries.data?.items ?? [])
             .map((row) => ({ ano: Number(row.ano), rdt65: Number(row.rdt65) }))
             .filter((row) => Number.isFinite(row.ano))}
-          series={[{ key: "rdt65", label: simple ? "Dependentes" : "RDT65", format: "decimal" }]}
+          series={[{ key: "rdt65", label: simple ? "Dependentes" : "Razão de dependência", format: "decimal" }]}
           window={
             marks.data?.bonus.ano_inicio != null && marks.data.bonus.ano_fim != null
               ? { x1: marks.data.bonus.ano_inicio, x2: marks.data.bonus.ano_fim }

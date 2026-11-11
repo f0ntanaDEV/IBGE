@@ -6,6 +6,9 @@ import { datasetNav } from "@/app/navigation"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FactsCard } from "@/features/facts/FactsCard"
 import { PageHeader } from "@/components/common/PageHeader"
+import { UpdateLine } from "@/components/common/UpdateLine"
+import { pageCopy } from "@/content/pages"
+import { formatDateTime } from "@/lib/format"
 import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
 import { processDataset, type PublishedQuality } from "@/features/datasets/api"
 import { chartId, focusChart } from "@/lib/chartId"
@@ -91,7 +94,7 @@ function TechnicalQuality() {
   const title = source === "sujo" ? "Qualidade de dados · Base de demonstração" : "Qualidade de dados"
   return (
     <div className="page-stack">
-      <PageHeader title={title} description="Linhas, nulos, duplicatas, outliers e validações de cada base." />
+      <PageHeader title={title} lead={pageCopy("quality")?.question} audience={pageCopy("quality")?.audience} meta={<UpdateLine processedAt={body?.finished_at} />} />
       <div className="flex flex-wrap gap-3">
         <label className="grid gap-1 text-sm">
           Dataset
@@ -143,10 +146,12 @@ function TechnicalQuality() {
         </section>
         <section data-chart-id={chartId("Validações")} tabIndex={-1} className="span-4 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Validações</h2>
+          <p className="mt-2">{body?.validation_summary?.text ?? "Sem validações"}</p>
           <ul className="mt-2 grid gap-1">
             {(body?.validations ?? []).map((item) => (
               <li key={item.rule}>
                 {item.ok ? "ok" : "falha"} · {item.rule}
+                {item.motivo ? ` · ${item.motivo}` : ""}
               </li>
             ))}
           </ul>
@@ -200,7 +205,8 @@ function TechnicalQuality() {
           <ul className="mt-2 grid gap-1">
             {(runs.data ?? []).slice(0, 6).map((item, index) => (
               <li key={`${item.source ?? source}-${index}`}>
-                {item.source ?? source} · {formatValue(item.rows_after ?? 0, { key: "linhas", kind: "count" })} linhas
+                {item.finished_at ? formatDateTime(item.finished_at) : "—"} · {item.source ?? source} · {item.status ?? "success"} ·{" "}
+                {item.rows_out ? formatValue(item.rows_out, { key: "linhas", kind: "count" }) : "—"} linhas
               </li>
             ))}
           </ul>
@@ -221,7 +227,7 @@ function Metric({ label, value }: { label: string; value: number }) {
 }
 
 function SourceColumn({ title, report }: { title: string; report?: PublishedQuality | null }) {
-  if (!report) return <p className="text-muted-foreground">{title}: sem execução.</p>
+  if (!report) return <p className="text-muted-foreground">{title}: execução ainda não registrada.</p>
   return (
     <div>
       <h3 className="font-medium">{title}</h3>

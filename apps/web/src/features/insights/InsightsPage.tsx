@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { ChevronDown } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { INSIGHTS, PATTERNS } from "@/content/insights"
+import { PAGE_COPY } from "@/content/pages"
 import { cn } from "@/lib/cn"
 
 export function InsightsPage() {
@@ -32,6 +33,13 @@ export function InsightsPage() {
   return (
     <div className="page-stack">
       <PageHeader title="Insights" description="Valores das Projeções da População, Revisão 2024; ano de referência 2026." />
+      <nav aria-label="Perguntas centrais" className="grid gap-2 text-sm">
+        {PAGE_COPY.map((item) => (
+          <Link key={item.id} to={item.to} className="underline">
+            {item.question}
+          </Link>
+        ))}
+      </nav>
       <nav aria-label="Seções" className="flex flex-wrap gap-3 text-sm">
         {INSIGHTS.map((section) => (
           <a key={section.pageId} href={`#${section.pageId}`} className="underline">

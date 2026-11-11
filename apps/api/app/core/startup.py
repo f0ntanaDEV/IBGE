@@ -42,10 +42,17 @@ def should_seed() -> bool:
 
 
 def start_seed() -> None:
-    if not should_seed() or _seeding.is_set():
+    if _seeding.is_set():
         return
-    _seeding.set()
-    threading.Thread(target=_run, name="auto-seed", daemon=True).start()
+    if should_seed():
+        _seeding.set()
+        threading.Thread(target=_run, name="auto-seed", daemon=True).start()
+        return
+    from app.tools.load_dirty import missing_dirty
+
+    if get_settings().auto_seed and missing_dirty():
+        _seeding.set()
+        threading.Thread(target=_run_dirty, name="auto-seed-dirty", daemon=True).start()
 
 
 def _run() -> None:
@@ -55,5 +62,16 @@ def _run() -> None:
         seed_all()
     except Exception:
         logger.exception("semeadura automática falhou")
+    finally:
+        _seeding.clear()
+
+
+def _run_dirty() -> None:
+    try:
+        from app.tools.load_dirty import main
+
+        main()
+    except Exception:
+        logger.exception("semeadura da base suja falhou")
     finally:
         _seeding.clear()

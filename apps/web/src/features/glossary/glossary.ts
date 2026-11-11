@@ -229,7 +229,7 @@ export function unidadeKpi(key: string, value: number | null): string | null {
   if (/^(e0|e0_t|e0_h|e0_m|e60|ex|idade_mediana|id_med)$/.test(key)) return "anos"
   if (key === "tft") return value != null && Math.abs(value) < 2 ? "filho por mulher" : "filhos por mulher"
   if (key === "ie60") return "por 100 jovens"
-  if (key === "tmi" || key === "tmi_t") return "por mil"
+  if (key === "tmi" || key === "tmi_t" || key === "nqx_0") return null
   if (key === "tbn" || key === "tbm") return "‰"
   if (key === "razao_80_0_4") return "por criança"
   return null

@@ -33,6 +33,13 @@ class Validation(BaseModel):
     rule: str
     ok: bool
     max_diff: float
+    motivo: str | None = None
+
+
+class ValidationSummary(BaseModel):
+    approved: int
+    total: int
+    text: str
 
 
 class ManifestOutliers(BaseModel):
@@ -69,6 +76,7 @@ class QualityReport(BaseModel):
     duplicates: DuplicatesReport
     outliers: OutliersReport
     validations: list[Validation]
+    validation_summary: ValidationSummary | None = None
     whitespace_cells: int = 0
     ids_recovered: int = 0
 
@@ -86,9 +94,10 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
     before = {str(key): int(value) for key, value in (raw.get("nulls_before") or {}).items()}
     after = {str(key): int(value) for key, value in (raw.get("nulls_after") or {}).items()}
     structural = {str(key): int(value) for key, value in (raw.get("structural_nulls") or {}).items()}
+    engineered = {"is_outlier", "outlier_motivo", "row_uid"}
     by_column = {
         column: StepCount(before=before.get(column, 0), after=after.get(column, 0))
-        for column in sorted(set(before) | set(after))
+        for column in sorted((set(before) | set(after)) - engineered)
     }
     identifiers = {"cod", "sigla", "local", "sexo", "ano", "idade", "grupo_etario", "intervalo", "nivel"}
     imputed = 0
@@ -115,13 +124,17 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
     now = datetime.now()
     validations = []
     for item in raw.get("validations") or []:
+        ok = bool(item.get("ok"))
+        diff = float(item.get("max_diff") or 0)
         validations.append(
             Validation(
                 rule=str(item.get("rule")),
-                ok=bool(item.get("ok")),
-                max_diff=float(item.get("max_diff") or 0),
+                ok=ok,
+                max_diff=diff,
+                motivo=None if ok else str(item.get("motivo") or f"diferença máxima de {diff:g}"),
             )
         )
+    approved = sum(1 for item in validations if item.ok)
     return QualityReport(
         dataset_id=str(raw.get("dataset_id")),
         source=source,
@@ -144,6 +157,7 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
             method=str(strategies.get("outlier_method") or ""),
         ),
         validations=validations,
+        validation_summary=ValidationSummary(approved=approved, total=len(validations), text=f"{approved} de {len(validations)} aprovadas"),
         whitespace_cells=int(raw.get("whitespace_cells") or 0),
         ids_recovered=int(raw.get("ids_recovered") or 0),
     )

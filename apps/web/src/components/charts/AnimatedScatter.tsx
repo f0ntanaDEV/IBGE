@@ -74,8 +74,8 @@ export function AnimatedScatter({
       </div>
       <ChartContainer config={config} className="h-full min-h-0 flex-1">
         <ScatterChart margin={{ left: 8, right: 8, top: 8 }}>
-          <XAxis dataKey="tft" type="number" name="TFT" stroke="hsl(var(--muted-foreground))" />
-          <YAxis dataKey="e0" type="number" name="e0" stroke="hsl(var(--muted-foreground))" width={40} />
+          <XAxis dataKey="tft" type="number" name="Filhos por mulher" stroke="hsl(var(--muted-foreground))" />
+          <YAxis dataKey="e0" type="number" name="Esperança de vida" stroke="hsl(var(--muted-foreground))" width={40} />
           <ZAxis dataKey="tamanho" range={[40, 400]} />
           <ChartTooltip
             content={

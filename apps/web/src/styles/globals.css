@@ -43,6 +43,9 @@
   --card-h-chart: 25rem;
   --card-h-chart-mobile: 20rem;
   --card-h-info: 11rem;
+  --status-good: 140 18% 40%;
+  --status-warn: 38 45% 42%;
+  --status-bad: 6 32% 48%;
 }
 
 .dark {
@@ -76,6 +79,9 @@
   --chart-seq-3: 215 18% 52%;
   --chart-seq-4: 215 20% 64%;
   --chart-seq-5: 215 22% 78%;
+  --status-good: 140 20% 60%;
+  --status-warn: 38 50% 62%;
+  --status-bad: 6 40% 65%;
 }
 
 :root[data-contrast="high"] {
@@ -94,6 +100,9 @@
   --hc-chart-6: #4d4d4d;
   --border-width: 2px;
   --focus-width: 3px;
+  --status-good: 130 100% 20%;
+  --status-warn: 38 100% 28%;
+  --status-bad: 0 100% 32%;
 }
 
 .dark[data-contrast="high"] {

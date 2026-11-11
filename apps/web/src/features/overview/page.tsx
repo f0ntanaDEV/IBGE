@@ -7,14 +7,19 @@ import { pickFilters } from "@/features/datasets/search"
 import { datasetNav } from "@/app/navigation"
 import { ChartCard } from "@/components/common/ChartCard"
 import { ErrorState } from "@/components/common/ErrorState"
+import { ActionStrip } from "@/components/common/ActionStrip"
+import { Headline } from "@/components/common/Headline"
 import { KpiCard } from "@/components/common/KpiCard"
 import { PageHeader } from "@/components/common/PageHeader"
+import { UpdateLine } from "@/components/common/UpdateLine"
+import { pageCopy } from "@/content/pages"
+import { kpiView } from "@/lib/kpiView"
 import { fetchData, fetchPyramid } from "@/features/datasets/api"
 import { EnrichmentChart } from "@/features/datasets/components/EnrichmentChart"
 import { ProjectionLine } from "@/features/datasets/components/ProjectionLine"
 import { ObservationsCard } from "@/components/common/NarrativeText"
 import { buildNarratives, finalObservations } from "@/lib/narratives/engine"
-import { deltaValue, num, peakPoint } from "@/features/datasets/derive"
+import { num, peakPoint } from "@/features/datasets/derive"
 import { useContext, useDashboardFilters, useDatasetList, useFacts, useRows } from "@/features/datasets/hooks"
 import { FactsCard } from "@/features/facts/FactsCard"
 import { SimplePage } from "@/features/simple/SimplePage"
@@ -87,17 +92,33 @@ export function OverviewPage() {
   }, [])
 
   const kpis = [
-    { key: "pop_t", label: "População", format: "int" as const, hint: "População projetada do Brasil." },
-    { key: "e0_t", label: "Esperança de vida", format: "years" as const, hint: "Anos esperados ao nascer." },
-    { key: "tft", label: "Taxa de fecundidade", format: "decimal" as const, hint: "Número médio de filhos por mulher." },
-    { key: "ie60", label: "Índice de envelhecimento", format: "decimal" as const, hint: "Idosos de 60 anos ou mais para cada 100 jovens." },
+    { key: "pop_t", label: "População", format: "int" as const },
+    { key: "e0_t", label: "Esperança de vida ao nascer", format: "years" as const },
+    { key: "tft", label: "Filhos por mulher", format: "decimal" as const },
+    { key: "ie60", label: "Idosos para cada 100 crianças", format: "decimal" as const },
   ]
+  const copy = pageCopy("overview")
+  const processed = datasets.data?.map((item) => item.last_run?.finished_at).filter((item): item is string => Boolean(item)).sort().at(-1)
+  const previous = series.find((row) => Number(row.ano) === year - 1)
+  const base = series.find((row) => Number(row.ano) === 2000)
+  const brazilNow = (brazil.data?.items ?? []).find((row) => Number(row.ano) === year)
+  const views = kpis.map((kpi) => ({
+    ...kpi,
+    ...kpiView(kpi.key, {
+      value: num(current?.[kpi.key]),
+      prevYear: num(previous?.[kpi.key]),
+      past10: num(past?.[kpi.key]),
+      brazil: num(brazilNow?.[kpi.key]),
+      year2000: num(base?.[kpi.key]),
+      cod,
+    }),
+  }))
 
   if (mode === "simple") return <SimplePage pageId="overview" />
 
   return (
     <div className="page-stack">
-      <PageHeader title="Visão geral" description={`${place}, ${year}. Projeções da população, revisão 2024.`} />
+      <PageHeader title="Visão geral" lead={copy?.question} audience={copy?.audience} meta={<UpdateLine processedAt={processed} latestRevision={datasets.data?.[0]?.latest_revision} />} />
       <FilterBar
         territories={filters.territories}
         filters={["territorio", "ano"]}
@@ -108,23 +129,23 @@ export function OverviewPage() {
         onAno={filters.setAno}
         onSexo={() => undefined}
       />
+      <Headline pageId="overview" input={{ cod, place, ano: year, pop: num(current?.pop_t), peakYear: peak?.ano ?? null, e0: num(current?.e0_t), e0Brazil: num(brazilNow?.e0_t) }} />
       <section className="dashboard-grid" aria-label="Indicadores do Brasil">
-        {kpis.map((kpi) => {
-          const value = num(current?.[kpi.key])
-          const previous = num(past?.[kpi.key])
-          return (
-            <KpiCard
-              key={kpi.key}
-              metricKey={kpi.key}
-              label={kpi.label}
-              value={value}
-              format={kpi.format === "int" ? "integer" : kpi.format}
-              delta={deltaValue(value, previous, kpi.format)}
-              loading={rows[0]?.isLoading}
-            />
-          )
-        })}
+        {views.map((kpi) => (
+          <KpiCard
+            key={kpi.key}
+            metricKey={kpi.key}
+            label={kpi.label}
+            value={num(current?.[kpi.key])}
+            format={kpi.format === "int" ? "integer" : kpi.format}
+            delta={kpi.delta}
+            status={kpi.status}
+            reference={kpi.reference}
+            loading={rows[0]?.isLoading}
+          />
+        ))}
       </section>
+      <ActionStrip items={views.flatMap((item) => (item.status && item.status !== "good" ? [{ id: item.key, label: item.label, action: item.action, status: item.status }] : []))} />
       {rows[0]?.error instanceof Error ? (
         <ErrorState message={rows[0].error.message} onRetry={() => void rows[0]?.refetch()} />
       ) : null}
@@ -159,7 +180,6 @@ export function OverviewPage() {
           />
         </div>
       </div>
-      <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
       <ObservationsCard insights={insights} />
       <EnrichmentChart
         datasetId="ds4"
@@ -173,6 +193,7 @@ export function OverviewPage() {
           span: 12,
         }}
       />
+      <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
       <section className="dashboard-grid" aria-label="Datasets">
         {datasetNav.map((item) => {
           const id = item.to.split("/").pop() ?? ""

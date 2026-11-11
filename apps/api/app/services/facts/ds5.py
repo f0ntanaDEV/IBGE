@@ -65,8 +65,8 @@ def build(cod: int) -> list[Fact]:
             kind="years",
             reference_year=REF_YEAR,
             detail_values=[
-                DetailPoint(ano=REF_YEAR, valor=round_num(e60h or 0, 2), kind="years"),
-                DetailPoint(ano=REF_YEAR, valor=round_num(e60m or 0, 2), kind="years"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(e60h or 0, 2), kind="years", rotulo="homens {valor}"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(e60m or 0, 2), kind="years", rotulo="mulheres {valor}"),
             ],
         ),
         Fact(id="q0", label="Risco de morrer antes de 1 ano", value=round_num(_q(base, REF_YEAR, 0) or 0, 2), kind="permil", reference_year=REF_YEAR),
@@ -78,8 +78,8 @@ def build(cod: int) -> list[Fact]:
             kind="rate",
             reference_year=REF_YEAR,
             detail_values=[
-                DetailPoint(ano=REF_YEAR, valor=round_num(l80h or 0, 1), kind="rate"),
-                DetailPoint(ano=REF_YEAR, valor=round_num(l80m or 0, 1), kind="rate"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(l80h or 0, 1), kind="rate", rotulo="homens {valor}"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(l80m or 0, 1), kind="rate", rotulo="mulheres {valor}"),
             ],
         ),
         Fact(

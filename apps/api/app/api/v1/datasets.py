@@ -54,9 +54,23 @@ def _store() -> ParquetStore:
 
 
 def _reports(dataset_id: str) -> list[dict]:
+    from app.services.run_stamp import finished_from_name
+
     folder = get_settings().processed_dir
     paths = sorted(folder.glob(f"{dataset_id}_*.report.json"))
-    return [json.loads(path.read_text(encoding="utf-8")) for path in paths]
+    items = []
+    for path in paths:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        finished = finished_from_name(path)
+        if finished is not None:
+            payload["finished_at"] = finished.isoformat()
+        payload.setdefault("status", "success")
+        rows = payload.get("rows_out", payload.get("rows_after"))
+        if not rows:
+            rows = payload.get("rows_in", payload.get("rows_before"))
+        payload["rows_out"] = int(rows or 0)
+        items.append(payload)
+    return items
 
 
 @router.get("")
@@ -74,10 +88,14 @@ def list_datasets() -> list[dict]:
                 if last is None
                 else {
                     "source": last.get("source"),
+                    "status": last.get("status") or "success",
                     "rows_in": last.get("rows_in", last.get("rows_before")),
                     "rows_out": last.get("rows_out", last.get("rows_after")),
+                    "finished_at": last.get("finished_at"),
                     "duration_s": last.get("duration_s"),
                 },
+                "revision": "2024",
+                "latest_revision": get_settings().ibge_latest_revision,
             }
         )
     return items
@@ -151,10 +169,15 @@ def quality_report(
     source: Literal["original", "sujo"] = "original",
 ) -> PublishedQualityReport:
     catalog_or_404(dataset_id)
+    from datetime import datetime
+
     reports = [item for item in _reports(dataset_id) if (item.get("source") or "original") == source]
     if not reports:
         raise AppError("no_run_for_source", "Não há execução para esta fonte", 404, {"source": source})
-    published = publish_report(reports[-1])
+    raw = reports[-1]
+    finished = raw.get("finished_at")
+    when = datetime.fromisoformat(finished) if isinstance(finished, str) else None
+    published = publish_report(raw, finished_at=when, started_at=when)
     if source == "sujo":
         manifest_path = get_settings().raw_dir / f"{dataset_id}_sujo.manifest.json"
         if manifest_path.exists():
@@ -181,10 +204,27 @@ def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None =
                 if parsed is not None:
                     item["report_json"] = parsed
                 normalized.append(item)
-            return _with_source(normalized, source)
+            return [_public_run(item) for item in _with_source(normalized, source)]
     except Exception:
         pass
-    return _with_source(_reports(dataset_id), source)
+    return [_public_run(item) for item in _with_source(_reports(dataset_id), source)]
+
+
+def _public_run(row: dict) -> dict:
+    payload = row.get("report_json") if isinstance(row.get("report_json"), dict) else row
+    rows = row.get("rows_out")
+    if rows in (None, 0):
+        rows = payload.get("rows_out") if isinstance(payload, dict) else None
+    if rows in (None, 0) and isinstance(payload, dict):
+        rows = payload.get("rows_after") or payload.get("rows_before") or row.get("rows_in")
+    status = row.get("status") or (payload.get("status") if isinstance(payload, dict) else None) or "success"
+    finished = row.get("finished_at") or (payload.get("finished_at") if isinstance(payload, dict) else None)
+    return {
+        "source": row.get("source") or (payload.get("source") if isinstance(payload, dict) else None) or "original",
+        "status": status,
+        "finished_at": finished.isoformat() if hasattr(finished, "isoformat") else finished,
+        "rows_out": int(rows or 0),
+    }
 
 
 def _with_source(rows: list[dict], source: str | None) -> list[dict]:

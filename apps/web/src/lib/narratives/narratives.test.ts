@@ -34,8 +34,8 @@ describe("narrativas", () => {
       ctx({
         series: [
           { ano: 2000, valor: 70 },
-          { ano: 2024, valor: 76 },
-          { ano: 2030, valor: 78 },
+          { ano: 2024, valor: 78 },
+          { ano: 2030, valor: 76 },
         ],
         seriesB: [
           { ano: 2000, valor: 72 },
@@ -59,6 +59,17 @@ describe("narrativas", () => {
     expect(finals.length).toBeLessThanOrEqual(5)
     expect(finals.filter((item) => item.type === "trend").length).toBeLessThanOrEqual(2)
     expect(buildNarratives(ctx({}))).toEqual([])
+    const edge = buildNarratives(
+      ctx({
+        series: [
+          { ano: 2000, valor: 2.32 },
+          { ano: 2010, valor: 1.8 },
+          { ano: 2026, valor: 1.51 },
+        ],
+      }),
+    )
+    expect(edge.some((item) => item.type === "peak")).toBe(false)
+    expect(edge.find((item) => item.type === "trend")?.text.charAt(0)).toBe(edge.find((item) => item.type === "trend")?.text.charAt(0).toUpperCase())
   })
 
   it("não fala de pico sem série e prioriza o cruzamento", () => {
@@ -89,8 +100,9 @@ describe("narrativas", () => {
       ctx(
         {
           series: [
-            { ano: 2000, valor: 30 },
-            { ano: 2010, valor: 18 },
+            { ano: 2000, valor: 10 },
+            { ano: 2010, valor: 30 },
+            { ano: 2020, valor: 18 },
           ],
         },
         { series: [{ key: "jovem", label: "0 a 14 anos" }] },

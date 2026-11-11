@@ -3,6 +3,7 @@ import { useMemo, useState } from "react"
 import { datasetNav } from "@/app/navigation"
 import { EmptyState } from "@/components/common/EmptyState"
 import { NewsCard } from "@/components/common/NewsCard"
+import { NewsUpdateLine } from "@/components/common/UpdateLine"
 import { PageHeader } from "@/components/common/PageHeader"
 import { Button } from "@/components/ui/button"
 import { fetchDatasetNews } from "@/features/datasets/api"
@@ -33,7 +34,7 @@ export function NewsPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader title="Notícias IBGE" description="Matérias da Agência IBGE ligadas aos temas de cada projeção." />
+      <PageHeader title="Notícias IBGE" meta={<NewsUpdateLine updatedAt={queries.find((query) => query.dataUpdatedAt)?.dataUpdatedAt ? new Date(queries.find((query) => query.dataUpdatedAt)?.dataUpdatedAt ?? Date.now()).toISOString() : null} />} />
       {cached ? <p className="text-sm text-muted-foreground">Fonte de notícias indisponível. Exibindo o conteúdo em cache.</p> : null}
       <div className="flex flex-wrap gap-3">
         <label className="grid gap-1 text-sm">

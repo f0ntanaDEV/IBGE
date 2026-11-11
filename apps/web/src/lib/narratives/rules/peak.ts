@@ -9,6 +9,8 @@ export function peak(ctx: NarrativeContext): Insight | null {
   const series = windowed(ctx.data.series, ctx.zoom)
   if (!named || !series?.length) return null
   const top = series.reduce((best, point) => (point.valor > best.valor ? point : best))
+  const index = series.indexOf(top)
+  if (index <= 0 || index >= series.length - 1) return null
   const onde = preposicaoTerritorio(ctx.territorio.nome)
   return {
     type: "peak",

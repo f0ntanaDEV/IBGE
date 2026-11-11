@@ -1,5 +1,6 @@
 import { useTerritories } from "@/features/datasets/hooks"
 import type { FactItem } from "@/features/datasets/api"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { formatValue, type MetricKind } from "@/lib/format"
 import { useMode } from "@/stores/preferences"
 
@@ -17,10 +18,20 @@ function textValue(fact: FactItem, mode: "technical" | "simple") {
   return formatValue(fact.value, { key: fact.id, kind: fact.kind as MetricKind }, mode)
 }
 
-function detailText(fact: FactItem, mode: "technical" | "simple") {
+export function detailText(fact: FactItem, mode: "technical" | "simple") {
   if (!fact.detail_values?.length) return fact.detail ?? ""
+  const repeated = new Set<number>()
+  for (const point of fact.detail_values) {
+    if (repeated.has(point.ano) && !point.rotulo) return fact.detail ?? ""
+    repeated.add(point.ano)
+  }
   return fact.detail_values
-    .map((point) => `${point.ano}: ${formatValue(point.valor, { key: fact.id, kind: point.kind as MetricKind }, mode)}`)
+    .map((point) => {
+      const formatted = formatValue(point.valor, { key: fact.id, kind: point.kind as MetricKind }, mode)
+      if (point.rotulo?.includes("{valor}")) return point.rotulo.replaceAll("{valor}", formatted)
+      if (point.rotulo) return `${point.rotulo}: ${formatted}`
+      return `${point.ano}: ${formatted}`
+    })
     .join(" · ")
 }
 
@@ -36,7 +47,10 @@ export function FactList({ facts }: { facts: FactItem[] }) {
         const detail = detailText(fact, mode)
         return (
           <li key={fact.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5 text-sm leading-5">
-            <span>{fact.label}</span>
+            <span className="inline-flex items-center gap-2">
+              {fact.label}
+              {fact.status ? <StatusBadge status={fact.status} /> : null}
+            </span>
             <span className="font-medium tabular-nums">
               {textValue(fact, mode)}
               {detail ? <span className="font-normal text-muted-foreground"> · {detail}</span> : null}

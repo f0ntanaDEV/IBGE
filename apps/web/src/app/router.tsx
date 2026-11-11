@@ -9,6 +9,7 @@ const QualityPage = lazy(() => import("@/features/quality/page").then((mod) => (
 const NewsPage = lazy(() => import("@/features/news/page").then((mod) => ({ default: mod.NewsPage })))
 const SettingsPage = lazy(() => import("@/features/settings/page").then((mod) => ({ default: mod.SettingsPage })))
 const InsightsPage = lazy(() => import("@/features/insights/InsightsPage").then((mod) => ({ default: mod.InsightsPage })))
+const AboutPage = lazy(() => import("@/features/about/page").then((mod) => ({ default: mod.AboutPage })))
 
 function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando…</p>}>{children}</Suspense>
@@ -56,6 +57,14 @@ export const router = createBrowserRouter([
         element: (
           <Lazy>
             <NewsPage />
+          </Lazy>
+        ),
+      },
+      {
+        path: "sobre",
+        element: (
+          <Lazy>
+            <AboutPage />
           </Lazy>
         ),
       },

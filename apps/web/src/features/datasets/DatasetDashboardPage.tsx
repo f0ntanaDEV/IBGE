@@ -9,7 +9,10 @@ import { ErrorState } from "@/components/common/ErrorState"
 import { FactsCard } from "@/features/facts/FactsCard"
 import { DataTable } from "@/components/common/DataTable"
 import { ObservationsCard } from "@/components/common/NarrativeText"
+import { ActionStrip } from "@/components/common/ActionStrip"
+import { Headline } from "@/components/common/Headline"
 import { KpiCard } from "@/components/common/KpiCard"
+import { UpdateLine } from "@/components/common/UpdateLine"
 import { NewsCard } from "@/components/common/NewsCard"
 import { PageHeader } from "@/components/common/PageHeader"
 import { Button } from "@/components/ui/button"
@@ -45,7 +48,6 @@ import {
   compositionSeries,
   calendarYear,
   crossingYear,
-  deltaValue,
   groupKpis,
   isOutlier,
   num,
@@ -54,6 +56,9 @@ import {
   rowsForYear,
   sexKind,
 } from "@/features/datasets/derive"
+import { pageCopy } from "@/content/pages"
+import { selectNews } from "@/content/news-curated"
+import { kpiView } from "@/lib/kpiView"
 import { buildNarratives, finalObservations } from "@/lib/narratives/engine"
 import { useEffectiveFilters } from "@/stores/crossfilter"
 import type { NarrativeContext } from "@/lib/narratives/types"
@@ -209,9 +214,10 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
     } else if (spec.id === "ds5") {
       map.set("e0", valueAtAge(lifeItems, sexo, 0, "ex"))
       map.set("e60", valueAtAge(lifeItems, sexo, 60, "ex"))
-      map.set("nqx_0", valueAtAge(lifeItems, sexo, 0, "nqx"))
+      const risk = valueAtAge(lifeItems, sexo, 0, "nqx")
+      map.set("nqx_0", risk == null ? null : risk * 1000)
       const survivors = valueAtAge(lifeItems, sexo, 80, "lx")
-      map.set("lx_80", survivors)
+      map.set("lx_80", survivors == null ? null : survivors / 1000)
     } else if (currentRow) {
       const cross = crossingYear(
         linePoints(tableItems, ["p_0_14_t", "p_60_mais_t"]).map((row) => ({
@@ -252,29 +258,36 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const confirming = useMemo(() => {
     const fromClaims = (claims.data ?? []).flatMap((claim) => claim.news ?? [])
     const fromFeed = news.data?.items ?? []
-    const merged = [...fromClaims, ...fromFeed]
-    const seen = new Set<string>()
-    const unique: NewsItem[] = []
-    for (const item of merged) {
-      const id = String(item.id ?? item.link ?? item.titulo)
-      if (seen.has(id)) continue
-      seen.add(id)
-      unique.push(item)
-      if (unique.length === 3) break
-    }
-    return unique
-  }, [claims.data, news.data?.items])
+    return selectNews(spec.id, [...fromClaims, ...fromFeed])
+  }, [claims.data, news.data?.items, spec.id])
 
-  const last = info?.last_run
-  const description = last
-    ? `IBGE, Projeções da População – Revisão 2024. Último processamento: ${last.source ?? "—"}, ${formatBy("integer", last.rows_out ?? 0)} linhas.`
-    : "IBGE, Projeções da População – Revisão 2024. Ainda sem processamento nesta base."
+  const copy = pageCopy(spec.id)
+  const processedAt = info?.last_run?.finished_at
+  const yearBefore = tableItems.find((row) => Number(row.ano) === effective.ano - 1)
+  const year2000 = tableItems.find((row) => Number(row.ano) === 2000)
+  const brazilNow = (brazil.data?.items ?? []).find((row) => Number(row.ano) === effective.ano)
+  const actions = activeKpis.flatMap((kpi) => {
+    const raw = values.get(kpi.key)
+    const numeric = typeof raw === "number" ? raw : null
+    const view = kpiView(kpi.key, {
+      value: numeric,
+      prevYear: num(yearBefore?.[kpi.key]),
+      past10: priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
+      brazil: num(brazilNow?.[kpi.key]),
+      year2000: num(year2000?.[kpi.key]),
+      cod: effective.cod,
+      withSigla: spec.id === "ds4",
+    })
+    return view.status && view.status !== "good" ? [{ id: kpi.key, label: view.label, action: view.action, status: view.status }] : []
+  })
 
   return (
     <div className="page-stack">
       <PageHeader
         title={meta?.title ?? spec.id}
-        description={description}
+        lead={copy?.question}
+        audience={copy?.audience}
+        meta={<UpdateLine processedAt={processedAt} latestRevision={info?.latest_revision} />}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => reprocess.mutate()} disabled={reprocess.isPending}>
@@ -318,26 +331,51 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         onAno={filters.setAno}
         onSexo={filters.setSexo}
       />
+      <Headline
+        pageId={spec.id}
+        input={{
+          cod: effective.cod,
+          place: place?.local ?? "Brasil",
+          ano: effective.ano,
+          e0: num(values.get("e0_t") ?? values.get("e0")),
+          e0Brazil: num(brazilNow?.e0_t ?? brazilNow?.e0),
+          tft: num(values.get("tft")),
+          crossYear: typeof values.get("ano_cruzamento") === "number" ? Number(values.get("ano_cruzamento")) : null,
+          lx80: num(values.get("lx_80")),
+          median: num(values.get("idade_mediana")),
+          band: typeof values.get("maior_grupo") === "string" ? String(values.get("maior_grupo")) : null,
+        }}
+      />
       <section className="dashboard-grid" aria-label="Indicadores">
         {activeKpis.map((kpi) => {
           const raw = values.get(kpi.key)
           const numeric = typeof raw === "number" ? raw : null
-          const prior = priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo)
-          const delta = kpi.deltaYears && typeof raw === "number" ? deltaValue(numeric, prior, kpi.format) : null
+          const view = kpiView(kpi.key, {
+            value: numeric,
+            prevYear: num(yearBefore?.[kpi.key]),
+            past10: priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
+            brazil: num(brazilNow?.[kpi.key]),
+            year2000: num(year2000?.[kpi.key]),
+            cod: effective.cod,
+            withSigla: spec.id === "ds4",
+          })
           return (
             <KpiCard
               key={kpi.key}
               metricKey={kpi.key}
-              label={kpi.label}
+              label={spec.id === "ds4" ? view.label : kpi.label}
               value={numeric}
               display={typeof raw === "string" ? raw : undefined}
               format={asFormat(kpi.format)}
-              delta={delta}
+              delta={view.delta}
+              status={view.status}
+              reference={view.reference}
               loading={pyramidEnabled ? pyramid.isLoading : spec.id === "ds5" ? life.isLoading : series.isLoading}
             />
           )
         })}
       </section>
+      <ActionStrip items={actions} />
       <div className="chart-board">
         {activeCharts.map((chart, index) => {
           const span = packRows(activeCharts.map((item) => item.span ?? 6))[index]

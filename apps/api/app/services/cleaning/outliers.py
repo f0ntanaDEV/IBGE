@@ -72,7 +72,14 @@ def _join_reasons(left: object, right: object) -> object:
     return f"{left}; {right}"
 
 
+_MIN_ABS_DELTA = 0.05
+_MIN_DELTA_FENCE = 0.8
+_MIN_LEVEL_RATIO = 4.0
+_SHOCK_YEARS = {2020, 2021}
+
+
 def _variation_flags(frame: pd.DataFrame, col: str, series: list[str], method: str, factor: float) -> pd.Series:
+    """Marca salto anual fora da referência e grande frente à amplitude da série. 2020–2021 ficam fora da referência."""
     if "ano" not in frame.columns or not series:
         return pd.Series(False, index=frame.index)
     ordered = frame.sort_values(series + ["ano"], kind="mergesort")
@@ -81,20 +88,44 @@ def _variation_flags(frame: pd.DataFrame, col: str, series: list[str], method: s
     delta = delta.replace([np.inf, -np.inf], np.nan)
     work = ordered[series].copy()
     work["_delta"] = delta.to_numpy()
-    grouped = work.groupby(series, dropna=False, sort=False)["_delta"]
+    work["_ano"] = ordered["ano"].to_numpy()
+    work["_value"] = ordered[col].to_numpy()
+    work["_change"] = (ordered[col] - previous).abs().to_numpy()
+    reference = work.loc[~work["_ano"].isin(_SHOCK_YEARS)]
     if method == "mad":
-        center = grouped.transform("median")
-        mad = (work["_delta"] - center).abs().groupby([work[name] for name in series], dropna=False, sort=False).transform("median")
-        score = _MAD_SCALE * (work["_delta"] - center) / mad.replace(0, np.nan)
-        flagged = work["_delta"].notna() & mad.notna() & (mad > 0) & score.abs().gt(factor)
+        center = reference.groupby(series, dropna=False, sort=False)["_delta"].median()
+        ref = reference.join(center.rename("_center"), on=series)
+        mad = (ref["_delta"] - ref["_center"]).abs().groupby([ref[name] for name in series], dropna=False, sort=False).median()
+        merged = work.join(center.rename("_center"), on=series).join(mad.rename("_mad"), on=series)
+        score = _MAD_SCALE * (merged["_delta"] - merged["_center"]) / merged["_mad"].replace(0, np.nan)
+        distance = (merged["_delta"] - merged["_center"]).abs()
+        flagged = merged["_delta"].notna() & merged["_mad"].notna() & merged["_mad"].gt(0) & score.abs().gt(factor) & distance.gt(_MIN_DELTA_FENCE)
     else:
-        quantiles = grouped.quantile([0.25, 0.75]).unstack().rename(columns={0.25: "_q1", 0.75: "_q3"})
+        quantiles = (
+            reference.groupby(series, dropna=False, sort=False)["_delta"]
+            .quantile([0.25, 0.5, 0.75])
+            .unstack()
+            .rename(columns={0.25: "_q1", 0.5: "_median", 0.75: "_q3"})
+        )
         merged = work.join(quantiles, on=series)
         iqr = merged["_q3"] - merged["_q1"]
-        flagged = merged["_delta"].notna() & (
-            (merged["_delta"] < merged["_q1"] - factor * iqr) | (merged["_delta"] > merged["_q3"] + factor * iqr)
-        )
+        fence = (factor * iqr).clip(lower=_MIN_DELTA_FENCE)
+        flagged = merged["_delta"].notna() & merged["_median"].notna() & (merged["_delta"] - merged["_median"]).abs().gt(fence)
+    flagged = flagged & work["_delta"].abs().ge(_MIN_ABS_DELTA) & _level_jump(work, reference, series)
     return flagged.reindex(frame.index).fillna(False).astype(bool)
+
+
+def _level_jump(work: pd.DataFrame, reference: pd.DataFrame, series: list[str]) -> pd.Series:
+    """Exige |x − x anterior| maior que 4× o IQR do nível, para não marcar taxas perto de zero."""
+    quantiles = (
+        reference.groupby(series, dropna=False, sort=False)["_value"]
+        .quantile([0.25, 0.75])
+        .unstack()
+        .rename(columns={0.25: "_x1", 0.75: "_x3"})
+    )
+    levels = work.join(quantiles, on=series)
+    width = (levels["_x3"] - levels["_x1"]).fillna(0)
+    return work["_change"].gt(_MIN_LEVEL_RATIO * width)
 
 
 def _domain_flags(frame: pd.DataFrame, cfg: DatasetConfig, col: str) -> pd.Series:

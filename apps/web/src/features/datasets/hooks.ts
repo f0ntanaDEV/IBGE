@@ -9,6 +9,7 @@ import {
   fetchDatasetNews,
   fetchDatasets,
   fetchMetrics,
+  fetchMetricCatalog,
   fetchContext,
   fetchFacts,
   fetchPyramid,
@@ -154,6 +155,14 @@ export function useQualityReport(id: string, source: "original" | "sujo") {
     queryKey: ["quality-report", id, source],
     queryFn: () => fetchQualityReport(id, source),
     staleTime: STALE_TIME,
+  })
+}
+
+export function useMetricCatalog() {
+  return useQuery({
+    queryKey: ["metric-catalog"],
+    queryFn: fetchMetricCatalog,
+    staleTime: Infinity,
   })
 }
 

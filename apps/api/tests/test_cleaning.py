@@ -103,6 +103,27 @@ def test_dedupe_exata_e_por_chave_preserva_brasil():
     assert float(result.loc[result["cod"] == 11, "populacao"].iloc[0]) == 10
 
 
+def test_outlier_ignora_variacao_pequena_e_marca_salto():
+    years = list(range(2010, 2018))
+    smooth = pd.DataFrame(
+        {
+            "cod": [11] * 8,
+            "sexo": ["Ambos"] * 8,
+            "idade": [0] * 8,
+            "ano": years,
+            "populacao": [100, 101, 102, 103, 104, 105, 106, 107],
+        }
+    )
+    quiet, quiet_counts = apply_outliers(smooth, load_catalog().get("ds1"), [{"coluna": "populacao"}], "iqr_delta", 3.0, "flag")
+    assert "populacao" not in quiet_counts
+    assert not bool(quiet["is_outlier"].any())
+    jump = smooth.copy()
+    jump.loc[jump.index[-1], "populacao"] = 1070
+    flagged, counts = apply_outliers(jump, load_catalog().get("ds1"), [{"coluna": "populacao"}], "iqr_delta", 3.0, "flag")
+    assert counts["populacao"]["iqr_delta"] >= 1
+    assert bool(flagged.iloc[-1]["is_outlier"])
+
+
 def test_outlier_iqr_cap_e_dominio_da_tabua():
     years = list(range(2000, 2008))
     frame = pd.DataFrame(

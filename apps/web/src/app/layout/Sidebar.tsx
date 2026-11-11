@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom"
+import { BookOpen } from "lucide-react"
 import { mainNav } from "@/app/navigation"
 import { pickFilters } from "@/features/datasets/search"
 import { cn } from "@/lib/cn"
@@ -38,6 +39,18 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           </NavLink>
         ))}
       </nav>
+      <div className="mt-auto border-t border-border px-2 py-3">
+        <NavLink
+          to="/sobre"
+          onClick={onNavigate}
+          className={({ isActive }: { isActive: boolean }) =>
+            cn("flex items-center gap-2 rounded-md px-3 py-2 text-sm", isActive ? "bg-muted font-medium" : "hover:bg-muted")
+          }
+        >
+          <BookOpen className="size-4 shrink-0" aria-hidden />
+          <span>Como ler este painel</span>
+        </NavLink>
+      </div>
     </div>
   )
 }

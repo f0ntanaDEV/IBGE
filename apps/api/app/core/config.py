@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     ibge_timeout_s: float = 8.0
     ibge_retries: int = 2
     cache_ttl_s: int = 6 * 3600
+    ibge_latest_revision: str = ""
     page_size_max: int = 200
 
     @property

@@ -12,7 +12,10 @@ def _pair(cod: int) -> tuple[str, str] | None:
         return None
     high = rows.loc[rows["e0_t"].idxmax()]
     low = rows.loc[rows["e0_t"].idxmin()]
-    return f"{high['sigla']} {round_num(float(high['e0_t']), 2)}", f"{low['sigla']} {round_num(float(low['e0_t']), 2)}"
+    def _pt(value: float) -> str:
+        return f"{round_num(value, 2):.2f}".replace(".", ",")
+
+    return f"{high['sigla']} {_pt(float(high['e0_t']))}", f"{low['sigla']} {_pt(float(low['e0_t']))}"
 
 
 def build(cod: int) -> list[Fact]:
@@ -42,8 +45,8 @@ def build(cod: int) -> list[Fact]:
             kind="years",
             reference_year=REF_YEAR,
             detail_values=[
-                DetailPoint(ano=REF_YEAR, valor=round_num(e0h or 0, 2), kind="years"),
-                DetailPoint(ano=REF_YEAR, valor=round_num(e0m or 0, 2), kind="years"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(e0h or 0, 2), kind="years", rotulo="homens {valor}"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(e0m or 0, 2), kind="years", rotulo="mulheres {valor}"),
             ],
         ),
         Fact(id="e0_gap", label="Mulheres vivem a mais", value=round_num((e0m or 0) - (e0h or 0), 2), kind="years", reference_year=REF_YEAR),

@@ -67,7 +67,9 @@ export type DatasetListItem = {
   id: string
   name: string
   table: string
-  last_run: { source?: string; rows_in?: number; rows_out?: number; duration_s?: number } | null
+  last_run: { source?: string; status?: string; rows_in?: number; rows_out?: number; finished_at?: string; duration_s?: number } | null
+  revision?: string
+  latest_revision?: string
 }
 
 export type CensoReference = {
@@ -96,7 +98,10 @@ export type QualityReport = {
   structural_nulls?: Record<string, number>
   duplicates_removed?: Record<string, number>
   outliers?: Record<string, Record<string, number>>
-  validations?: { rule: string; ok: boolean; max_diff?: number | null }[]
+  validations?: { rule: string; ok: boolean; max_diff?: number | null; motivo?: string | null }[]
+  finished_at?: string
+  status?: string
+  rows_out?: number
   duration_s?: number
   steps?: { step: string }[]
   strategies?: Record<string, unknown>
@@ -145,6 +150,12 @@ export function fetchDatasets() {
 
 export function fetchMetrics(id: string) {
   return send<MetricInfo[]>(`/api/v1/datasets/${id}/metrics`)
+}
+
+export type MetricCatalogItem = { id: string; nome: string; sigla: string; definicao: string; unidade: string; fonte: string }
+
+export function fetchMetricCatalog() {
+  return send<MetricCatalogItem[]>("/api/v1/metrics")
 }
 
 export function fetchSummary(id: string, filters: { ano?: number; cod?: number; sexo?: string }) {
@@ -249,8 +260,9 @@ export type FactItem = {
   value: number | string
   kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw"
   detail?: string | null
-  detail_values?: { ano: number; valor: number; kind: FactItem["kind"] }[] | null
+  detail_values?: { ano: number; valor: number; kind: FactItem["kind"]; rotulo?: string | null }[] | null
   reference_year?: number | null
+  status?: "good" | "warn" | "bad" | null
 }
 
 export function fetchFacts(page: string, cod: number) {
@@ -278,7 +290,9 @@ export type PublishedQuality = {
   nulls: { by_column: Record<string, { before: number; after: number }>; structural: Record<string, number>; total_imputed: number }
   duplicates: { exact: number; by_key: number }
   outliers: { by_column: Record<string, number>; by_reason: Record<string, number>; strategy: string; method: string }
-  validations: { rule: string; ok: boolean; max_diff: number }[]
+  validations: { rule: string; ok: boolean; max_diff: number; motivo?: string | null }[]
+  validation_summary?: { approved: number; total: number; text: string }
+  finished_at?: string
   whitespace_cells?: number
   ids_recovered?: number
   manifest?: QualityManifest | null

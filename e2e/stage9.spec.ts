@@ -85,7 +85,7 @@ for (const theme of THEMES) {
         const fatos = await page.evaluate(
           () => [...document.querySelectorAll("[data-card]")].filter((card) => card.querySelector("h2")?.textContent?.trim() === "Fatos").length,
         )
-        expect(fatos).toBe(0)
+        expect(fatos).toBe(route.path === "/noticias" || route.path === "/configuracoes" ? 0 : 1)
         if (width === 1280) {
           mkdirSync(`e2e/__screenshots__/${theme}`, { recursive: true })
           await page.screenshot({ path: `e2e/__screenshots__/${theme}/${route.name}.png`, fullPage: true })

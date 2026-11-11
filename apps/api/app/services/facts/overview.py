@@ -33,7 +33,7 @@ def build(cod: int) -> list[Fact]:
             label="Pico populacional",
             value=peak_year or 0,
             kind="year",
-            detail_values=None if peak_value is None or peak_year is None else [DetailPoint(ano=peak_year, valor=peak_value, kind="count")],
+            detail_values=None if peak_value is None or peak_year is None else [DetailPoint(ano=peak_year, valor=peak_value, kind="count", rotulo="{valor} pessoas")],
         ),
         Fact(
             id="pop_2070",
@@ -53,7 +53,7 @@ def build(cod: int) -> list[Fact]:
             value=round_num(e0 or 0, 2),
             kind="years",
             reference_year=REF_YEAR,
-            detail_values=None if e0 is None or e0_2000 is None else [DetailPoint(ano=2000, valor=round_num(e0 - e0_2000, 2), kind="years")],
+            detail_values=None if e0 is None or e0_2000 is None else [DetailPoint(ano=2000, valor=round_num(e0 - e0_2000, 2), kind="years", rotulo="+{valor} desde 2000")],
         ),
         Fact(
             id="tft",
@@ -61,7 +61,7 @@ def build(cod: int) -> list[Fact]:
             value=round_num(tft or 0, 2),
             kind="rate",
             reference_year=REF_YEAR,
-            detail_values=None if below is None else [DetailPoint(ano=below, valor=2.1, kind="rate")],
+            detail_values=None if below is None else [DetailPoint(ano=below, valor=below, kind="year", rotulo="abaixo de 2,1 desde {valor}")],
         ),
         Fact(
             id="id_med",
