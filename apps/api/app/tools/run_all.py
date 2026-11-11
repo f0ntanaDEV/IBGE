@@ -6,9 +6,7 @@ from app.core.config import get_settings
 from app.domain.dataset import load_catalog
 from app.services.etl import process_dataset
 from app.services.store import ParquetStore
-from app.tools.make_dirty import dirty_frame
-from app.services.cleaning.reader import read_dataset
-from app.tools.sheets import write_like_source
+from app.tools.make_dirty import write_dirty
 
 
 def main() -> None:
@@ -16,9 +14,7 @@ def main() -> None:
     store = ParquetStore(settings.processed_dir)
     catalog = load_catalog()
     for cfg in catalog.datasets:
-        raw = read_dataset(settings.raw_dir / cfg.file, cfg)
-        dest = settings.raw_dir / f"{cfg.id}_sujo.xlsx"
-        write_like_source(dirty_frame(raw, cfg, seed=42), dest, cfg)
+        write_dirty(cfg, settings, seed=42)
         started = perf_counter()
         dirty_report = process_dataset(
             cfg.id,

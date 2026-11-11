@@ -1,6 +1,10 @@
-export type InsightSection = { pageId: string; title: string; route: string; items: { q: string; a: string[] }[] }
+import { INSIGHT_EXTRA, type InsightExtra } from "@/content/insightsExtra"
 
-export const INSIGHTS: InsightSection[] = [
+export type InsightItem = { q: string; a: string[]; route: string } & InsightExtra
+
+export type InsightSection = { pageId: string; title: string; route: string; items: InsightItem[] }
+
+const RAW: { pageId: string; title: string; route: string; items: { q: string; a: string[] }[] }[] = [
   {
     "pageId": "overview",
     "title": "Visão Geral",
@@ -261,6 +265,15 @@ export const INSIGHTS: InsightSection[] = [
     ]
   }
 ]
+
+export const INSIGHTS: InsightSection[] = RAW.map((section) => ({
+  ...section,
+  items: section.items.map((item, index) => ({
+    ...item,
+    ...INSIGHT_EXTRA[section.pageId][index],
+    route: section.route,
+  })),
+}))
 
 export const PATTERNS: { title: string; text: string }[] = [
   {

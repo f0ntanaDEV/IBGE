@@ -35,9 +35,29 @@ class Validation(BaseModel):
     max_diff: float
 
 
+class ManifestOutliers(BaseModel):
+    rows: list[int] = []
+    columns: dict[str, int] = {}
+    factor: list[float] = []
+
+
+class Manifest(BaseModel):
+    dataset: str
+    seed: int
+    generated_at: str
+    rows_original: int
+    nulls_injected: dict[str, int]
+    exact_duplicates: int
+    key_duplicates: int
+    outliers: ManifestOutliers
+    whitespace_cells: int
+    recoverable_ids: int
+
+
 class QualityReport(BaseModel):
     dataset_id: str
     source: Literal["original", "sujo", "upload"]
+    manifest: Manifest | None = None
     run_id: int
     started_at: datetime
     finished_at: datetime
@@ -49,6 +69,8 @@ class QualityReport(BaseModel):
     duplicates: DuplicatesReport
     outliers: OutliersReport
     validations: list[Validation]
+    whitespace_cells: int = 0
+    ids_recovered: int = 0
 
 
 def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime | None = None, finished_at: datetime | None = None) -> QualityReport:
@@ -68,9 +90,10 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
         column: StepCount(before=before.get(column, 0), after=after.get(column, 0))
         for column in sorted(set(before) | set(after))
     }
+    identifiers = {"cod", "sigla", "local", "sexo", "ano", "idade", "grupo_etario", "intervalo", "nivel"}
     imputed = 0
     for column, counts in by_column.items():
-        if column in structural:
+        if column in identifiers:
             continue
         imputed += max(0, counts.before - counts.after)
     duplicates = raw.get("duplicates_removed") or {}
@@ -121,4 +144,6 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
             method=str(strategies.get("outlier_method") or ""),
         ),
         validations=validations,
+        whitespace_cells=int(raw.get("whitespace_cells") or 0),
+        ids_recovered=int(raw.get("ids_recovered") or 0),
     )

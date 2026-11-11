@@ -26,4 +26,6 @@ class QualityReport(BaseModel):
     validations: list[ValidationResult]
     strategies: dict[str, Any]
     duration_s: float
+    whitespace_cells: int = 0
+    ids_recovered: int = 0
     steps: list[dict[str, Any]] = Field(default_factory=list)

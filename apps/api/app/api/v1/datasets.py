@@ -145,20 +145,27 @@ def _decode_report(payload: object) -> dict | None:
     return payload if isinstance(payload, dict) else None
 
 
-@router.get("/{dataset_id}/quality-report", response_model=PublishedQualityReport | None)
+@router.get("/{dataset_id}/quality-report", response_model=PublishedQualityReport)
 def quality_report(
     dataset_id: str,
     source: Literal["original", "sujo"] = "original",
-) -> PublishedQualityReport | None:
+) -> PublishedQualityReport:
     catalog_or_404(dataset_id)
     reports = [item for item in _reports(dataset_id) if (item.get("source") or "original") == source]
     if not reports:
-        return None
-    return publish_report(reports[-1])
+        raise AppError("no_run_for_source", "Não há execução para esta fonte", 404, {"source": source})
+    published = publish_report(reports[-1])
+    if source == "sujo":
+        manifest_path = get_settings().raw_dir / f"{dataset_id}_sujo.manifest.json"
+        if manifest_path.exists():
+            from app.domain.published_report import Manifest
+
+            published = published.model_copy(update={"manifest": Manifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))})
+    return published
 
 
 @router.get("/{dataset_id}/runs")
-def runs(dataset_id: str) -> list[dict]:
+def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
     catalog_or_404(dataset_id)
     try:
         from app.db import get_engine
@@ -174,10 +181,22 @@ def runs(dataset_id: str) -> list[dict]:
                 if parsed is not None:
                     item["report_json"] = parsed
                 normalized.append(item)
-            return normalized
+            return _with_source(normalized, source)
     except Exception:
         pass
-    return _reports(dataset_id)
+    return _with_source(_reports(dataset_id), source)
+
+
+def _with_source(rows: list[dict], source: str | None) -> list[dict]:
+    if source is None:
+        return rows
+    chosen = []
+    for row in rows:
+        payload = row.get("report_json") if "report_json" in row else row
+        found = row.get("source") or (payload or {}).get("source") or "original"
+        if found == source:
+            chosen.append(row)
+    return chosen
 
 
 @router.get("/{dataset_id}/data")

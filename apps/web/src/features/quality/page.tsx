@@ -1,12 +1,14 @@
-import { useState } from "react"
+import { useEffect } from "react"
 import { useMutation, useQuery } from "@tanstack/react-query"
+import { useLocation, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import { datasetNav } from "@/app/navigation"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FactsCard } from "@/features/facts/FactsCard"
 import { PageHeader } from "@/components/common/PageHeader"
-import { useFacts, useQualityReport } from "@/features/datasets/hooks"
-import { processDataset } from "@/features/datasets/api"
+import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
+import { processDataset, type PublishedQuality } from "@/features/datasets/api"
+import { chartId, focusChart } from "@/lib/chartId"
 import { formatValue } from "@/lib/format"
 import { queryClient } from "@/lib/queryClient"
 import { fetchHealth } from "@/lib/api"
@@ -23,10 +25,37 @@ function SimpleQuality() {
   return <SimplePage pageId="quality" />
 }
 
+function sum(values: Record<string, number> | undefined) {
+  return Object.values(values ?? {}).reduce((total, value) => total + value, 0)
+}
+
+type CompareRow = { label: string; inserted: number; detected: number; fixed: number; loose: boolean }
+
+function compareRows(report: PublishedQuality): CompareRow[] {
+  const manifest = report.manifest
+  return [
+    { label: "Nulos", inserted: sum(manifest?.nulls_injected), detected: report.nulls.total_imputed, fixed: report.nulls.total_imputed, loose: false },
+    { label: "Duplicatas exatas", inserted: manifest?.exact_duplicates ?? 0, detected: report.duplicates.exact, fixed: report.duplicates.exact, loose: false },
+    { label: "Duplicatas por chave", inserted: manifest?.key_duplicates ?? 0, detected: report.duplicates.by_key, fixed: report.duplicates.by_key, loose: false },
+    { label: "Outliers", inserted: sum(manifest?.outliers.columns), detected: sum(report.outliers.by_column), fixed: sum(report.outliers.by_column), loose: true },
+    { label: "Espaços extras", inserted: manifest?.whitespace_cells ?? 0, detected: report.whitespace_cells ?? 0, fixed: report.whitespace_cells ?? 0, loose: false },
+    { label: "Ids recuperáveis", inserted: manifest?.recoverable_ids ?? 0, detected: report.ids_recovered ?? 0, fixed: report.ids_recovered ?? 0, loose: false },
+  ]
+}
+
+function seal(row: CompareRow) {
+  if (row.loose) return row.inserted === 0 ? (row.detected === 0 ? "ok" : "atenção") : row.detected >= row.inserted * 0.9 ? "ok" : "atenção"
+  return row.detected === row.inserted ? "ok" : "atenção"
+}
+
 function TechnicalQuality() {
-  const [datasetId, setDatasetId] = useState("ds1")
-  const [source, setSource] = useState<"original" | "sujo">("original")
-  const report = useQualityReport(datasetId, source)
+  const [params, setParams] = useSearchParams()
+  const source = params.get("source") === "sujo" ? "sujo" : "original"
+  const datasetId = params.get("dataset") || "ds1"
+  const original = useQualityReport(datasetId, "original")
+  const dirty = useQualityReport(datasetId, "sujo")
+  const report = source === "sujo" ? dirty : original
+  const runs = useRuns(datasetId, source)
   const facts = useFacts("quality")
   const health = useQuery({ queryKey: ["health"], queryFn: fetchHealth })
   const seeding = Boolean((health.data as { seeding?: boolean } | undefined)?.seeding)
@@ -38,14 +67,35 @@ function TechnicalQuality() {
     },
     onError: (error: Error) => toast.error(error.message),
   })
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (!hash.startsWith("#chart-")) return
+    focusChart(decodeURIComponent(hash.slice("#chart-".length)))
+  }, [hash])
+
+  function setSource(next: "original" | "sujo") {
+    const updated = new URLSearchParams(params)
+    if (next === "sujo") updated.set("source", "sujo")
+    else updated.delete("source")
+    setParams(updated, { replace: true })
+  }
+
+  function setDataset(next: string) {
+    const updated = new URLSearchParams(params)
+    updated.set("dataset", next)
+    setParams(updated, { replace: true })
+  }
+
   const body = report.data
+  const rows = body?.manifest ? compareRows(body) : []
+  const title = source === "sujo" ? "Qualidade de dados · Base de demonstração" : "Qualidade de dados"
   return (
     <div className="page-stack">
-      <PageHeader title="Qualidade de dados" description="Linhas, nulos, duplicatas, outliers e validações de cada base." />
+      <PageHeader title={title} description="Linhas, nulos, duplicatas, outliers e validações de cada base." />
       <div className="flex flex-wrap gap-3">
         <label className="grid gap-1 text-sm">
           Dataset
-          <select className="h-9 rounded-md border border-border bg-background px-2" value={datasetId} onChange={(event) => setDatasetId(event.target.value)}>
+          <select className="h-9 rounded-md border border-border bg-background px-2" value={datasetId} onChange={(event) => setDataset(event.target.value)}>
             {datasetNav.map((item) => (
               <option key={item.to} value={item.to.split("/").pop()}>
                 {item.label}
@@ -70,48 +120,117 @@ function TechnicalQuality() {
           description="Ainda não há execução para esta base."
           action={
             <button type="button" className="text-sm underline" onClick={() => process.mutate()}>
-              Processar bases agora
+              {source === "sujo" ? "Processar base de demonstração" : "Processar bases agora"}
             </button>
           }
         />
       ) : null}
       {body ? (
-        <section className="dashboard-grid" aria-label="Antes e depois">
-          <article data-card className="rounded-lg border border-border p-4 text-sm">
-            <h2 className="font-medium">Linhas</h2>
-            <p>
-              {formatValue(body.rows_in, { key: "linhas", kind: "count" })} antes · {formatValue(body.rows_out, { key: "linhas", kind: "count" })} depois
-            </p>
-          </article>
-          <article data-card className="rounded-lg border border-border p-4 text-sm">
-            <h2 className="font-medium">Nulos estruturais</h2>
-            <p>{formatValue(Object.values(body.nulls.structural).reduce((sum, value) => sum + value, 0), { key: "nulos", kind: "count" })}</p>
-          </article>
-          <article data-card className="rounded-lg border border-border p-4 text-sm">
-            <h2 className="font-medium">Duplicatas</h2>
-            <p>
-              {formatValue(body.duplicates.exact, { key: "dup", kind: "count" })} exatas · {formatValue(body.duplicates.by_key, { key: "dup", kind: "count" })} por chave
-            </p>
-          </article>
-          <article data-card className="rounded-lg border border-border p-4 text-sm">
-            <h2 className="font-medium">Outliers</h2>
-            <p>{formatValue(Object.values(body.outliers.by_column).reduce((sum, value) => sum + value, 0), { key: "out", kind: "count" })}</p>
-          </article>
+        <section className="dashboard-grid" aria-label="Indicadores da fonte">
+          <Metric label="Linhas antes" value={body.rows_in} />
+          <Metric label="Linhas depois" value={body.rows_out} />
+          <Metric label="Nulos imputados" value={body.nulls.total_imputed} />
+          <Metric label="Duplicatas removidas" value={body.duplicates.exact + body.duplicates.by_key} />
         </section>
       ) : null}
-      {body ? (
-        <section className="rounded-lg border border-border p-4 text-sm" aria-label="Validações">
+      <div className="chart-board">
+        <section data-chart-id={chartId("Original × Demonstração")} tabIndex={-1} className="span-8 rounded-lg border border-border p-4 text-sm">
+          <h2 className="font-medium">Base original × Base de demonstração</h2>
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
+            <SourceColumn title="Base original" report={original.data} />
+            <SourceColumn title="Base de demonstração" report={dirty.data} />
+          </div>
+        </section>
+        <section data-chart-id={chartId("Validações")} tabIndex={-1} className="span-4 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Validações</h2>
           <ul className="mt-2 grid gap-1">
-            {body.validations.map((item) => (
+            {(body?.validations ?? []).map((item) => (
               <li key={item.rule}>
                 {item.ok ? "ok" : "falha"} · {item.rule}
               </li>
             ))}
           </ul>
         </section>
-      ) : null}
+        {source === "sujo" && rows.length ? (
+          <section data-chart-id={chartId("Inserido · Detectado · Corrigido")} tabIndex={-1} className="span-12 rounded-lg border border-border p-4 text-sm">
+            <h2 className="font-medium">Inserido · Detectado · Corrigido</h2>
+            <table className="mt-3 w-full text-left">
+              <thead>
+                <tr className="text-muted-foreground">
+                  <th className="py-1 font-medium">Problema</th>
+                  <th className="py-1 font-medium">Inserido</th>
+                  <th className="py-1 font-medium">Detectado</th>
+                  <th className="py-1 font-medium">Corrigido/Sinalizado</th>
+                  <th className="py-1 font-medium">Selo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => {
+                  const status = seal(row)
+                  return (
+                    <tr key={row.label} className="border-t border-border">
+                      <td className="py-2">{row.label}</td>
+                      <td className="tabular-nums">{formatValue(row.inserted, { key: row.label, kind: "count" })}</td>
+                      <td className="tabular-nums">{formatValue(row.detected, { key: row.label, kind: "count" })}</td>
+                      <td className="tabular-nums">{formatValue(row.fixed, { key: row.label, kind: "count" })}</td>
+                      <td>
+                        <span data-seal={status}>
+                          {status === "ok" ? "ok" : "atenção"}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
+        <section data-chart-id={chartId("Nulos por coluna")} tabIndex={-1} className="span-6 rounded-lg border border-border p-4 text-sm">
+          <h2 className="font-medium">Nulos por coluna</h2>
+          <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
+            {Object.entries(body?.nulls.by_column ?? {}).map(([column, counts]) => (
+              <li key={column}>
+                {column}: {formatValue(counts.before, { key: column, kind: "count" })} antes · {formatValue(counts.after, { key: column, kind: "count" })} depois
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section data-chart-id={chartId("Histórico de execuções")} tabIndex={-1} className="span-6 rounded-lg border border-border p-4 text-sm">
+          <h2 className="font-medium">Histórico de execuções</h2>
+          <ul className="mt-2 grid gap-1">
+            {(runs.data ?? []).slice(0, 6).map((item, index) => (
+              <li key={`${item.source ?? source}-${index}`}>
+                {item.source ?? source} · {formatValue(item.rows_after ?? 0, { key: "linhas", kind: "count" })} linhas
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
       <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
+    </div>
+  )
+}
+
+function Metric({ label, value }: { label: string; value: number }) {
+  return (
+    <article data-card className="rounded-lg border border-border p-4 text-sm">
+      <h2 className="font-medium">{label}</h2>
+      <p>{formatValue(value, { key: label, kind: "count" })}</p>
+    </article>
+  )
+}
+
+function SourceColumn({ title, report }: { title: string; report?: PublishedQuality | null }) {
+  if (!report) return <p className="text-muted-foreground">{title}: sem execução.</p>
+  return (
+    <div>
+      <h3 className="font-medium">{title}</h3>
+      <p>Linhas: {formatValue(report.rows_in, { key: "linhas", kind: "count" })} → {formatValue(report.rows_out, { key: "linhas", kind: "count" })}</p>
+      <p>Nulos imputados: {formatValue(report.nulls.total_imputed, { key: "nulos", kind: "count" })}</p>
+      <p>
+        Duplicatas: {formatValue(report.duplicates.exact, { key: "dup", kind: "count" })} exatas · {formatValue(report.duplicates.by_key, { key: "dup", kind: "count" })} por chave
+      </p>
+      <p>Outliers: {formatValue(sum(report.outliers.by_column), { key: "out", kind: "count" })}</p>
     </div>
   )
 }

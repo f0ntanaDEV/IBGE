@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom"
@@ -39,12 +40,15 @@ function Harness() {
 describe("FilterBar", () => {
   it("grava território, ano e sexo na URL", async () => {
     const user = userEvent.setup()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     render(
-      <MemoryRouter initialEntries={["/datasets/ds1"]}>
-        <Routes>
-          <Route path="*" element={<Harness />} />
-        </Routes>
-      </MemoryRouter>,
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={["/datasets/ds1"]}>
+          <Routes>
+            <Route path="*" element={<Harness />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
     )
     await user.selectOptions(screen.getByLabelText("Território"), "33")
     await user.selectOptions(screen.getByLabelText("Ano"), "2041")

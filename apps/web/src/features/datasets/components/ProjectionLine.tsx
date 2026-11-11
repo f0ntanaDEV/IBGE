@@ -24,6 +24,8 @@ type ProjectionLineProps = {
   compact?: boolean
   band?: { x1: number; x2: number }
   markYear?: number
+  reference?: LinePoint[]
+  referenceKey?: string
 }
 
 function ProjectionLineView({
@@ -40,6 +42,8 @@ function ProjectionLineView({
   compact = false,
   band,
   markYear,
+  reference,
+  referenceKey,
 }: ProjectionLineProps) {
   const { colors, isAnimationActive, strokeWidth, dash, highContrast } = useChartTheme()
   const [hidden, setHidden] = useState<Set<string>>(() => new Set())
@@ -58,9 +62,17 @@ function ProjectionLineView({
     return next
   }, [colors, shown])
 
+  const brazilByYear = useMemo(() => {
+    const map = new Map<number, number | null>()
+    if (!reference || !referenceKey) return map
+    for (const row of reference) map.set(row.ano, row[referenceKey] ?? null)
+    return map
+  }, [reference, referenceKey])
+
   const chartData = useMemo(() => {
     return data.map((row) => {
       const next: LinePoint = { ano: row.ano }
+      if (referenceKey) next.brasil = brazilByYear.get(row.ano) ?? null
       for (const item of shown) {
         const value = row[item.key] ?? null
         if (value != null) next[item.key] = value
@@ -77,7 +89,7 @@ function ProjectionLineView({
       }
       return next
     })
-  }, [current, data, shown, variant])
+  }, [brazilByYear, current, data, referenceKey, shown, variant])
 
   const peak = markMax ? peakPoint(data.map((row) => ({ ano: row.ano, valor: row[shown[0]?.key ?? ""] ?? null }))) : null
   const cross =
@@ -195,6 +207,21 @@ function ProjectionLineView({
               />
             )
           })}
+          {referenceKey && reference?.length ? (
+            <Line
+              dataKey="brasil"
+              name="Brasil"
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray={highContrast ? "4 2" : "2 3"}
+              dot={false}
+              strokeWidth={1.5}
+              isAnimationActive={false}
+              connectNulls
+              label={(props: { index?: number; x?: number; y?: number }) =>
+                props.index === chartData.length - 1 ? <EndLabel x={Number(props.x)} y={Number(props.y)} text="Brasil" /> : <g />
+              }
+            />
+          ) : null}
           {variant !== "area100"
             ? shown.map((item, index) => (
                 <Line

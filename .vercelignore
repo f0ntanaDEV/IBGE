@@ -1,4 +1,5 @@
 apps/api
+.env.local
 data
 docs
 e2e

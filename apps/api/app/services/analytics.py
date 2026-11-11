@@ -93,15 +93,16 @@ def summary(
     sexo: str | None = None,
 ) -> dict:
     metric = _main_metric(cfg, frame)
-    current = apply_filters(frame, ano=ano, cod=cod, sexo=sexo)
+    base = frame if sexo is not None else _sexo_total(frame)
+    current = apply_filters(base, ano=ano, cod=cod, sexo=sexo)
     year = ano if ano is not None else _latest_year(current)
-    scoped = apply_filters(frame, ano=year, cod=cod, sexo=sexo)
+    scoped = apply_filters(base, ano=year, cod=cod, sexo=sexo)
     additive = is_count(metric)
     value = _aggregate(scoped, metric, additive)
     kpis = [{"id": metric, "label": _label(metric), "value": value, "unidade": _unit(metric)}]
     if year is not None:
         previous = _aggregate(
-            apply_filters(frame, ano=int(year) - 1, cod=cod, sexo=sexo),
+            apply_filters(base, ano=int(year) - 1, cod=cod, sexo=sexo),
             metric,
             additive,
         )
@@ -124,7 +125,7 @@ def summary(
                     "unidade": _unit(extra),
                 }
             )
-    series = _series(apply_filters(frame, cod=cod, sexo=sexo), metric, additive)
+    series = _series(apply_filters(base, cod=cod, sexo=sexo), metric, additive)
     rankings = _rankings(scoped if year is not None else current, metric, additive)
     return {"kpis": kpis, "series": series, "rankings": rankings}
 

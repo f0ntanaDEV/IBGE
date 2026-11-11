@@ -185,8 +185,8 @@ export function fetchData(id: string, query: DataQuery) {
   )
 }
 
-export function fetchRuns(id: string) {
-  return send<QualityReport[]>(`/api/v1/datasets/${id}/runs`)
+export function fetchRuns(id: string, source?: string) {
+  return send<QualityReport[]>(`/api/v1/datasets/${id}/runs${queryString({ source })}`)
 }
 
 export function uploadDataset(id: string, file: File) {
@@ -257,6 +257,17 @@ export function fetchFacts(page: string, cod: number) {
   return send<FactItem[]>(`/api/v1/facts${queryString({ page, cod })}`)
 }
 
+export type QualityManifest = {
+  dataset: string
+  seed: number
+  nulls_injected: Record<string, number>
+  exact_duplicates: number
+  key_duplicates: number
+  outliers: { rows: number[]; columns: Record<string, number>; factor: number[] }
+  whitespace_cells: number
+  recoverable_ids: number
+}
+
 export type PublishedQuality = {
   dataset_id: string
   source: "original" | "sujo" | "upload"
@@ -268,10 +279,34 @@ export type PublishedQuality = {
   duplicates: { exact: number; by_key: number }
   outliers: { by_column: Record<string, number>; by_reason: Record<string, number>; strategy: string; method: string }
   validations: { rule: string; ok: boolean; max_diff: number }[]
+  whitespace_cells?: number
+  ids_recovered?: number
+  manifest?: QualityManifest | null
 }
 
-export function fetchQualityReport(id: string, source: "original" | "sujo") {
-  return send<PublishedQuality | null>(`/api/v1/datasets/${id}/quality-report${queryString({ source })}`)
+export type ContextItem = {
+  id: string
+  label: string
+  value: number | string
+  kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw" | "ratio"
+  note?: string | null
+  note_values?: { key: string; value: number | string; kind: ContextItem["kind"] }[] | null
+  chart_id: string
+  chart_label: string
+}
+
+export async function fetchQualityReport(id: string, source: "original" | "sujo") {
+  try {
+    return await send<PublishedQuality>(`/api/v1/datasets/${id}/quality-report${queryString({ source })}`)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null
+    throw error
+  }
+}
+
+export function fetchContext(page: string, filters: { cod: number; ano: number; sexo: string }) {
+  const sexo = filters.sexo === "Homens" ? "H" : filters.sexo === "Mulheres" ? "M" : "T"
+  return send<ContextItem[]>(`/api/v1/context${queryString({ page, cod: filters.cod, ano: filters.ano, sexo })}`)
 }
 
 export function fetchMilestones(cod: number) {

@@ -39,15 +39,31 @@ def load_mysql(
             )
         ).inserted_primary_key[0]
     staging = f"{table_name}__stg"
+    previous = f"{table_name}__old"
+    with engine.begin() as connection:
+        connection.execute(text(f"DROP TABLE IF EXISTS {staging}"))
+        connection.execute(text(f"DROP TABLE IF EXISTS {previous}"))
+        if _same_row_count(connection, table_name, len(frame)):
+            connection.execute(
+                etl_runs.update()
+                .where(etl_runs.c.id == run_id)
+                .values(
+                    status="success",
+                    finished_at=datetime.now(),
+                    rows_out=len(frame),
+                    report_json=report.model_dump(),
+                    error=None,
+                )
+            )
+            return
     try:
         with engine.begin() as connection:
-            connection.execute(text(f"DROP TABLE IF EXISTS {staging}"))
             connection.execute(text(f"CREATE TABLE {staging} LIKE {table_name}"))
+            if connection.dialect.name == "mysql":
+                connection.execute(text(f"ALTER TABLE `{staging}` MODIFY `outlier_motivo` TEXT"))
         _insert_batches(engine, staging, table, frame)
         with engine.begin() as connection:
             _replace_dimensions(connection, frame, dataset_id, metrics)
-            previous = f"{table_name}__old"
-            connection.execute(text(f"DROP TABLE IF EXISTS {previous}"))
             connection.execute(text(f"RENAME TABLE {table_name} TO {previous}, {staging} TO {table_name}"))
             connection.execute(text(f"DROP TABLE IF EXISTS {previous}"))
             connection.execute(
@@ -70,6 +86,19 @@ def load_mysql(
                 .values(status="failed", finished_at=datetime.now(), error=str(exc)[:2000])
             )
         raise
+
+
+def _same_row_count(connection, table_name: str, rows: int) -> bool:
+    """Evita a segunda cópia no volume de 500 MB do Railway quando a carga já está lá."""
+    if connection.dialect.name != "mysql":
+        return False
+    exists = connection.execute(text(
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :name"
+    ), {"name": table_name}).scalar()
+    if not exists:
+        return False
+    current = connection.execute(text(f"SELECT COUNT(*) FROM `{table_name}`")).scalar()
+    return int(current or 0) == rows
 
 
 def _insert_batches(engine: Engine, staging: str, table, frame: pd.DataFrame) -> None:

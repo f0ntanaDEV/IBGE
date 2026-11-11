@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import { ChartCard } from "@/components/common/ChartCard"
+import { useTerritories } from "@/features/datasets/hooks"
+import { TERRITORIES } from "@/features/datasets/territories"
+import { ufsForScope } from "@/features/datasets/territoryScope"
+import { chartId } from "@/lib/chartId"
 import { AgeYearHeatmap } from "@/components/charts/AgeYearHeatmap"
 import { AnimatedScatter } from "@/components/charts/AnimatedScatter"
 import { BrazilMap } from "@/components/charts/BrazilMap"
@@ -39,6 +43,9 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
   const simple = false
   const selection = useCrossFilter((state) => state.selection)
   const toggle = useCrossFilter((state) => state.toggle)
+  const territories = useTerritories()
+  const scope = ufsForScope(cod, territories.data?.length ? territories.data : TERRITORIES)
+  const allow = new Set(scope.ufs)
   const enabled = isEnrichment(spec)
   const mapMetric = spec.kind === "map" ? spec.metric : ""
   const slopeMetric = spec.kind === "slope" ? spec.metric : ""
@@ -91,6 +98,7 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
   return (
     <ChartCard
       title={spec.title}
+      chartId={chartId(spec.title)}
       description={spec.description}
       loading={bonusLoading || active.isLoading}
       error={active.error instanceof Error ? active.error.message : null}
@@ -99,7 +107,9 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
       {spec.kind === "map" ? (
         <>
           <BrazilMap
-            items={map.data?.items ?? []}
+            items={(map.data?.items ?? []).filter((item) => allow.has(item.cod))}
+            ufs={scope.ufs}
+            highlight={scope.highlight}
             metric={{ key: spec.metric, kind: kindOf(spec.format) }}
             summary={spec.description}
             selected={selection.uf ?? []}
@@ -119,14 +129,16 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
       ) : null}
       {spec.kind === "scatter" ? (
         <AnimatedScatter
-          points={scatter.data?.items ?? []}
+          points={(scatter.data?.items ?? []).filter((item) => allow.has(item.cod))}
           summary={spec.description}
+          selected={scope.highlight != null ? [scope.highlight] : []}
           onSelect={(value) => toggle("uf", value, { multi: false, source: "scatter" })}
         />
       ) : null}
       {spec.kind === "slope" && spec.kind === "slope" ? (
         <SlopeChart
-          items={slope.data?.items ?? []}
+          items={(slope.data?.items ?? []).filter((item) => allow.has(item.cod))}
+          selected={scope.highlight != null ? [scope.highlight] : []}
           anoA={2000}
           anoB={year === 2000 ? 2070 : year}
           metric={{ key: spec.metric, kind: kindOf(spec.format) }}
@@ -136,7 +148,8 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
       ) : null}
       {spec.kind === "diverging" ? (
         <DivergingBars
-          items={gaps.data ?? []}
+          items={(gaps.data ?? []).filter((item) => allow.has(item.cod))}
+          selected={scope.highlight != null ? [scope.highlight] : []}
           summary={spec.description}
           onSelect={(value) => toggle("uf", value, { multi: false, source: "diverging" })}
         />

@@ -6,9 +6,18 @@ from app.domain.dataset import DatasetConfig
 from app.domain.territory import nivel_de
 
 
-def recover_ids(frame: pd.DataFrame, cfg: DatasetConfig) -> tuple[pd.DataFrame, int]:
+def _id_gaps(frame: pd.DataFrame) -> int:
+    total = 0
+    for col in ("cod", "sigla", "local"):
+        if col in frame.columns:
+            total += int(frame[col].isna().sum())
+    return total
+
+
+def recover_ids(frame: pd.DataFrame, cfg: DatasetConfig) -> tuple[pd.DataFrame, int, int]:
     """Preenche cod/sigla/local pelo mapa do próprio arquivo e descarta ids restantes nulos."""
     out = frame.copy()
+    missing_before = _id_gaps(out)
     if {"cod", "sigla", "local"} <= set(out.columns):
         known = out.dropna(subset=["cod", "sigla", "local"])
         if not known.empty:
@@ -31,7 +40,8 @@ def recover_ids(frame: pd.DataFrame, cfg: DatasetConfig) -> tuple[pd.DataFrame, 
     for col in required:
         invalid = invalid | out[col].isna()
     discarded = int(invalid.sum())
-    return out.loc[~invalid].reset_index(drop=True), discarded
+    recovered = missing_before - _id_gaps(out)
+    return out.loc[~invalid].reset_index(drop=True), discarded, recovered
 
 
 def structural_mask(frame: pd.DataFrame, cfg: DatasetConfig) -> dict[str, pd.Series]:

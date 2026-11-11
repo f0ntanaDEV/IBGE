@@ -40,8 +40,8 @@ export function FilterChipsBar() {
   useEffect(() => {
     if (!ready.current) return
     setParams(
-      (current) => {
-        const copy = new URLSearchParams(current)
+      (_current) => {
+        const copy = new URLSearchParams(window.location.search)
         if (selection.uf?.length) copy.set("sel_uf", selection.uf.join(","))
         else copy.delete("sel_uf")
         if (selection.faixa?.length) copy.set("sel_faixa", selection.faixa.join(","))
@@ -66,8 +66,8 @@ export function FilterChipsBar() {
 
   function write(next: CrossSelection) {
     setParams(
-      (current) => {
-        const copy = new URLSearchParams(current)
+      (_current) => {
+        const copy = new URLSearchParams(window.location.search)
         if (next.uf?.length) copy.set("sel_uf", next.uf.join(","))
         else copy.delete("sel_uf")
         if (next.faixa?.length) copy.set("sel_faixa", next.faixa.join(","))

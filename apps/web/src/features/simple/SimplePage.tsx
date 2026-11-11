@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader"
 import { KpiCard } from "@/components/common/KpiCard"
 import { Card } from "@/components/ui/card"
 import { FilterBar } from "@/features/datasets/components/FilterBar"
-import { useDashboardFilters, useFacts, useSummary, useTerritories, useDatasetNews } from "@/features/datasets/hooks"
+import { useContext, useDashboardFilters, useFacts, useSummary, useTerritories, useDatasetNews } from "@/features/datasets/hooks"
 import { formatValue, type MetricKind, type NumberFormat } from "@/lib/format"
 import { FactList, visibleFacts } from "@/features/facts/FactsCard"
 
@@ -59,6 +59,17 @@ function kpiFormat(unidade: string): NumberFormat {
   return "integer"
 }
 
+function RelatedNews({ item }: { item?: { titulo?: string | null; link?: string | null } }) {
+  if (!item?.titulo) return null
+  return (
+    <p className="mt-3">
+      <a href={item.link ?? "https://agenciadenoticias.ibge.gov.br/"} className="underline" target="_blank" rel="noreferrer">
+        {item.titulo}
+      </a>
+    </p>
+  )
+}
+
 function SectionCard({ id, title, wide, children }: { id: string; title: string; wide?: boolean; children: ReactNode }) {
   return (
     <Card id={id} className={`flex h-full flex-col p-4 ${wide ? "md:col-span-2" : ""}`}>
@@ -73,6 +84,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const territories = useTerritories()
   const summaryId = pageId === "overview" || pageId === "quality" ? "ds4" : pageId
   const summary = useSummary(summaryId, { ano: filters.ano, cod: filters.cod })
+  const context = useContext(pageId === "quality" ? "overview" : pageId, filters, pageId !== "quality")
   const facts = useFacts(pageId === "overview" ? "overview" : pageId)
   const news = useDatasetNews(summaryId)
   const copy = COPY[pageId] ?? COPY.overview
@@ -83,6 +95,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const value2000 = formatValue(at(2000) ?? null, { key: "serie", kind: "count" }, "simple")
   const value2070 = formatValue(at(2070) ?? null, { key: "serie", kind: "count" }, "simple")
   const shownFacts = visibleFacts(facts.data)
+  const related = news.data?.items ?? []
   const sections = [
     { id: "o-que", title: "O que esta página mostra" },
     { id: "hoje", title: "Como está hoje" },
@@ -97,7 +110,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
     <div className="page-stack">
       <PageHeader title={copy.title} description={`${place}, ${filters.ano}. Projeções da população, revisão 2024.`} />
       <FilterBar
-        territories={territories.data ?? []}
+        territories={filters.territories}
         filters={["territorio", "ano"]}
         cod={filters.cod}
         ano={filters.ano}
@@ -125,33 +138,50 @@ export function SimplePage({ pageId }: { pageId: string }) {
         <div className="grid items-stretch gap-4 md:grid-cols-2">
           <SectionCard id="o-que" title="O que esta página mostra">
             <p>{copy.what}</p>
+            <RelatedNews item={related[0]} />
           </SectionCard>
           <SectionCard id="dia" title="O que isso significa no dia a dia">
             <p>{copy.daily}</p>
+            <RelatedNews item={related[1] ?? related[0]} />
           </SectionCard>
           <SectionCard id="hoje" title="Como está hoje" wide>
             <p>
               {place} em {filters.ano}.
             </p>
             <ul className="mt-3 divide-y divide-border border-y border-border">
-              {kpis.map((item) => (
-                <li key={item.id} className="flex items-baseline justify-between gap-4 py-2">
-                  <span>{item.label}</span>
-                  <span className="shrink-0 font-medium tabular-nums">{formatValue(item.value, { key: item.id, kind: metricKind(item.unidade) }, "simple")}</span>
-                </li>
-              ))}
+              {context.data?.length
+                ? context.data.map((item) => (
+                    <li key={item.id} className="flex items-baseline justify-between gap-4 py-2">
+                      <span>{item.label}</span>
+                      <span className="shrink-0 font-medium tabular-nums">
+                        {typeof item.value === "string"
+                          ? item.value
+                          : formatValue(item.value, { key: item.id, kind: item.kind === "ratio" ? "rate" : item.kind }, "simple")}
+                      </span>
+                    </li>
+                  ))
+                : kpis.map((item) => (
+                    <li key={item.id} className="flex items-baseline justify-between gap-4 py-2">
+                      <span>{item.label}</span>
+                      <span className="shrink-0 font-medium tabular-nums">{formatValue(item.value, { key: item.id, kind: metricKind(item.unidade) }, "simple")}</span>
+                    </li>
+                  ))}
             </ul>
+            <RelatedNews item={related[2] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2000" title="Como era em 2000">
             <p className="text-2xl font-semibold tabular-nums">{value2000}</p>
             <p className="mt-2 text-muted-foreground">Indicador principal no início da série.</p>
+            <RelatedNews item={related[3] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2070" title="Para onde vamos (2070)">
             <p className="text-2xl font-semibold tabular-nums">{value2070}</p>
             <p className="mt-2 text-muted-foreground">Projeção no fim da série.</p>
+            <RelatedNews item={related[4] ?? related[1] ?? related[0]} />
           </SectionCard>
           <SectionCard id="territorios" title="Comparando territórios" wide>
             <p>{filters.cod === 0 ? "O Brasil reúne as cinco regiões." : `${place} é comparado com o Brasil nos fatos e nos indicadores.`}</p>
+            <RelatedNews item={related[5] ?? related[2] ?? related[0]} />
           </SectionCard>
           <SectionCard id="fatos" title="Fatos em destaque" wide>
             {shownFacts.length ? (
@@ -159,6 +189,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
             ) : (
               <p>Os fatos aparecem quando a base termina de carregar.</p>
             )}
+            <RelatedNews item={related[6] ?? related[0]} />
           </SectionCard>
           <SectionCard id="noticias" title="Notícias do IBGE" wide>
             <ul className="grid gap-2">

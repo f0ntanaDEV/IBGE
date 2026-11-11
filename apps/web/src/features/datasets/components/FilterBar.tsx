@@ -14,50 +14,12 @@ type FilterBarProps = {
   onSexo: (sexo: string) => void
 }
 
-function group(items: Territory[], nivel: string) {
-  return items
-    .filter((item) => item.nivel === nivel)
-    .sort((a, b) => a.local.localeCompare(b.local, "pt-BR"))
-}
-
 export function FilterBar({ territories, filters, cod, ano, sexo, onCod, onAno, onSexo }: FilterBarProps) {
-  const simple = false
   const current = calendarYear()
   const years = Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, index) => YEAR_MIN + index)
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      {filters.includes("territorio") ? (
-        simple ? (
-          <SimpleTerritory territories={territories} cod={cod} onCod={onCod} />
-        ) : (
-        <label className="grid gap-1 text-sm">
-          Território
-          <select className={fieldClass} value={cod} onChange={(event) => onCod(Number(event.target.value))}>
-            <optgroup label="Brasil">
-              {group(territories, "brasil").map((item) => (
-                <option key={item.cod} value={item.cod}>
-                  {item.local}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Regiões">
-              {group(territories, "regiao").map((item) => (
-                <option key={item.cod} value={item.cod}>
-                  {item.local}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Unidades da Federação">
-              {group(territories, "uf").map((item) => (
-                <option key={item.cod} value={item.cod}>
-                  {item.sigla} · {item.local}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </label>
-        )
-      ) : null}
+      {filters.includes("territorio") ? <TerritorySelect territories={territories} cod={cod} onCod={onCod} /> : null}
       {filters.includes("ano") ? (
         <label className="grid gap-1 text-sm">
           Ano
@@ -71,7 +33,7 @@ export function FilterBar({ territories, filters, cod, ano, sexo, onCod, onAno, 
           </select>
         </label>
       ) : null}
-      {filters.includes("sexo") && !simple ? (
+      {filters.includes("sexo") ? (
         <label className="grid gap-1 text-sm">
           Sexo
           <select className={fieldClass} value={sexo} onChange={(event) => onSexo(event.target.value)}>
@@ -85,22 +47,35 @@ export function FilterBar({ territories, filters, cod, ano, sexo, onCod, onAno, 
   )
 }
 
-function SimpleTerritory({ territories, cod, onCod }: { territories: Territory[]; cod: number; onCod: (cod: number) => void }) {
-  const options = territories
-    .filter((item) => item.nivel === "brasil" || item.nivel === "uf")
-    .sort((a, b) => {
-      if (a.nivel !== b.nivel) return a.nivel === "brasil" ? -1 : 1
-      return a.local.localeCompare(b.local, "pt-BR")
-    })
+export function TerritorySelect({ territories, cod, onCod }: { territories: Territory[]; cod: number; onCod: (cod: number) => void }) {
+  const brasil = territories.filter((item) => item.nivel === "brasil")
+  const regions = territories.filter((item) => item.nivel === "regiao").sort((a, b) => a.cod - b.cod)
+  const ufs = territories.filter((item) => item.nivel === "uf").sort((a, b) => a.local.localeCompare(b.local, "pt-BR"))
   return (
     <label className="grid gap-1 text-sm">
       Território
-      <select className={fieldClass} value={cod} onChange={(event) => onCod(Number(event.target.value))}>
-        {options.map((item) => (
-          <option key={item.cod} value={item.cod}>
-            {item.local}
-          </option>
-        ))}
+      <select className={fieldClass} value={String(cod)} onChange={(event) => onCod(Number(event.target.value))}>
+        <optgroup label="Brasil">
+          {brasil.map((item) => (
+            <option key={item.cod} value={String(item.cod)}>
+              {item.local}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="Regiões">
+          {regions.map((item) => (
+            <option key={item.cod} value={String(item.cod)}>
+              {item.local}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="Unidades da Federação">
+          {ufs.map((item) => (
+            <option key={item.cod} value={String(item.cod)}>
+              {item.local}
+            </option>
+          ))}
+        </optgroup>
       </select>
     </label>
   )

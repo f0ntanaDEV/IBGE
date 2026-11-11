@@ -35,12 +35,16 @@ export function BrazilMap({
   summary,
   selected = [],
   onSelect,
+  ufs,
+  highlight,
 }: {
   items: BrazilMapItem[]
   metric: MetricMeta
   summary: string
   selected?: number[]
   onSelect?: (cod: number, multi: boolean) => void
+  ufs?: number[]
+  highlight?: number
 }) {
   const { sequential, highContrast } = useChartTheme()
   const host = useRef<HTMLDivElement>(null)
@@ -54,14 +58,20 @@ export function BrazilMap({
     },
     [highContrast, items],
   )
+  const scoped = useMemo(() => {
+    if (!mesh) return null
+    if (!ufs) return mesh
+    const allow = new Set(ufs)
+    return { ...mesh, features: mesh.features.filter((feature) => allow.has(feature.properties.cod)) }
+  }, [mesh, ufs])
   const paths = useMemo(() => {
-    if (!mesh) return []
+    if (!scoped) return []
     const projection = geoMercator() as ReturnType<typeof geoMercator> & {
       fitSize(size: [number, number], object: GeoPermissibleObjects): void
     }
-    projection.fitSize([Math.max(size.w, 1), Math.max(size.h, 1)], mesh as unknown as GeoPermissibleObjects)
+    projection.fitSize([Math.max(size.w, 1), Math.max(size.h, 1)], scoped as unknown as GeoPermissibleObjects)
     const path = geoPath(projection)
-    return mesh.features.map((feature) => {
+    return scoped.features.map((feature) => {
       const object = feature as unknown as GeoPermissibleObjects
       return {
         cod: feature.properties.cod,
@@ -69,7 +79,7 @@ export function BrazilMap({
         d: path(object) ?? "",
       }
     })
-  }, [mesh, size.h, size.w])
+  }, [scoped, size.h, size.w])
 
   useEffect(() => {
     const node = host.current
@@ -104,8 +114,8 @@ export function BrazilMap({
         {paths.map((shape) => {
           const item = byCod.get(shape.cod)
           const value = item?.valor
-          const faded = selected.length > 0 && !selected.includes(shape.cod)
-          const fill = value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
+          const faded = highlight != null ? shape.cod !== highlight : selected.length > 0 && !selected.includes(shape.cod)
+          const fill = faded || value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
           const label = item ? `${item.local}: ${formatValue(item.valor, metric)}` : shape.sigla
           const shared = {
             d: shape.d,

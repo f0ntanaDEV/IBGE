@@ -11,6 +11,7 @@ type ChartCardProps = {
   title: string
   description?: string
   metricKey?: string
+  chartId?: string
   actions?: ReactNode
   loading?: boolean
   error?: string | null
@@ -19,7 +20,7 @@ type ChartCardProps = {
   children?: ReactNode
 }
 
-export function ChartCard({ title, description, metricKey, actions, loading, error, onRetry, narrative, children }: ChartCardProps) {
+export function ChartCard({ title, description, metricKey, chartId, actions, loading, error, onRetry, narrative, children }: ChartCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
 
@@ -35,7 +36,13 @@ export function ChartCard({ title, description, metricKey, actions, loading, err
   }
 
   return (
-    <Card ref={cardRef} className="flex h-[var(--card-h-chart)] flex-col overflow-hidden">
+    <Card
+      ref={cardRef}
+      id={chartId ? `chart-${chartId}` : undefined}
+      data-chart-id={chartId}
+      tabIndex={chartId ? -1 : undefined}
+      className="flex h-[var(--card-h-chart)] flex-col overflow-hidden"
+    >
       <CardHeader className="shrink-0 flex-row items-start justify-between">
         <div className="min-w-0">
           <div className="flex items-start gap-1">

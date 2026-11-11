@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom"
 import { mainNav } from "@/app/navigation"
+import { pickFilters } from "@/features/datasets/search"
 import { cn } from "@/lib/cn"
 
 type SidebarProps = {
@@ -8,6 +9,7 @@ type SidebarProps = {
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const { search } = useLocation()
+  const kept = pickFilters(search)
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -19,7 +21,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         {mainNav.map((item) => (
           <NavLink
             key={item.to}
-            to={{ pathname: item.to, search }}
+            to={{ pathname: item.to, search: kept }}
             end={item.end}
             title={item.title}
             onClick={onNavigate}

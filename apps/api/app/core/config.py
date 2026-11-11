@@ -54,6 +54,13 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
-    if not settings.data_dir.is_absolute():
-        object.__setattr__(settings, "data_dir", (REPO_ROOT / settings.data_dir).resolve())
+    configured = settings.data_dir
+    if not configured.is_absolute():
+        configured = (REPO_ROOT / configured).resolve()
+    repo_data = (REPO_ROOT / "data").resolve()
+    # `.env` usa `/data` para o compose. No Windows isso vira `C:\data` e o filtro do Brasil fica sem base.
+    # `.env` usa `/data` para o compose. No Windows isso vira `C:\data`, que não existe.
+    if not configured.exists() and (repo_data / "processed").exists():
+        configured = repo_data
+    object.__setattr__(settings, "data_dir", configured)
     return settings

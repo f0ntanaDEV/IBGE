@@ -40,7 +40,7 @@ datasets:
     key: [grupo_etario, sexo, cod, ano]
     series_by: [cod, sexo, grupo_etario]
     metrics: [populacao]
-    news_keywords: ["envelhecimento", "idosos"]
+    news_keywords: ["envelhecimento populacional", "faixa etária"]
 
   - id: ds3
     name: "Grupos etários específicos"
@@ -51,7 +51,7 @@ datasets:
     key: [cod, ano]
     series_by: [cod]
     metrics: auto
-    news_keywords: ["idosos", "crianças", "população em idade de trabalhar"]
+    news_keywords: ["pessoas idosas", "crianças e adolescentes", "idade de trabalhar"]
     claims:
       - id: idosos_superam_jovens
         label: "Ano em que a população 60+ supera a de 0–14 anos (Brasil)"
@@ -95,4 +95,4 @@ datasets:
       - "0 <= nqx <= 1"
       - "lx non_increasing by idade within (cod, sexo, ano)"
       - "ex >= 0"
-    news_keywords: ["tábuas de mortalidade", "esperança de vida"]
+    news_keywords: ["tábuas de mortalidade", "expectativa de vida"]

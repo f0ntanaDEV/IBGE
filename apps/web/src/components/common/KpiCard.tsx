@@ -20,7 +20,7 @@ function bareNumber(value: number, format: NumberFormat, mode: "technical" | "si
   if (format === "percent") return formatValue(value, { key: "kpi", kind: "percent" }, mode)
   if (format === "integer") return formatValue(value, { key: "kpi", kind: "count" }, mode)
   if (format === "permil") return formatValue(value, { key: "kpi", kind: "permil" }, mode)
-  if (format === "years") return formatValue(value, { key: "kpi", kind: "years" }, mode)
+  if (format === "years") return formatValue(value, { key: "kpi", kind: "years" }, mode).replace(/ anos$/, "")
   if (format === "number") return formatValue(value, { key: "kpi", kind: "raw" }, mode)
   return formatValue(value, { key: "kpi", kind: "rate" }, mode)
 }
@@ -50,7 +50,11 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
   const shown = display ?? (value == null ? "—" : bareNumber(value, format, mode))
 
   return (
-    <Card ref={cardRef} className="flex h-full min-h-[7rem] flex-col gap-1 p-4">
+    <Card
+      ref={cardRef}
+      data-population={metricKey === "pop_t" || metricKey === "populacao" ? value ?? undefined : undefined}
+      className="flex h-full min-h-[7rem] flex-col gap-1 p-4"
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="truncate text-sm text-muted-foreground">{label}</span>
         {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}

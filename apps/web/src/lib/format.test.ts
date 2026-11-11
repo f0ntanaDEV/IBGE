@@ -63,7 +63,7 @@ describe("formatação central", () => {
   it("não chama toLocaleString, toFixed nem Intl.NumberFormat fora de lib/format.ts", () => {
     const root = resolve(process.cwd(), "src")
     const hits = sourceFiles(root).flatMap((path) => {
-      if (path.endsWith("/lib/format.ts")) return []
+      if (path.replaceAll("\\", "/").endsWith("/lib/format.ts")) return []
       const text = readFileSync(path, "utf8")
       const found = text.match(/\.toLocaleString\(|\.toFixed\(|new Intl\.NumberFormat\(/g)
       return found ? [`${path}: ${found.join(", ")}`] : []

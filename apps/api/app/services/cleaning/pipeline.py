@@ -25,6 +25,18 @@ def null_counts(frame: pd.DataFrame) -> dict[str, int]:
     return {str(col): int(frame[col].isna().sum()) for col in frame.columns}
 
 
+def whitespace_cells(frame: pd.DataFrame) -> int:
+    total = 0
+    for column in frame.columns:
+        series = frame[column]
+        if series.dtype != object and not pd.api.types.is_string_dtype(series):
+            continue
+        for value in series:
+            if isinstance(value, str) and value != value.strip():
+                total += 1
+    return total
+
+
 def run_frame(
     raw: pd.DataFrame,
     cfg: DatasetConfig,
@@ -37,6 +49,7 @@ def run_frame(
     others: dict[str, pd.DataFrame] | None = None,
 ) -> tuple[pd.DataFrame, list[dict], QualityReport]:
     started = perf_counter()
+    spaces = whitespace_cells(raw)
     steps: list[dict[str, Any]] = []
     threshold = cfg.null_threshold if null_threshold is None else null_threshold
     method = outlier_method or cfg.outlier.method
@@ -46,17 +59,17 @@ def run_frame(
     shaped, metrics = prepare(raw, cfg)
     steps.append({"step": "reshape", "rows": len(shaped)})
     rows_before = len(shaped)
-    before = null_counts(shaped)
 
-    recovered, discarded = recover_ids(shaped, cfg)
+    recovered, discarded, ids_recovered = recover_ids(shaped, cfg)
     steps.append({"step": "recover_ids", "rows": len(recovered), "discarded": discarded})
-    structural = structural_mask(recovered, cfg)
-    structural_counts = {col: int(mask.sum()) for col, mask in structural.items()}
     recovered, metrics, dropped = drop_sparse(recovered, cfg, metrics, threshold)
     nulls_pre = recovered.isna().sum(axis=1)
-    filled = fill_missing(recovered, cfg, metrics, structural)
-    deduped, dup_counts = dedupe(filled, cfg, nulls_pre)
-    cleaned, outlier_counts = apply_outliers(deduped, cfg, metrics, method, factor, strategy)
+    deduped, dup_counts = dedupe(recovered, cfg, nulls_pre)
+    before = null_counts(deduped)
+    structural = structural_mask(deduped, cfg)
+    structural_counts = {col: int(mask.sum()) for col, mask in structural.items()}
+    filled = fill_missing(deduped, cfg, metrics, structural)
+    cleaned, outlier_counts = apply_outliers(filled, cfg, metrics, method, factor, strategy)
     checks = validate(cleaned, cfg, others)
     after = null_counts(cleaned)
     steps.append({"step": "done", "rows": len(cleaned)})
@@ -80,6 +93,8 @@ def run_frame(
             "outlier_strategy": strategy,
         },
         duration_s=round(perf_counter() - started, 3),
+        whitespace_cells=spaces,
+        ids_recovered=ids_recovered,
         steps=steps,
     )
     return cleaned, metrics, report

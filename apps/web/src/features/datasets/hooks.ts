@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useCallback, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
+import { useTerritory } from "@/hooks/useTerritory"
 import {
   fetchCenso,
   fetchClaims,
@@ -8,6 +9,7 @@ import {
   fetchDatasetNews,
   fetchDatasets,
   fetchMetrics,
+  fetchContext,
   fetchFacts,
   fetchPyramid,
   fetchQualityReport,
@@ -17,17 +19,16 @@ import {
   type DataQuery,
 } from "@/features/datasets/api"
 import { calendarYear, clampYear } from "@/features/datasets/derive"
-import { useCrossFilter } from "@/stores/crossfilter"
 import { STALE_TIME } from "@/lib/queryClient"
 
 export function useDashboardFilters() {
   const [params, setParams] = useSearchParams()
+  const territory = useTerritory()
   const ano = clampYear(params.has("ano") ? Number(params.get("ano")) : calendarYear())
-  const parsed = Number(params.get("cod") ?? "0")
   const sexo = params.get("sexo") ?? "Ambos"
 
   const setFilter = useCallback(
-    (key: "ano" | "cod" | "sexo", value: string) => {
+    (key: "ano" | "sexo", value: string) => {
       const next = new URLSearchParams(params)
       next.set(key, value)
       setParams(next, { replace: true })
@@ -37,20 +38,11 @@ export function useDashboardFilters() {
 
   return {
     ano,
-    cod: Number.isFinite(parsed) ? parsed : 0,
+    cod: territory.cod,
     sexo,
+    territories: territory.territories,
     setAno: (value: number) => setFilter("ano", String(clampYear(value))),
-    setCod: (value: number) => {
-      const next = new URLSearchParams(params)
-      next.set("cod", String(value))
-      next.delete("sel_uf")
-      next.delete("sel_regiao")
-      for (const key of [...next.keys()]) {
-        if (key.startsWith("d_")) next.delete(key)
-      }
-      setParams(next, { replace: true })
-      useCrossFilter.getState().clear()
-    },
+    setCod: territory.setCod,
     setSexo: (value: string) => setFilter("sexo", value),
   }
 }
@@ -143,6 +135,20 @@ export function useFacts(pageId: string) {
   return { ...query, factsCod, territoryCod: filters.cod }
 }
 
+export function useContext(pageId: string, filters: { ano: number; cod: number; sexo?: string }, enabled = true) {
+  return useQuery({
+    queryKey: ["context", pageId, filters.cod, filters.ano, filters.sexo ?? "T"],
+    queryFn: () =>
+      fetchContext(pageId, {
+        cod: filters.cod,
+        ano: filters.ano,
+        sexo: filters.sexo === "Homens" ? "H" : filters.sexo === "Mulheres" ? "M" : "T",
+      }),
+    staleTime: STALE_TIME,
+    enabled,
+  })
+}
+
 export function useQualityReport(id: string, source: "original" | "sujo") {
   return useQuery({
     queryKey: ["quality-report", id, source],
@@ -154,7 +160,7 @@ export function useQualityReport(id: string, source: "original" | "sujo") {
 export function useRuns(id: string, source: string) {
   return useQuery({
     queryKey: ["quality", id, source],
-    queryFn: () => fetchRuns(id),
+    queryFn: () => fetchRuns(id, source),
     staleTime: STALE_TIME,
     enabled: id.length > 0,
   })

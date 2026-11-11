@@ -1,0 +1,1 @@
+"""Cálculo do card Contexto."""

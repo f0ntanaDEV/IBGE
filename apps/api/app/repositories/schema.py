@@ -54,7 +54,7 @@ def _col(name: str) -> Column:
     if name in FLAGS:
         return Column(name, Boolean)
     if name == "outlier_motivo":
-        return Column(name, String(512))
+        return Column(name, Text)
     return Column(name, Float)
 
 

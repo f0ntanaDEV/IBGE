@@ -13,6 +13,7 @@ export type ChartSpec =
       logY?: boolean
       description: string
       span?: 4 | 6 | 8 | 12
+      refBrazil?: boolean
     }
   | { kind: "pyramid"; title: string; granularity: "idade" | "quinquenal" | "ampla"; compare?: boolean; animate?: boolean; description: string; span?: 4 | 6 | 8 | 12 }
   | { kind: "lifeTable"; title: string; metric: "lx" | "nqx" | "ex"; logY?: boolean; compareYears?: boolean; description: string; span?: 4 | 6 | 8 | 12 }
@@ -88,8 +89,9 @@ export const dashboards: DashboardSpec[] = [
         granularity: "quinquenal",
         compare: true,
         description: "Comparação de 2000, do ano escolhido e de 2070.",
-        span: 12,
+        span: 8,
       },
+      { kind: "context", title: "Contexto", description: "Indicadores do território no ano selecionado.", span: 4 },
       { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       {
         kind: "area100",
@@ -122,6 +124,7 @@ export const dashboards: DashboardSpec[] = [
         markCrossing: ["p_0_14_t", "p_60_mais_t"],
         description: "Proporções de jovens e de idosos, com o ano em que 60+ ultrapassa 0–14.",
         span: 8,
+        refBrazil: true,
       },
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
       { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
@@ -178,6 +181,7 @@ export const dashboards: DashboardSpec[] = [
         ],
         description: "Quantos anos homens e mulheres vivem, em média",
         span: 8,
+        refBrazil: true,
       },
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
       { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
@@ -188,6 +192,7 @@ export const dashboards: DashboardSpec[] = [
         refLine: { y: 2.1, label: "Reposição 2,1" },
         description: "TFT comparada ao nível de reposição de 2,1 filhos por mulher.",
         span: 6,
+        refBrazil: true,
       },
       {
         kind: "area",
@@ -255,7 +260,8 @@ export const dashboards: DashboardSpec[] = [
       { key: "lx_80", format: "int", label: "Sobreviventes aos 80", hint: "lx: sobreviventes aos 80 anos para cada 100 mil nascimentos da tábua.", unit: "por 100 mil" },
     ],
     charts: [
-      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 12 },
+      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 8 },
+      { kind: "context", title: "Contexto", description: "Indicadores da tábua no ano e sexo selecionados.", span: 4 },
       { kind: "facts", title: "Fatos", description: "Fatos do território.", span: 12 },
       { kind: "lifeTable", title: "Probabilidade de morte", metric: "nqx", logY: true, compareYears: true, description: "nqx por idade em escala logarítmica, em dois anos." },
       { kind: "lifeTable", title: "Esperança de vida por idade", metric: "ex", description: "ex de homens e mulheres por idade." },

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useLocation } from "react-router-dom"
 import { type ColumnDef } from "@tanstack/react-table"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -33,7 +34,10 @@ import { ProjectionLine, type LinePoint } from "@/features/datasets/components/P
 import { RankingBars, type RankRow } from "@/features/datasets/components/RankingBars"
 import { UploadDialog } from "@/features/datasets/components/UploadDialog"
 import { packRows } from "@/features/datasets/board"
+import { ContextCard } from "@/features/context/ContextCard"
 import { EnrichmentChart, isEnrichment } from "@/features/datasets/components/EnrichmentChart"
+import { TERRITORIES } from "@/features/datasets/territories"
+import { ufsForScope } from "@/features/datasets/territoryScope"
 import { SERIES_LABELS, type ChartSpec, type DashboardSpec, type MetricFormat } from "@/features/datasets/dashboards.config"
 import {
   ageKpis,
@@ -54,7 +58,7 @@ import { buildNarratives, finalObservations } from "@/lib/narratives/engine"
 import { useEffectiveFilters } from "@/stores/crossfilter"
 import type { NarrativeContext } from "@/lib/narratives/types"
 import {
-  useCenso,
+  useContext,
   useFacts,
   useClaims,
   useDashboardFilters,
@@ -65,6 +69,7 @@ import {
   useRows,
   useTerritories,
 } from "@/features/datasets/hooks"
+import { chartId, focusChart } from "@/lib/chartId"
 import { formatBy, formatValue, type NumberFormat } from "@/lib/format"
 import { queryClient } from "@/lib/queryClient"
 
@@ -148,8 +153,15 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const metrics = useMetrics(spec.id)
   const claims = useClaims(spec.id, spec.id === "ds1" || spec.id === "ds3" || spec.id === "ds4")
   const news = useDatasetNews(spec.id)
-  const censo = useCenso(effective.cod, spec.showCensoReference)
+  const context = useContext(spec.id, effective)
   const facts = useFacts(spec.id)
+  const brazil = useRows(spec.id, { cod: 0, pageSize: 200 }, effective.cod !== 0 && (spec.id === "ds3" || spec.id === "ds4"))
+  const scope = ufsForScope(effective.cod, territories.data?.length ? territories.data : TERRITORIES)
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (!hash.startsWith("#chart-")) return
+    focusChart(decodeURIComponent(hash.slice("#chart-".length)))
+  }, [hash])
   const pyramidEnabled = spec.id === "ds1" || spec.id === "ds2"
   const pyramid = usePyramid(spec.id, effective.cod, effective.sexo, pyramidEnabled)
   const series = useRows(spec.id, { cod: effective.cod, pageSize: 200 }, spec.id === "ds3" || spec.id === "ds4")
@@ -297,7 +309,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         />
       ) : null}
       <FilterBar
-        territories={territories.data ?? []}
+        territories={filters.territories}
         filters={spec.filters}
         cod={filters.cod}
         ano={filters.ano}
@@ -335,14 +347,10 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
                 <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
               ) : chart.kind === "context" ? (
                 <ContextCard
-                  hasCenso={spec.showCensoReference}
-                  loading={censo.isLoading || claims.isLoading}
-                  error={censo.error}
-                  data={censo.data}
-                  onRetry={() => {
-                    void censo.refetch()
-                    void claims.refetch()
-                  }}
+                  items={context.data}
+                  loading={context.isLoading}
+                  error={context.error instanceof Error ? context.error.message : null}
+                  onRetry={() => void context.refetch()}
                 />
               ) : chart.kind === "lifeTable" && chart.metric === "nqx" ? (
                 <NqxCompare spec={spec} cod={effective.cod} year={effective.ano} sexo={effective.sexo} />
@@ -363,6 +371,8 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
                   lifeItems={lifeItems}
                   compareLife={lifeItems}
                   placeName={place?.local ?? "Brasil"}
+                  scope={scope}
+                  brazilItems={brazil.data?.items ?? []}
                   loading={chartLoading(chart, pyramid.isLoading, series.isLoading, ranking.isLoading, life.isLoading)}
                   error={chartError(chart, pyramid.error, series.error, ranking.error, life.error)}
                   onRetry={() => {
@@ -465,45 +475,6 @@ function chartError(spec: ChartSpec | undefined, pyramid: unknown, series: unkno
   return error instanceof Error ? error.message : null
 }
 
-function ContextCard({
-  hasCenso,
-  loading,
-  error,
-  data,
-  onRetry,
-}: {
-  hasCenso: boolean
-  loading: boolean
-  error: unknown
-  data?: { available: boolean; projecao: number | null; censo: number | null; diff_pct: number | null; nota: string }
-  onRetry: () => void
-}) {
-  const censoReady = Boolean(data?.available && data.censo != null)
-  const diff = data?.diff_pct == null ? null : Math.abs(data.diff_pct) > 1 ? data.diff_pct / 100 : data.diff_pct
-  return (
-    <ChartCard title="Contexto" loading={loading} error={error instanceof Error ? error.message : null} onRetry={onRetry}>
-      <div className="flex h-full min-h-0 flex-col overflow-y-auto">
-        {hasCenso ? (
-          <section className="grid gap-1 text-sm" aria-label="Censo 2022">
-            <h3 className="font-medium">Censo 2022</h3>
-            {censoReady ? (
-              <>
-                <p>Projeção: {formatBy("integer", data?.projecao ?? null)}</p>
-                <p>Recenseada: {formatBy("integer", data?.censo ?? null)}</p>
-                <p>Diferença: {diff == null ? "Dado do Censo indisponível no momento" : formatValue(diff, { key: "diff", kind: "percent" })}</p>
-                {data?.nota ? <p className="text-muted-foreground">{data.nota}</p> : null}
-              </>
-            ) : (
-              <p>Dado do Censo indisponível no momento</p>
-            )}
-          </section>
-        ) : null}
-        {hasCenso ? null : <p className="text-sm text-muted-foreground">Sem referência do Censo 2022 nesta página.</p>}
-      </div>
-    </ChartCard>
-  )
-}
-
 type SlotProps = {
   spec?: ChartSpec
   page: DashboardSpec
@@ -523,6 +494,8 @@ type SlotProps = {
   error: string | null
   onRetry: () => void
   placeName?: string
+  scope?: { ufs: number[]; highlight?: number }
+  brazilItems?: Record<string, unknown>[]
 }
 
 function chartMetricKey(spec: ChartSpec) {
@@ -534,7 +507,8 @@ function chartMetricKey(spec: ChartSpec) {
   if (spec.kind === "scatter" || spec.kind === "diverging") return "e0_t"
   if (spec.kind === "bonus") return "rdt65"
   if (spec.kind === "milestones") return "ano"
-  return spec.series[0]?.key ?? "populacao"
+  if (spec.kind === "line" || spec.kind === "area" || spec.kind === "area100") return spec.series[0]?.key ?? "populacao"
+  return "populacao"
 }
 
 function ChartSlot(props: SlotProps) {
@@ -547,6 +521,7 @@ function ChartSlot(props: SlotProps) {
   return (
     <ChartCard
       title={spec.title}
+      chartId={chartId(spec.title)}
       metricKey={chartMetricKey(spec)}
       description={spec.description}
       loading={props.loading}
@@ -601,7 +576,7 @@ function seriesLabel(key: string) {
   return SERIES_LABELS[key] ?? key
 }
 
-function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compareYear, seriesItems, rankItems, lifeItems }: SlotProps & { spec: ChartSpec }) {
+function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compareYear, seriesItems, rankItems, lifeItems, scope, brazilItems }: SlotProps & { spec: ChartSpec }) {
   if (isEnrichment(spec)) return null
   if (spec.kind === "pyramid") {
     const broad = spec.granularity === "ampla"
@@ -632,13 +607,14 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
   if (spec.kind === "ranking") {
     const rowsByMetric: Record<string, RankRow[]> = {}
     for (const option of spec.metricOptions) {
+      const allow = new Set(scope?.ufs ?? [])
       rowsByMetric[option.key] = rankItems
         .map((row) => ({
           cod: Number(row.cod),
           label: String(row.sigla ?? row.local ?? row.cod),
           value: num(row[option.key]) ?? 0,
         }))
-        .filter((row) => Number.isFinite(row.cod))
+        .filter((row) => Number.isFinite(row.cod) && (!allow.size || allow.has(row.cod)))
     }
     return (
       <RankingBars
@@ -676,6 +652,7 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
     )
   }
   const keys = spec.series.map((item) => item.key)
+  const reference = spec.refBrazil && cod !== 0 ? linePoints(brazilItems ?? [], [keys[0] ?? ""]) : undefined
   const data: ({ ano: number } & Record<string, number | null>)[] =
     keys.includes("populacao") && allPyramid.length
       ? populationSeries(allPyramid, sexo)
@@ -700,6 +677,8 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
       markMax={spec.markMax}
       logY={spec.logY}
       summary={summary}
+      reference={reference}
+      referenceKey={keys[0]}
     />
   )
 }
@@ -715,6 +694,7 @@ function NqxCompare({ spec, cod, year, sexo }: { spec: DashboardSpec; cod: numbe
   return (
     <ChartCard
       title={chart.title}
+      chartId={chartId(chart.title)}
       description={chart.description}
       loading={current.isLoading || previous.isLoading}
       error={current.error instanceof Error ? current.error.message : previous.error instanceof Error ? previous.error.message : null}

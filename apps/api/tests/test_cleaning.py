@@ -70,7 +70,8 @@ def test_recupera_sigla_e_descarta_idade_nula():
             "ano": [2024, 2024, 2024],
         }
     )
-    result, discarded = recover_ids(frame, load_catalog().get("ds1"))
+    result, discarded, recovered = recover_ids(frame, load_catalog().get("ds1"))
+    assert recovered == 1
     assert discarded == 1
     assert result.iloc[0]["sigla"] == "RO"
     assert len(result) == 2
