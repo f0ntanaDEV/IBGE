@@ -66,3 +66,4 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-11 | etapa 11 | Playwright sobe a API com `python -m uvicorn` | Neste ambiente não há `.venv/bin/python`.
 - 2026-11-11 | etapa 11 | O fallback de `DATA_DIR` só ocorre quando o diretório não existe | Um `DATA_DIR` explícito sem `processed/` (teste ou pasta vazia) estava caindo na base do repositório.
 - 2026-11-11 | etapa 11 | A barra de seleção cruzada regrava a URL a partir de `window.location.search` | O efeito lia os parâmetros anteriores e apagava o `cod` recém-escolhido.
+- 2026-11-11 | notícias | Cada dataset devolve até 30 matérias das três páginas já no snapshot | O corte em 10 e a parada aos 6 acertos ocultavam matérias do tema que já estavam em cache.

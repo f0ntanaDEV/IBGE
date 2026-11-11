@@ -14,6 +14,9 @@ from app.integrations.http import fetch_json
 
 NEWS_URL = "https://servicodados.ibge.gov.br/api/v3/noticias/?busca={term}&qtd=10&page={page}"
 NEWS_CACHE_TTL_S = 7 * 24 * 3600
+_MAX_PAGES = 3
+_PER_TERM = 30
+_MAX_ITEMS = 30
 IMAGE_ORIGIN = "https://agenciadenoticias.ibge.gov.br/"
 _GENERIC = {
     "anos",
@@ -44,7 +47,7 @@ def fetch_news(
         matched: list[dict] = []
         loose: list[dict] = []
         ok_any = False
-        for page in range(1, 4):
+        for page in range(1, _MAX_PAGES + 1):
             payload, ok = fetch_json(
                 NEWS_URL.format(term=quote_plus(f'"{term.strip()}"'), page=page),
                 settings,
@@ -62,7 +65,7 @@ def fetch_news(
                 loose.append(item)
                 if _related(item, needles):
                     matched.append(item)
-            if len(matched) >= 6:
+            if len(matched) >= _PER_TERM:
                 break
         return ok_any, matched or loose
 
@@ -81,7 +84,7 @@ def fetch_news(
                 continue
             seen.add(item["id"])
             items.append(item)
-    return {"available": available, "items": items[:10]}
+    return {"available": available, "items": items[:_MAX_ITEMS]}
 
 
 def _needles(term: str) -> list[str]:

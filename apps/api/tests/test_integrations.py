@@ -72,6 +72,33 @@ def test_cache_e_retry(tmp_path, monkeypatch):
     assert news["available"] is True
     assert news["items"][0]["titulo"] == "A"
     assert news["items"][0]["imagem"] == "https://agenciadenoticias.ibge.gov.br/images/agenciadenoticias/foto.jpg"
+    wider = fetch_news(
+        ["projeção da população"],
+        settings,
+        ResponseCache(tmp_path / "cache-wider", settings.cache_ttl_s),
+        httpx.Client(
+            transport=httpx.MockTransport(
+                lambda _request: httpx.Response(
+                    200,
+                    json={
+                        "items": [
+                            {
+                                "id": index,
+                                "titulo": f"Projeção {index}",
+                                "introducao": "Série da população",
+                                "data_publicacao": "",
+                                "link": f"https://agenciadenoticias.ibge.gov.br/{index}",
+                                "editorias": "",
+                                "imagens": None,
+                            }
+                            for index in range(1, 13)
+                        ]
+                    },
+                )
+            )
+        ),
+    )
+    assert len(wider["items"]) == 12
     get_settings.cache_clear()
 
 
