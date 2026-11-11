@@ -17,9 +17,7 @@ RUN pip install --no-cache-dir .
 
 ENV DATA_DIR=/data \
     MYSQL_REQUIRED=false
-RUN python -m app.tools.load_originals \
-    && python -m app.tools.load_dirty \
-    && python -m app.tools.warm_cache
+RUN python -m app.tools.load_originals
 
 COPY apps/api/news_snapshot /data/cache
 
