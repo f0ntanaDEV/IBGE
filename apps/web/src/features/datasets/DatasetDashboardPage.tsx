@@ -26,7 +26,6 @@ import {
   downloadHref,
   fetchData,
   processDataset,
-  type NewsItem,
   type PyramidRow,
 } from "@/features/datasets/api"
 import { FilterBar } from "@/features/datasets/components/FilterBar"
