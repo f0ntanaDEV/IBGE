@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom"
+import { CountUp } from "@/motion/CountUp"
 import { Reveal } from "@/motion/useMotion"
 import { CharFade } from "@/motion/WordReveal"
 import { formatValue } from "@/lib/format"
@@ -44,9 +45,11 @@ function NarrativeNumber({ text }: { text: string }) {
   if (!plain) {
     return <strong className="font-medium">{text}</strong>
   }
+  const kind = Number.isInteger(value) && value >= 1900 && value <= 2100 ? "year" : Number.isInteger(value) ? "count" : "raw"
+  const metric = { key: "narrativa", kind } as const
   return (
     <strong className="font-medium tabular-nums">
-      {formatValue(value, { key: "narrativa", kind: Number.isInteger(value) && value >= 1900 && value <= 2100 ? "year" : Number.isInteger(value) ? "count" : "raw" })}
+      {kind === "year" ? formatValue(value, metric) : <CountUp value={value} metric={metric} />}
     </strong>
   )
 }

@@ -2,6 +2,7 @@ import { useTerritories } from "@/features/datasets/hooks"
 import type { FactItem } from "@/features/datasets/api"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { formatValue, type MetricKind } from "@/lib/format"
+import { CountUp } from "@/motion/CountUp"
 import { Reveal } from "@/motion/useMotion"
 import { CharFade, WordReveal } from "@/motion/WordReveal"
 import { useMode } from "@/stores/preferences"
@@ -15,19 +16,21 @@ const NAMES: Record<number, string> = {
   5: "Centro-Oeste",
 }
 
-function textValue(fact: FactItem, mode: "technical" | "simple") {
-  if (typeof fact.value === "string") return fact.value
-  return formatValue(fact.value, { key: fact.id, kind: fact.kind as MetricKind }, mode)
+function detailPoints(fact: FactItem) {
+  const points = fact.detail_values
+  if (!points?.length) return null
+  const repeated = new Set<number>()
+  for (const point of points) {
+    if (repeated.has(point.ano) && !point.rotulo) return null
+    repeated.add(point.ano)
+  }
+  return points
 }
 
 export function detailText(fact: FactItem, mode: "technical" | "simple") {
-  if (!fact.detail_values?.length) return fact.detail ?? ""
-  const repeated = new Set<number>()
-  for (const point of fact.detail_values) {
-    if (repeated.has(point.ano) && !point.rotulo) return fact.detail ?? ""
-    repeated.add(point.ano)
-  }
-  return fact.detail_values
+  const points = detailPoints(fact)
+  if (!points) return fact.detail ?? ""
+  return points
     .map((point) => {
       const formatted = formatValue(point.valor, { key: fact.id, kind: point.kind as MetricKind }, mode)
       if (point.rotulo?.includes("{valor}")) return point.rotulo.replaceAll("{valor}", formatted)
@@ -41,24 +44,70 @@ export function visibleFacts(facts: FactItem[] | undefined) {
   return (facts ?? []).slice(0, 10)
 }
 
+function FactNumber({ value, metricKey, kind, mode }: { value: number; metricKey: string; kind: FactItem["kind"]; mode: "technical" | "simple" }) {
+  const metric = { key: metricKey, kind: kind as MetricKind }
+  if (kind === "year") return <>{formatValue(value, metric, mode)}</>
+  return <CountUp value={value} metric={metric} />
+}
+
+function FactFigures({ fact, mode }: { fact: FactItem; mode: "technical" | "simple" }) {
+  const detail = detailText(fact, mode)
+  const points = detailPoints(fact)
+  if (typeof fact.value !== "number") return <>{`${fact.value}${detail ? ` · ${detail}` : ""}`}</>
+  return (
+    <>
+      <FactNumber value={fact.value} metricKey={fact.id} kind={fact.kind} mode={mode} />
+      {points
+        ? points.map((point, index) => {
+            const number = <FactNumber value={point.valor} metricKey={fact.id} kind={point.kind} mode={mode} />
+            if (point.rotulo?.includes("{valor}")) {
+              const [before, after] = point.rotulo.split("{valor}")
+              return (
+                <span key={`${point.ano}-${index}`}>
+                  {" · "}
+                  {before}
+                  {number}
+                  {after}
+                </span>
+              )
+            }
+            if (point.rotulo) {
+              return (
+                <span key={`${point.ano}-${index}`}>
+                  {" · "}
+                  {point.rotulo}: {number}
+                </span>
+              )
+            }
+            return (
+              <span key={`${point.ano}-${index}`}>
+                {" · "}
+                {point.ano}: {number}
+              </span>
+            )
+          })
+        : detail
+          ? ` · ${detail}`
+          : null}
+    </>
+  )
+}
+
 export function FactList({ facts }: { facts: FactItem[] }) {
   const mode = useMode()
   return (
     <ul className="divide-y divide-border border-y border-border">
-      {facts.map((fact) => {
-        const detail = detailText(fact, mode)
-        return (
-          <li key={fact.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5 text-sm leading-5">
-            <span className="inline-flex items-center gap-2">
-              <WordReveal as="span" text={fact.label} />
-              {fact.status ? <StatusBadge status={fact.status} /> : null}
-            </span>
-            <span className="font-medium tabular-nums">
-              <WordReveal as="span" text={`${textValue(fact, mode)}${detail ? ` · ${detail}` : ""}`} />
-            </span>
-          </li>
-        )
-      })}
+      {facts.map((fact) => (
+        <li key={fact.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5 text-sm leading-5">
+          <span className="inline-flex items-center gap-2">
+            <WordReveal as="span" text={fact.label} />
+            {fact.status ? <StatusBadge status={fact.status} /> : null}
+          </span>
+          <span className="font-medium tabular-nums">
+            <FactFigures fact={fact} mode={mode} />
+          </span>
+        </li>
+      ))}
     </ul>
   )
 }

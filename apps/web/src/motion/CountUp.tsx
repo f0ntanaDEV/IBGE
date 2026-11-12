@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
-import { commitCount, countedFrom, decimalsOf, formatCount, metricFor, roundPlaces } from "@/motion/count"
-import { easeOutExpo } from "@/motion/tokens"
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
+import { commitCount, decimalsOf, formatCount, metricFor, roundPlaces } from "@/motion/count"
+import { easeOutExpo, MOTION } from "@/motion/tokens"
+import { useMotionApi } from "@/motion/MotionProvider"
 import { useMotion, motionVars } from "@/motion/useMotion"
 import { metricById } from "@/content/metricas"
 import type { NumberFormat } from "@/lib/format"
@@ -21,6 +22,7 @@ export function CountUp({ value, metricKey, format, compact = false, metric, cla
   const mode = useMode()
   const [params] = useSearchParams()
   const cod = Number(params.get("cod") ?? 0)
+  const { enabled } = useMotionApi()
   const motion = useMotion()
   const resolved = metric ?? metricFor(metricKey, format, value)
   const catalog = metricKey ? metricById(metricKey) : undefined
@@ -36,21 +38,36 @@ export function CountUp({ value, metricKey, format, compact = false, metric, cla
 
   const metricRef = useRef(resolved)
   metricRef.current = resolved
+  const renderRef = useRef(renderValue)
+  renderRef.current = renderValue
+  const played = useRef("")
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const metric = metricRef.current
-    const rendered = renderValue ? renderValue(value) : formatCount(Number.isInteger(value) ? value : roundPlaces(value, places), metric, mode, compact)
-    if (!motion.animate) {
+    const paint = renderRef.current
+    const rendered = paint ? paint(value) : formatCount(Number.isInteger(value) ? value : roundPlaces(value, places), metric, mode, compact)
+    const showFinal = () => {
       commitCount(key, value)
       setText(rendered)
       setAnimating(false)
+    }
+    if (!enabled || value === 0) {
+      showFinal()
       return
     }
-    const from = countedFrom(key, value)
-    if (from == null || from === value) {
-      commitCount(key, value)
-      setText(rendered)
-      setAnimating(false)
+    const stamp = `${key}|${value}|${motion.groupId ?? ""}|${motion.start}`
+    let start = motion.start
+    let duration = motion.durationMs
+    if (motion.animate) played.current = stamp
+    else if (played.current === stamp) {
+      showFinal()
+      return
+    } else if (motion.groupId) {
+      played.current = `${stamp}|late`
+      start = performance.now()
+      duration = MOTION.page
+    } else {
+      showFinal()
       return
     }
     const integer = Number.isInteger(value)
@@ -58,10 +75,10 @@ export function CountUp({ value, metricKey, format, compact = false, metric, cla
     let frame = 0
     let settled = false
     const tick = (now: number) => {
-      const t = Math.min(1, Math.max(0, (now - motion.start) / Math.max(motion.durationMs, 1)))
-      const next = from + (value - from) * easeOutExpo(t)
+      const t = Math.min(1, Math.max(0, (now - start) / Math.max(duration, 1)))
+      const next = value * easeOutExpo(t)
       const shown = integer ? Math.round(next) : roundPlaces(next, places)
-      setText(renderValue ? renderValue(shown) : formatCount(shown, metric, mode, compact))
+      setText(paint ? paint(shown) : formatCount(shown, metric, mode, compact))
       if (t < 1) frame = requestAnimationFrame(tick)
       else {
         settled = true
@@ -75,7 +92,7 @@ export function CountUp({ value, metricKey, format, compact = false, metric, cla
       cancelAnimationFrame(frame)
       if (!settled) setAnimating(false)
     }
-  }, [compact, key, mode, motion.animate, motion.durationMs, motion.groupId, motion.start, places, value])
+  }, [compact, enabled, key, mode, motion.animate, motion.durationMs, motion.groupId, motion.start, places, value])
 
   useEffect(() => {
     if (!animating) {

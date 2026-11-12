@@ -88,7 +88,13 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
         {unit ? <span className="truncate text-sm text-muted-foreground">{unit}</span> : null}
       </div>
       {reference ? <p className="truncate text-xs text-muted-foreground">{reference}</p> : null}
-      <p className="truncate text-sm text-muted-foreground">{deltaText || "\u00a0"}</p>
+      <p className="truncate text-sm text-muted-foreground">
+        {metricKey && typeof delta === "number" ? (
+          <CountUp value={delta} metricKey={metricKey} renderValue={(current) => formatDelta(current, metricKey) || "\u00a0"} />
+        ) : (
+          deltaText || "\u00a0"
+        )}
+      </p>
     </Card>
     </Reveal>
   )

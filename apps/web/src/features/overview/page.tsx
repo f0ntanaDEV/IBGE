@@ -25,6 +25,7 @@ import { FactsCard } from "@/features/facts/FactsCard"
 import { SimplePage } from "@/features/simple/SimplePage"
 import { chartId, focusChart } from "@/lib/chartId"
 import { formatValue } from "@/lib/format"
+import { CountUp } from "@/motion/CountUp"
 import { useMotionFilters, usePageReady } from "@/motion/usePageReady"
 import { useMode } from "@/stores/preferences"
 import { queryClient, STALE_TIME } from "@/lib/queryClient"
@@ -206,7 +207,13 @@ export function OverviewPage() {
               <span className="block font-medium">{item.label}</span>
               <span className="mt-1 block text-muted-foreground">{item.title}</span>
               <span className="mt-2 block text-xs text-muted-foreground">
-                {run ? `${run.source ?? "processado"} · ${formatValue(run.rows_out ?? 0, { key: "linhas", kind: "count" })} linhas` : "Sem processamento"}
+                {run ? (
+                  <>
+                    {run.source ?? "processado"} · <CountUp value={run.rows_out ?? 0} metric={{ key: `${id}-linhas`, kind: "count" }} /> linhas
+                  </>
+                ) : (
+                  "Sem processamento"
+                )}
               </span>
             </Link>
           )

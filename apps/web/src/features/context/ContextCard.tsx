@@ -14,18 +14,32 @@ function showValue(item: ContextItem, mode: Mode) {
   return formatValue(item.value, { key: item.id, kind: kindOf(item.kind) }, mode)
 }
 
-function renderNote(item: ContextItem, mode: Mode) {
+function NoteText({ item, mode }: { item: ContextItem; mode: Mode }) {
   if (!item.note) return null
-  let text = item.note
-  for (const part of item.note_values ?? []) {
-    const formatted =
-      typeof part.value === "string"
-        ? part.value
-        : formatValue(part.value, { key: part.key, kind: kindOf(part.kind) }, mode)
-    const signed = typeof part.value === "number" && part.value > 0 && part.key === "delta" ? `+${formatted}` : formatted
-    text = text.replaceAll(`{${part.key}}`, signed)
-  }
-  return text
+  const chunks = item.note.split(/\{([^}]+)\}/g)
+  return chunks.map((chunk, index) => {
+    if (index % 2 === 0) return <span key={index}>{chunk}</span>
+    const part = item.note_values?.find((entry) => entry.key === chunk)
+    if (!part) return <span key={index}>{chunk}</span>
+    if (typeof part.value !== "number" || part.kind === "year") {
+      const formatted = typeof part.value === "string" ? part.value : formatValue(part.value, { key: part.key, kind: kindOf(part.kind) }, mode)
+      const signed = typeof part.value === "number" && part.value > 0 && part.key === "delta" ? `+${formatted}` : formatted
+      return <span key={index}>{signed}</span>
+    }
+    const kind = kindOf(part.kind)
+    const positive = part.value > 0 && part.key === "delta"
+    return (
+      <CountUp
+        key={`${part.key}-${index}`}
+        value={part.value}
+        metric={{ key: part.key, kind }}
+        renderValue={(current) => {
+          const formatted = formatValue(current, { key: part.key, kind }, mode)
+          return positive && current > 0 ? `+${formatted}` : formatted
+        }}
+      />
+    )
+  })
 }
 
 export function ContextCard({
@@ -61,7 +75,7 @@ export function ContextCard({
                 )}
               </span>
             </div>
-            {item.note ? <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{renderNote(item, mode)}</p> : null}
+            {item.note ? <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground"><NoteText item={item} mode={mode} /></p> : null}
             {showCharts ? (
               <button type="button" className="mt-1 text-xs underline-offset-2 hover:underline" onClick={() => focusChart(item.chart_id)}>
                 Ver no gráfico: {item.chart_label}

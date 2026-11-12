@@ -50,10 +50,6 @@ html[data-motion="on"] [data-allow-motion="fill"] {
   transform-origin: left center;
 }
 
-[data-motion="on"] [data-anim="char"] {
-  animation: motion-fade 240ms var(--anim-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
-}
-
 [data-motion="on"] [data-anim="fade"],
 [data-motion="on"] .motion-end {
   animation: motion-fade calc(var(--anim-duration) * 0.2) var(--anim-ease) calc(var(--anim-delay, 0ms) + var(--anim-duration) * 0.8) both;

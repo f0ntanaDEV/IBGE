@@ -11,10 +11,11 @@ import { Card } from "@/components/ui/card"
 import { FilterBar } from "@/features/datasets/components/FilterBar"
 import { useContext, useDashboardFilters, useFacts, useSummary, useTerritories, useDatasetNews } from "@/features/datasets/hooks"
 import { formatValue, type MetricKind, type NumberFormat } from "@/lib/format"
+import { CountUp } from "@/motion/CountUp"
 import { FactList, visibleFacts } from "@/features/facts/FactsCard"
 import { useMotionApi } from "@/motion/MotionProvider"
 import { useMotionFilters, usePageReady } from "@/motion/usePageReady"
-import { WordReveal, WordRevealControl, useWordRevealControl } from "@/motion/WordReveal"
+import { WordReveal } from "@/motion/WordReveal"
 
 const COPY: Record<string, { title: string; what: string; daily: string }> = {
   overview: {
@@ -78,17 +79,6 @@ function RelatedNews({ item }: { item?: { titulo?: string | null; link?: string 
   )
 }
 
-function ShowAll() {
-  const { enabled } = useMotionApi()
-  const { finishAll } = useWordRevealControl()
-  if (!enabled) return null
-  return (
-    <button type="button" className="h-8 rounded-md border border-border px-3 text-sm" onClick={finishAll}>
-      Mostrar tudo
-    </button>
-  )
-}
-
 function SectionCard({ id, title, wide, children }: { id: string; title: string; wide?: boolean; children: ReactNode }) {
   const { enabled } = useMotionApi()
   return (
@@ -114,8 +104,8 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const place = territories.data?.find((item) => item.cod === filters.cod)?.local ?? "Brasil"
   const series = summary.data?.series ?? []
   const at = (year: number) => series.find((point) => point.ano === year)?.valor
-  const value2000 = formatValue(at(2000) ?? null, { key: "serie", kind: "count" }, "simple")
-  const value2070 = formatValue(at(2070) ?? null, { key: "serie", kind: "count" }, "simple")
+  const raw2000 = at(2000)
+  const raw2070 = at(2070)
   const shownFacts = visibleFacts(facts.data)
   usePageReady(summary.isSuccess || summary.isError)
   useMotionFilters(`${filters.cod}|${filters.ano}`)
@@ -148,13 +138,9 @@ export function SimplePage({ pageId }: { pageId: string }) {
           <KpiCard key={kpi.id} metricKey={kpi.id} label={kpi.label} value={kpi.value} format={kpiFormat(kpi.unidade)} loading={summary.isLoading} />
         ))}
       </section>
-      <WordRevealControl>
       <section className="grid gap-4" aria-label="Entenda os dados">
         <Headline pageId={pageId} input={{ cod: filters.cod, place, ano: filters.ano, pop: kpis.find((item) => item.id === "pop_t")?.value ?? null }} />
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-medium">Entenda os dados</h2>
-          <ShowAll />
-        </div>
+        <h2 className="text-base font-medium">Entenda os dados</h2>
         <Card className="p-4">
           <nav className="flex flex-wrap gap-2" aria-label="Categorias">
             {sections.map((section) => (
@@ -181,28 +167,34 @@ export function SimplePage({ pageId }: { pageId: string }) {
                     <li key={item.id} className="flex items-baseline justify-between gap-4 py-2">
                       <span>{item.label}</span>
                       <span className="shrink-0 font-medium tabular-nums">
-                        {typeof item.value === "string"
-                          ? item.value
-                          : formatValue(item.value, { key: item.id, kind: item.kind === "ratio" ? "rate" : item.kind }, "simple")}
+                        {typeof item.value === "string" ? (
+                          item.value
+                        ) : item.kind === "year" ? (
+                          formatValue(item.value, { key: item.id, kind: "year" }, "simple")
+                        ) : (
+                          <CountUp value={item.value} metric={{ key: item.id, kind: item.kind === "ratio" ? "rate" : item.kind }} />
+                        )}
                       </span>
                     </li>
                   ))
                 : kpis.map((item) => (
                     <li key={item.id} className="flex items-baseline justify-between gap-4 py-2">
                       <span>{item.label}</span>
-                      <span className="shrink-0 font-medium tabular-nums">{formatValue(item.value, { key: item.id, kind: metricKind(item.unidade) }, "simple")}</span>
+                      <span className="shrink-0 font-medium tabular-nums">
+                        {item.value == null ? "—" : <CountUp value={item.value} metric={{ key: item.id, kind: metricKind(item.unidade) }} />}
+                      </span>
                     </li>
                   ))}
             </ul>
             <RelatedNews item={related[2] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2000" title="Como era em 2000">
-            <p className="text-2xl font-semibold tabular-nums">{value2000}</p>
+            <p className="text-2xl font-semibold tabular-nums">{raw2000 == null ? "—" : <CountUp value={raw2000} metric={{ key: "serie", kind: "count" }} />}</p>
             <WordReveal className="mt-2 text-muted-foreground" text="Indicador principal no início da série." />
             <RelatedNews item={related[3] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2070" title="Para onde vamos (2070)">
-            <p className="text-2xl font-semibold tabular-nums">{value2070}</p>
+            <p className="text-2xl font-semibold tabular-nums">{raw2070 == null ? "—" : <CountUp value={raw2070} metric={{ key: "serie", kind: "count" }} />}</p>
             <WordReveal className="mt-2 text-muted-foreground" text="Projeção no fim da série." />
             <RelatedNews item={related[4] ?? related[1] ?? related[0]} />
           </SectionCard>
@@ -232,7 +224,6 @@ export function SimplePage({ pageId }: { pageId: string }) {
           </SectionCard>
         </div>
       </section>
-      </WordRevealControl>
       <p className="text-sm">
         <Link to="/insights" className="underline">
           Ver perguntas da página Insights

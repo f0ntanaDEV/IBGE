@@ -11,7 +11,7 @@ import { pageCopy } from "@/content/pages"
 import { CountUp } from "@/motion/CountUp"
 import { CharFade } from "@/motion/WordReveal"
 import { Reveal } from "@/motion/useMotion"
-import { formatDateTime, formatValue } from "@/lib/format"
+import { formatDateTime } from "@/lib/format"
 import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
 import { processDataset, type PublishedQuality } from "@/features/datasets/api"
 import { chartId, focusChart } from "@/lib/chartId"
@@ -177,9 +177,9 @@ function TechnicalQuality() {
                   return (
                     <tr key={row.label} className="border-t border-border">
                       <td className="py-2">{row.label}</td>
-                      <td className="tabular-nums">{formatValue(row.inserted, { key: row.label, kind: "count" })}</td>
-                      <td className="tabular-nums">{formatValue(row.detected, { key: row.label, kind: "count" })}</td>
-                      <td className="tabular-nums">{formatValue(row.fixed, { key: row.label, kind: "count" })}</td>
+                      <td className="tabular-nums"><Stat value={row.inserted} name={`${row.label}-in`} /></td>
+                      <td className="tabular-nums"><Stat value={row.detected} name={`${row.label}-det`} /></td>
+                      <td className="tabular-nums"><Stat value={row.fixed} name={`${row.label}-fix`} /></td>
                       <td>
                         <span data-seal={status}>
                           {status === "ok" ? "ok" : "atenção"}
@@ -197,7 +197,7 @@ function TechnicalQuality() {
           <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
             {Object.entries(body?.nulls.by_column ?? {}).map(([column, counts]) => (
               <li key={column}>
-                {column}: {formatValue(counts.before, { key: column, kind: "count" })} antes · {formatValue(counts.after, { key: column, kind: "count" })} depois
+                {column}: <Stat value={counts.before} name={`${column}-antes`} /> antes · <Stat value={counts.after} name={`${column}-depois`} /> depois
               </li>
             ))}
           </ul>
@@ -208,7 +208,7 @@ function TechnicalQuality() {
             {(runs.data ?? []).slice(0, 6).map((item, index) => (
               <li key={`${item.source ?? source}-${index}`}>
                 {item.finished_at ? formatDateTime(item.finished_at) : "—"} · {item.source ?? source} · {item.status ?? "success"} ·{" "}
-                {item.rows_out ? formatValue(item.rows_out, { key: "linhas", kind: "count" }) : "—"} linhas
+                {item.rows_out ? <Stat value={item.rows_out} name={`linhas-${index}`} /> : "—"} linhas
               </li>
             ))}
           </ul>
@@ -217,6 +217,10 @@ function TechnicalQuality() {
       <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
     </div>
   )
+}
+
+function Stat({ value, name }: { value: number; name: string }) {
+  return <CountUp value={value} metric={{ key: name, kind: "count" }} />
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
@@ -237,12 +241,12 @@ function SourceColumn({ title, report }: { title: string; report?: PublishedQual
   return (
     <div>
       <h3 className="font-medium">{title}</h3>
-      <p>Linhas: {formatValue(report.rows_in, { key: "linhas", kind: "count" })} → {formatValue(report.rows_out, { key: "linhas", kind: "count" })}</p>
-      <p>Nulos imputados: {formatValue(report.nulls.total_imputed, { key: "nulos", kind: "count" })}</p>
+      <p>Linhas: <Stat value={report.rows_in} name={`${title}-in`} /> → <Stat value={report.rows_out} name={`${title}-out`} /></p>
+      <p>Nulos imputados: <Stat value={report.nulls.total_imputed} name={`${title}-nulos`} /></p>
       <p>
-        Duplicatas: {formatValue(report.duplicates.exact, { key: "dup", kind: "count" })} exatas · {formatValue(report.duplicates.by_key, { key: "dup", kind: "count" })} por chave
+        Duplicatas: <Stat value={report.duplicates.exact} name={`${title}-exatas`} /> exatas · <Stat value={report.duplicates.by_key} name={`${title}-chave`} /> por chave
       </p>
-      <p>Outliers: {formatValue(sum(report.outliers.by_column), { key: "out", kind: "count" })}</p>
+      <p>Outliers: <Stat value={sum(report.outliers.by_column)} name={`${title}-outliers`} /></p>
     </div>
   )
 }

@@ -138,12 +138,11 @@ test("depois da rolagem nada fica transparente e o estado final coincide", async
   expect(ratio).toBeLessThanOrEqual(0.001)
 })
 
-test("modo simples mostra as palavras e conclui com Mostrar tudo", async ({ page }) => {
+test("modo simples mostra o texto inteiro, sem fade por palavra", async ({ page }) => {
   await prefs(page, "on", "light", "simple")
   await page.goto("/?cod=0&ano=2026&motion-debug=1")
   await settle(page)
-  await expect(page.getByRole("button", { name: "Mostrar tudo" })).toBeVisible()
-  await page.getByRole("button", { name: "Mostrar tudo" }).click()
+  await expect(page.getByRole("button", { name: "Mostrar tudo" })).toHaveCount(0)
   await expect(page.getByText("Esta página mostra o tamanho da população")).toBeVisible()
 })
 

@@ -57,7 +57,7 @@ export function InsightsPage() {
         return (
           <section key={section.pageId} id={section.pageId} className="page-stack">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <CharFade as="h2" className="text-lg font-medium" text={section.title} />
+              <h2 className="text-lg font-medium">{section.title}</h2>
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <span className="text-muted-foreground">{section.items.length} perguntas</span>
                 <button type="button" className="underline" onClick={() => setOpen((current) => [...new Set([...current, ...ids])])}>
@@ -120,7 +120,7 @@ export function InsightsPage() {
         )
       })}
       <section id="padroes" className="page-stack" aria-label="Padrões dos dados">
-        <CharFade as="h2" className="text-lg font-medium" text="Padrões dos dados" />
+        <h2 className="text-lg font-medium">Padrões dos dados</h2>
         {PATTERNS.map((item, index) => {
           const id = `padrao-${index + 1}`
           const expanded = open.includes(id)
