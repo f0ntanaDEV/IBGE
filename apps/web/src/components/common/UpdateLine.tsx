@@ -15,7 +15,7 @@ export function UpdateLine({
     <p className="flex flex-wrap items-center gap-1">
       <span>
         Dados: Projeções da População do IBGE, Revisão 2024 (divulgada em 22/08/2024) · Atualização: a cada nova revisão do IBGE · Processado em{" "}
-        {processedAt ? formatDateTime(processedAt) : "—"}
+        {processedAt ? `${formatDateTime(processedAt)} (horário de Brasília)` : "—"}
       </span>
       <Tooltip>
         <TooltipTrigger asChild>

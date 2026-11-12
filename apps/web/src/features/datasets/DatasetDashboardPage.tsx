@@ -90,13 +90,13 @@ const COLUMN_LABELS: Record<string, string> = {
   n_0_14_t: "0–14",
   n_60_mais_t: "60+",
   p_60_mais_t: "% 60+",
-  e0_t: "e0",
-  tft: "TFT",
-  tmi_t: "TMI",
-  ie60: "IE60",
-  nqx: "nqx",
-  lx: "lx",
-  ex: "ex",
+  e0_t: "Esperança de vida",
+  tft: "Filhos por mulher",
+  tmi_t: "Mortalidade infantil",
+  ie60: "Idosos para cada 100 crianças",
+  nqx: "Risco de morrer",
+  lx: "Sobreviventes",
+  ex: "Esperança de vida",
 }
 
 function asFormat(format: MetricFormat): NumberFormat {
@@ -269,7 +269,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const brazilNow = (brazil.data?.items ?? []).find((row) => Number(row.ano) === effective.ano)
   const actions = activeKpis.flatMap((kpi) => {
     const raw = values.get(kpi.key)
-    const numeric = typeof raw === "number" ? raw : null
+    const numeric = kpi.key === "maior_grupo" ? num(values.get("maior_inicio")) : typeof raw === "number" ? raw : null
     const view = kpiView(kpi.key, {
       value: numeric,
       prevYear: num(yearBefore?.[kpi.key]),
@@ -277,9 +277,8 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
       brazil: num(brazilNow?.[kpi.key]),
       year2000: num(year2000?.[kpi.key]),
       cod: effective.cod,
-      withSigla: spec.id === "ds4",
     })
-    return view.status && view.status !== "good" ? [{ id: kpi.key, label: view.label, action: view.action, status: view.status }] : []
+    return view.status && view.status !== "good" ? [{ id: kpi.key, label: kpi.label, action: view.action, status: view.status }] : []
   })
 
   return (
@@ -349,7 +348,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
       <section className="dashboard-grid" aria-label="Indicadores">
         {activeKpis.map((kpi) => {
           const raw = values.get(kpi.key)
-          const numeric = typeof raw === "number" ? raw : null
+          const numeric = kpi.key === "maior_grupo" ? num(values.get("maior_inicio")) : typeof raw === "number" ? raw : null
           const view = kpiView(kpi.key, {
             value: numeric,
             prevYear: num(yearBefore?.[kpi.key]),
@@ -357,13 +356,12 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
             brazil: num(brazilNow?.[kpi.key]),
             year2000: num(year2000?.[kpi.key]),
             cod: effective.cod,
-            withSigla: spec.id === "ds4",
           })
           return (
             <KpiCard
               key={kpi.key}
               metricKey={kpi.key}
-              label={spec.id === "ds4" ? view.label : kpi.label}
+              label={kpi.label}
               value={numeric}
               display={typeof raw === "string" ? raw : undefined}
               format={asFormat(kpi.format)}
@@ -386,7 +384,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
               ) : chart.kind === "context" ? (
                 <ContextCard
                   items={context.data}
-                  loading={context.isLoading}
+                  loading={context.isPending}
                   error={context.error instanceof Error ? context.error.message : null}
                   onRetry={() => void context.refetch()}
                 />
@@ -753,7 +751,7 @@ function NqxCompare({ spec, cod, year, sexo }: { spec: DashboardSpec; cod: numbe
           { key: "atual", label: String(year) },
           { key: "outro", label: String(other) },
         ]}
-        summary={`nqx em escala logarítmica, ${year} e ${other}.`}
+        summary={`Risco de morrer por idade, em escala logarítmica, ${year} e ${other}.`}
       />
     </ChartCard>
   )

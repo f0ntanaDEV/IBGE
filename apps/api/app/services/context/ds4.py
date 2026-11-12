@@ -42,7 +42,7 @@ def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
                 round(tft, 2),
                 "rate",
                 TFT,
-                "TFT e reposição",
+                "Filhos por mulher e reposição",
                 "{delta} em relação à reposição",
                 [("delta", round(tft - 2.1, 2), "rate")],
             )
@@ -65,7 +65,7 @@ def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
         )
     tmi = cell(data, ano, "tmi_t")
     if tmi is not None:
-        items.append(item("tmi", "Mortalidade infantil", round(tmi, 2), "permil", MAP, "Mapa por UF (TMI)"))
+        items.append(item("tmi", "Mortalidade infantil", round(tmi, 2), "permil", MAP, "Mapa da mortalidade infantil"))
     scope = ufs_do_territorio(0 if is_uf(cod) else cod)
     ufs = frame("ds4")
     ufs = ufs[(ufs["ano"] == ano) & (ufs["cod"].isin(scope)) & (ufs["nivel"] == "uf")]

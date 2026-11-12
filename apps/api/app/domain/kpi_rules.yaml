@@ -54,6 +54,55 @@
   warn: { gt: 45, lte: 55 }
   action: Aproveitar a janela restante para elevar produtividade, escolaridade e formalização.
   thresholds: "Favorável até 45; Atenção de 45 a 55; Crítico acima de 55."
+- id: maior_grupo
+  metric_id: maior_grupo
+  basis: value
+  good: { lt: 30 }
+  warn: { gte: 30, lt: 45 }
+  action: Rever a oferta de serviços. O maior grupo já está na vida adulta e a demanda deixa de ser a de crianças.
+  thresholds: "Favorável se o maior grupo começa antes dos 30 anos; Atenção de 30 a 44; Crítico a partir de 45."
+- id: pop_0_4
+  metric_id: pop_0_4
+  basis: delta10_rel
+  good: { gte: 0 }
+  warn: { gte: -15, lt: 0 }
+  action: Readequar creches e a primeira etapa do ensino à queda do grupo de 0 a 4 anos.
+  thresholds: "Favorável variação de 10 anos igual ou acima de 0%; Atenção de −15% a 0%; Crítico abaixo de −15%."
+- id: pop_80
+  metric_id: pop_80
+  basis: delta10_rel
+  good: { lt: 20 }
+  warn: { gte: 20, lte: 40 }
+  action: Ampliar cuidado de longa duração, geriatria e moradia acessível para o grupo de 80 anos ou mais.
+  thresholds: "Favorável crescimento em 10 anos abaixo de 20%; Atenção de 20% a 40%; Crítico acima de 40%."
+- id: razao_80_0_4
+  metric_id: razao_80_0_4
+  basis: value
+  good: { lt: 0.5 }
+  warn: { gte: 0.5, lte: 1 }
+  action: Planejar cuidado de longa duração. Já há muitas pessoas de 80 anos ou mais para cada criança de 0 a 4.
+  thresholds: "Favorável abaixo de 0,5; Atenção de 0,5 a 1; Crítico acima de 1."
+- id: idade_ativa
+  metric_id: p_15_64_t
+  basis: value
+  good: { gte: 65 }
+  warn: { gte: 60, lt: 65 }
+  action: Aproveitar a parcela ainda alta em idade ativa para elevar produtividade, escolaridade e formalização.
+  thresholds: "Favorável a partir de 65%; Atenção de 60% a 65%; Crítico abaixo de 60%."
+- id: idosos_65
+  metric_id: p_65_mais_t
+  basis: value
+  good: { lt: 10 }
+  warn: { gte: 10, lte: 20 }
+  action: Dimensionar saúde, previdência e cuidado para uma população com mais pessoas de 65 anos ou mais.
+  thresholds: "Favorável abaixo de 10%; Atenção de 10% a 20%; Crítico acima de 20%."
+- id: idosos_80
+  metric_id: p_80_mais_t
+  basis: value
+  good: { lt: 3 }
+  warn: { gte: 3, lte: 6 }
+  action: Ampliar cuidados de longa duração e a rede de apoio a quem tem 80 anos ou mais.
+  thresholds: "Favorável abaixo de 3%; Atenção de 3% a 6%; Crítico acima de 6%."
 - id: idade_mediana
   metric_id: id_med
   basis: value

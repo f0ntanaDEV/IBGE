@@ -16,6 +16,13 @@ Status: **Favorável** · **Atenção** · **Crítico**, sempre com ícone + tex
 | Crianças (0–14) na população | variação em 10 anos (p.p.) | ≥ 0 | −3 a 0 p.p. | < −3 p.p. | Reavaliar a oferta de creches e escolas e redirecionar a capacidade ociosa. |
 | Razão de dependência total | valor (0–14 e 65+ por 100 de 15–64) | ≤ 45 | 45 a 55 | > 55 | Aproveitar a janela restante para elevar produtividade, escolaridade e formalização. |
 | Idade mediana | valor | < 30 | 30 a 40 | > 40 | Antecipar mudanças na demanda: de serviços para jovens para serviços para adultos e idosos. |
+| Maior grupo etário | idade em que o grupo começa | < 30 | 30 a 44 | ≥ 45 | Rever a oferta de serviços. O maior grupo já está na vida adulta e a demanda deixa de ser a de crianças. |
+| População 0–4 | variação % em 10 anos | ≥ 0% | −15% a 0% | < −15% | Readequar creches e a primeira etapa do ensino à queda do grupo de 0 a 4 anos. |
+| População 80+ | variação % em 10 anos | < 20% | 20% a 40% | > 40% | Ampliar cuidado de longa duração, geriatria e moradia acessível para o grupo de 80 anos ou mais. |
+| Razão 80+/0–4 | valor | < 0,5 | 0,5 a 1 | > 1 | Planejar cuidado de longa duração. Já há muitas pessoas de 80 anos ou mais para cada criança de 0 a 4. |
+| 15–64 anos | % | ≥ 65% | 60% a 65% | < 60% | Aproveitar a parcela ainda alta em idade ativa para elevar produtividade, escolaridade e formalização. |
+| 65 anos ou mais | % | < 10% | 10% a 20% | > 20% | Dimensionar saúde, previdência e cuidado para uma população com mais pessoas de 65 anos ou mais. |
+| 80 anos ou mais | % | < 3% | 3% a 6% | > 6% | Ampliar cuidados de longa duração e a rede de apoio a quem tem 80 anos ou mais. |
 | Risco de morrer antes de 1 ano (por mil) | valor | ≤ 10 | 10 a 15 | > 15 | Mesmas ações da mortalidade infantil. |
 | Chegam aos 80 (de cada 100) | valor | ≥ 55 | 45 a 55 | < 45 | Reduzir a mortalidade adulta evitável, sobretudo masculina (violência, acidentes, doenças crônicas). |
 | Vida restante aos 60 (anos) | valor | ≥ 22 | 20 a 22 | < 20 | Fortalecer o cuidado de doenças crônicas e o envelhecimento ativo. |

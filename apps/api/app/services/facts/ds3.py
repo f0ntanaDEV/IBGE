@@ -57,7 +57,7 @@ def build(cod: int) -> list[Fact]:
             label="Menor razão de dependência (0–14 e 65+)",
             value=0 if low is None else int(low["ano"]),
             kind="year",
-            detail_values=None if low is None else [DetailPoint(ano=int(low["ano"]), valor=round_num(float(low["rdt65"]), 1), kind="rate")],
+            detail_values=None if low is None else [DetailPoint(ano=int(low["ano"]), valor=round_num(float(low["rdt65"]), 1), kind="rate", rotulo="razão {valor}")],
         ),
         Fact(
             id="uf_mais_idosa",

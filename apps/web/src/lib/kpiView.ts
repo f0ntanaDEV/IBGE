@@ -20,19 +20,22 @@ export function kpiView(
   const yoyPct = input.value != null && input.prevYear != null && input.prevYear !== 0 ? (input.value / input.prevYear - 1) * 100 : undefined
   const delta10Pp =
     input.value != null && input.past10 != null ? (metric?.kind === "percent" ? (input.value - input.past10) * 100 : input.value - input.past10) : undefined
+  const delta10Rel = input.value != null && input.past10 != null && input.past10 !== 0 ? (input.value / input.past10 - 1) * 100 : undefined
   const brazil = metric?.kind === "percent" && input.brazil != null ? input.brazil * 100 : input.brazil
   let status: Status | undefined
   if (rule && level != null) {
     const missingYoy = rule.basis === "yoy_pct" && yoyPct == null
     const missingDelta = rule.basis === "delta10_pp" && delta10Pp == null
+    const missingRel = rule.basis === "delta10_rel" && delta10Rel == null
     const missingRef = rule.basis === "vs_brazil" && input.cod !== 0 && brazil == null
-    if (!missingYoy && !missingDelta && !missingRef) {
+    if (!missingYoy && !missingDelta && !missingRel && !missingRef) {
       status = evaluate(rule.id, {
         value: level,
         brazil: input.cod === 0 ? undefined : brazil ?? undefined,
         prev: input.prevYear ?? undefined,
         yoyPct,
         delta10Pp,
+        delta10Rel,
       }).status
     }
   }

@@ -70,8 +70,16 @@ export function relevance(pageId: string, item: NewsItem) {
   return (TERMS[pageId] ?? []).filter((term) => blob.includes(fold(term))).length
 }
 
+const PEAK_YEAR = 2041
+
+export function contradictsRevision(item: NewsItem) {
+  const blob = `${item.titulo ?? ""} ${item.introducao ?? ""}`
+  const matches = blob.matchAll(/(?:parar de crescer|para de crescer|deixa de crescer)(?: em)? (\d{4})/gi)
+  return [...matches].some((match) => Number(match[1]) !== PEAK_YEAR)
+}
+
 export function selectNews(pageId: string, items: NewsItem[]) {
-  const relevant = items.filter((item) => relevance(pageId, item) >= 1 && !String(item.id ?? "").startsWith("curated-"))
+  const relevant = items.filter((item) => relevance(pageId, item) >= 1 && !String(item.id ?? "").startsWith("curated-") && !contradictsRevision(item))
   const seen = new Set(relevant.map((item) => String(item.link ?? item.id)))
   const filled = [...relevant]
   for (const extra of CURATED[pageId] ?? []) {

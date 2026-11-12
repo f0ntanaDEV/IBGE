@@ -175,7 +175,7 @@ export function EnrichmentChart({ spec, datasetId, cod, year, sexo }: { spec: Ch
           items={[
             { id: "pico", ano: marks.data?.pico.ano ?? null, label: simple ? "A população chega ao máximo" : "Pico populacional" },
             { id: "idosos", ano: marks.data?.cruzamento_idosos_jovens.ano ?? null, label: simple ? "Idosos passam as crianças" : "60+ supera 0–14" },
-            { id: "tft", ano: marks.data?.tft_abaixo_reposicao.ano ?? null, label: simple ? "Passa a nascer menos do que o necessário" : "TFT abaixo de 2,1" },
+            { id: "tft", ano: marks.data?.tft_abaixo_reposicao.ano ?? null, label: simple ? "Passa a nascer menos do que o necessário" : "Filhos por mulher abaixo de 2,1" },
             { id: "nasc", ano: marks.data?.nascimentos_abaixo_obitos.ano ?? null, label: simple ? "Mortes passam os nascimentos" : "Nascimentos abaixo dos óbitos" },
           ]}
         />

@@ -32,7 +32,7 @@ class Band(BaseModel):
 class KpiRule(BaseModel):
     id: str
     metric_id: str
-    basis: Literal["value", "yoy_pct", "vs_brazil", "delta10_pp", "pct_rows"]
+    basis: Literal["value", "yoy_pct", "vs_brazil", "delta10_pp", "delta10_rel", "pct_rows"]
     good: Band
     warn: Band
     action: str
@@ -61,6 +61,8 @@ def basis_value(rule: KpiRule, ctx: dict) -> float:
         return float(ctx["value"]) - float(ctx["brazil"])
     if rule.basis == "delta10_pp":
         return float(ctx["delta10_pp"])
+    if rule.basis == "delta10_rel":
+        return float(ctx["delta10_rel"])
     return float(ctx["value"])
 
 

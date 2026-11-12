@@ -60,18 +60,11 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
       ref={cardRef}
       data-kpi={metricKey}
       data-population={metricKey === "pop_t" || metricKey === "populacao" ? value ?? undefined : undefined}
-      className="flex h-full min-h-[7rem] flex-col gap-1 p-4"
+      className="relative flex h-full min-h-[7rem] flex-col gap-1 p-4"
     >
       <div className="flex items-start justify-between gap-2">
-        <CharFade className="truncate text-sm text-muted-foreground" text={label} />
-        <span className="flex items-center gap-1">
-          {status ? (
-            <EndFade>
-              <StatusBadge status={status} />
-            </EndFade>
-          ) : null}
-          {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}
-        </span>
+        <CharFade className="text-sm leading-snug text-muted-foreground" text={label} />
+        {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}
       </div>
       <div className="flex min-w-0 items-baseline gap-1.5">
         {numeric ? (
@@ -87,14 +80,21 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
         )}
         {unit ? <span className="truncate text-sm text-muted-foreground">{unit}</span> : null}
       </div>
-      {reference ? <p className="truncate text-xs text-muted-foreground">{reference}</p> : null}
-      <p className="truncate text-sm text-muted-foreground">
+      {reference ? <p className="pr-6 text-xs text-muted-foreground">{reference}</p> : null}
+      <p className="pr-6 text-sm text-muted-foreground">
         {metricKey && typeof delta === "number" ? (
           <CountUp value={delta} metricKey={metricKey} renderValue={(current) => formatDelta(current, metricKey) || "\u00a0"} />
         ) : (
           deltaText || "\u00a0"
         )}
       </p>
+      {status ? (
+        <span className="absolute bottom-3 right-3">
+          <EndFade>
+            <StatusBadge status={status} compact />
+          </EndFade>
+        </span>
+      ) : null}
     </Card>
     </Reveal>
   )

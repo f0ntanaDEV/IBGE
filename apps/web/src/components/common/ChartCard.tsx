@@ -21,9 +21,10 @@ type ChartCardProps = {
   onRetry?: () => void
   narrative?: string
   children?: ReactNode
+  pinned?: boolean
 }
 
-export function ChartCard({ title, description, metricKey, chartId, actions, loading, error, onRetry, narrative, children }: ChartCardProps) {
+export function ChartCard({ title, description, metricKey, chartId, actions, loading, error, onRetry, narrative, children, pinned = true }: ChartCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
 
@@ -46,7 +47,7 @@ export function ChartCard({ title, description, metricKey, chartId, actions, loa
       id={chartId ? `chart-${chartId}` : undefined}
       data-chart-id={chartId}
       tabIndex={chartId ? -1 : undefined}
-      className="flex h-[var(--card-h-chart)] flex-col overflow-hidden"
+      className="flex h-[var(--card-h-chart)] min-h-48 flex-col overflow-hidden"
     >
       <CardHeader className="shrink-0 flex-row items-start justify-between">
         <div className="min-w-0">
@@ -79,15 +80,20 @@ export function ChartCard({ title, description, metricKey, chartId, actions, loa
           </Tooltip>
         </div>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col">
+      <CardContent className={pinned ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "min-h-40 flex-1 overflow-y-auto"}>
         {loading ? (
-          <Skeleton className="min-h-0 w-full flex-1" />
+          <Skeleton className="min-h-40 w-full flex-1" />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
-        ) : (
+        ) : pinned ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div ref={frameRef} className="flex min-h-0 flex-1 flex-col">{children}</div>
             {narrative ? <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{narrative}</p> : null}
+          </div>
+        ) : (
+          <div ref={frameRef}>
+            {children}
+            {narrative ? <p className="mt-2 text-sm text-muted-foreground">{narrative}</p> : null}
           </div>
         )}
       </CardContent>

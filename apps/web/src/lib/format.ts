@@ -77,6 +77,10 @@ function formatSimple(v: number, metric: MetricMeta) {
 
 export function formatValue(v: number | null, metric: MetricMeta | string, mode: Mode = "technical"): string {
   if (typeof metric === "string") return formatFromCatalog(v, metric, mode)
+  const catalog = metricById(metric.key)
+  if (mode !== "simple" && catalog && catalog.kind === metric.kind && catalog.kind !== "percent" && catalog.kind !== "count") {
+    return formatFromCatalog(v, catalog.id, mode)
+  }
   if (v == null || Number.isNaN(v)) return "—"
   if (metric.kind === "year") return String(Math.trunc(v))
   if (mode === "simple") return formatSimple(v, metric)
@@ -127,8 +131,17 @@ const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 })
 
+function parseStamp(value: string | Date) {
+  if (value instanceof Date) return value
+  const text = value.trim()
+  if (!text) return new Date(NaN)
+  if (/(?:Z|[+-]\d{2}:?\d{2})$/.test(text)) return new Date(text)
+  const normalized = text.includes("T") ? text : text.replace(" ", "T")
+  return new Date(`${normalized}Z`)
+}
+
 export function formatDateTime(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value)
+  const date = parseStamp(value)
   if (Number.isNaN(date.getTime())) return "—"
   return dateTimeFmt.format(date).replace(",", "")
 }

@@ -77,8 +77,8 @@ def build(cod: int) -> list[Fact]:
             detail_values=[
                 point
                 for point in (
-                    None if tft_2000 is None else DetailPoint(ano=2000, valor=round_num(tft_2000, 2), kind="rate"),
-                    None if below is None else DetailPoint(ano=below, valor=2.1, kind="rate"),
+                    None if tft_2000 is None else DetailPoint(ano=2000, valor=round_num(tft_2000, 2), kind="rate", rotulo="em 2000 {valor}"),
+                    None if below is None else DetailPoint(ano=below, valor=below, kind="year", rotulo="abaixo de 2,1 desde {valor}"),
                 )
                 if point is not None
             ],
@@ -112,10 +112,10 @@ def build(cod: int) -> list[Fact]:
         Fact(
             id="ie60",
             label="Idosos para cada 100 crianças",
-            value=round_num(ie or 0, 1),
+            value=round_num(ie or 0, 2),
             kind="rate",
             reference_year=REF_YEAR,
-            detail_values=None if ie_2070 is None else [DetailPoint(ano=2070, valor=round_num(ie_2070, 1), kind="rate")],
+            detail_values=None if ie_2070 is None else [DetailPoint(ano=2070, valor=round_num(ie_2070, 2), kind="rate", rotulo="em 2070 {valor}")],
         ),
         Fact(id="uf_e0", label="UFs com maior e menor esperança de vida", value="" if ends is None else f"{ends[0]} · {ends[1]}", kind="raw", reference_year=REF_YEAR),
     ]

@@ -158,6 +158,76 @@
   tipo_variacao: pontos
   fonte: IBGE, Projeções da População, Revisão 2024
   regra_status: idosos_populacao
+- id: maior_grupo
+  nome: Maior grupo etário
+  sigla: ""
+  definicao: Grupo quinquenal com mais pessoas no ano selecionado. O status usa a idade em que o grupo começa.
+  formula: grupo de maior população
+  unidade: anos
+  casas_decimais: 0
+  tipo_variacao: absoluta
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: maior_grupo
+- id: pop_0_4
+  nome: População 0–4
+  sigla: ""
+  definicao: Pessoas no grupo de 0 a 4 anos.
+  formula: população do grupo 0–4
+  unidade: pessoas
+  casas_decimais: 0
+  tipo_variacao: relativa
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: pop_0_4
+- id: pop_80
+  nome: População 80+
+  sigla: ""
+  definicao: Pessoas com 80 anos ou mais.
+  formula: soma dos grupos de 80 anos ou mais
+  unidade: pessoas
+  casas_decimais: 0
+  tipo_variacao: relativa
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: pop_80
+- id: razao_80_0_4
+  nome: Razão 80+/0–4
+  sigla: ""
+  definicao: Pessoas de 80 anos ou mais para cada pessoa de 0 a 4 anos.
+  formula: população 80+ / população 0–4
+  unidade: ""
+  casas_decimais: 2
+  tipo_variacao: absoluta
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: razao_80_0_4
+- id: p_15_64_t
+  nome: 15–64 anos
+  sigla: ""
+  definicao: Parcela da população em idade potencialmente ativa.
+  formula: população 15–64 / população total
+  unidade: ""
+  casas_decimais: 1
+  tipo_variacao: pontos
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: idade_ativa
+- id: p_65_mais_t
+  nome: 65 anos ou mais
+  sigla: ""
+  definicao: Parcela de pessoas com 65 anos ou mais.
+  formula: população 65+ / população total
+  unidade: ""
+  casas_decimais: 1
+  tipo_variacao: pontos
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: idosos_65
+- id: p_80_mais_t
+  nome: 80 anos ou mais
+  sigla: ""
+  definicao: Parcela de pessoas com 80 anos ou mais.
+  formula: população 80+ / população total
+  unidade: ""
+  casas_decimais: 1
+  tipo_variacao: pontos
+  fonte: IBGE, Projeções da População, Revisão 2024
+  regra_status: idosos_80
 - id: p_60_mais_t
   nome: Idosos (60+) na população
   sigla: ""

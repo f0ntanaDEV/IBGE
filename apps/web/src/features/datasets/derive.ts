@@ -153,6 +153,7 @@ export function groupKpis(rows: PyramidRow[], sexo: string) {
   const old = items.filter((item) => item.start >= 80).reduce((sum, item) => sum + item.pop, 0)
   return {
     maior_grupo: best?.label ?? null,
+    maior_inicio: best ? startAge(best.label) : null,
     pop_0_4: young || null,
     pop_80: old || null,
     razao_80_0_4: young ? old / young : null,

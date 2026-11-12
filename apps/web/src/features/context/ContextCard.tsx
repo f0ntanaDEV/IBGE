@@ -58,8 +58,8 @@ export function ContextCard({
   showCharts?: boolean
 }) {
   return (
-    <ChartCard title="Contexto" chartId="contexto" loading={loading} error={error} onRetry={onRetry}>
-      <ul className="flex min-h-0 flex-1 flex-col divide-y overflow-y-auto">
+    <ChartCard title="Contexto" chartId="contexto" loading={loading} error={error} onRetry={onRetry} pinned={false}>
+      <ul className="divide-y">
         {!loading && !error && (items ?? []).length === 0 ? (
           <li className="py-2 text-sm text-muted-foreground">Sem indicadores de contexto para este recorte.</li>
         ) : null}

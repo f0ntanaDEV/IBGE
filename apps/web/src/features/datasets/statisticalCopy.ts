@@ -108,7 +108,7 @@ export function bonusStatText(data: BonusPoint[], window: { x1: number; x2: numb
   const first = series[0]
   const last = series[series.length - 1]
   const sentences = [
-    `A RDT65 mede 0–14 e 65+ ${per}.`,
+    `A razão de dependência mede 0–14 e 65+ ${per}.`,
     `O mínimo é ${taxa(minPoint.rdt65)} em ${ano(minPoint.ano)}, ponto de virada da série.`,
     `A série sai de ${taxa(first.rdt65)} em ${ano(first.ano)} e chega a ${taxa(last.rdt65)} em ${ano(last.ano)}.`,
   ]

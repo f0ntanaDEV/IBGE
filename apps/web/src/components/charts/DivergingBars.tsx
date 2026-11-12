@@ -38,8 +38,8 @@ export function DivergingBars({
     e60: gap(item.e60_m, item.e60_h),
   }))
   const config: ChartConfig = {
-    e0: { label: simple ? "Ao nascer" : "e0, mulheres − homens", color: colors[0] },
-    e60: { label: "e60, mulheres − homens", color: colors[1] },
+    e0: { label: simple ? "Ao nascer" : "Ao nascer, mulheres − homens", color: colors[0] },
+    e60: { label: "Aos 60 anos, mulheres − homens", color: colors[1] },
   }
   const extent = Math.max(1, ...rows.flatMap((row) => [Math.abs(row.e0 ?? 0), simple ? 0 : Math.abs(row.e60 ?? 0)]))
 

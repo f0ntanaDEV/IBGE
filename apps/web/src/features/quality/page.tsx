@@ -13,7 +13,7 @@ import { CharFade } from "@/motion/WordReveal"
 import { Reveal } from "@/motion/useMotion"
 import { formatDateTime } from "@/lib/format"
 import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
-import { processDataset, type PublishedQuality } from "@/features/datasets/api"
+import { fetchValidations, processDataset, type PublishedQuality } from "@/features/datasets/api"
 import { chartId, focusChart } from "@/lib/chartId"
 import { queryClient } from "@/lib/queryClient"
 import { fetchHealth } from "@/lib/api"
@@ -61,6 +61,9 @@ function TechnicalQuality() {
   const dirty = useQualityReport(datasetId, "sujo")
   const report = source === "sujo" ? dirty : original
   const runs = useRuns(datasetId, source)
+  const board = useQuery({ queryKey: ["validations", source], queryFn: () => fetchValidations(source) })
+  const history = [...(runs.data ?? [])].sort((a, b) => (b.finished_at ?? "").localeCompare(a.finished_at ?? ""))
+  const processedAt = history[0]?.finished_at ?? report.data?.finished_at
   const facts = useFacts("quality")
   const health = useQuery({ queryKey: ["health"], queryFn: fetchHealth })
   const seeding = Boolean((health.data as { seeding?: boolean } | undefined)?.seeding)
@@ -96,7 +99,7 @@ function TechnicalQuality() {
   const title = source === "sujo" ? "Qualidade de dados · Base de demonstração" : "Qualidade de dados"
   return (
     <div className="page-stack">
-      <PageHeader title={title} lead={pageCopy("quality")?.question} audience={pageCopy("quality")?.audience} meta={<UpdateLine processedAt={body?.finished_at} />} />
+      <PageHeader title={title} lead={pageCopy("quality")?.question} audience={pageCopy("quality")?.audience} meta={<UpdateLine processedAt={processedAt} />} />
       <div className="flex flex-wrap gap-3">
         <label className="grid gap-1 text-sm">
           Dataset
@@ -148,11 +151,11 @@ function TechnicalQuality() {
         </section>
         <section data-chart-id={chartId("Validações")} tabIndex={-1} className="span-4 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Validações</h2>
-          <p className="mt-2">{body?.validation_summary?.text ?? "Sem validações"}</p>
-          <ul className="mt-2 grid gap-1">
-            {(body?.validations ?? []).map((item) => (
-              <li key={item.rule}>
-                {item.ok ? "ok" : "falha"} · {item.rule}
+          <p className="mt-2">{board.data?.text ?? (board.isPending ? "Carregando validações…" : "Sem validações")}</p>
+          <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
+            {(board.data?.items ?? []).filter((item) => !item.ok).map((item) => (
+              <li key={`${item.dataset_id}-${item.rule}`}>
+                falha · {item.dataset_id} · {item.rule}
                 {item.motivo ? ` · ${item.motivo}` : ""}
               </li>
             ))}
@@ -204,8 +207,9 @@ function TechnicalQuality() {
         </section>
         <section data-chart-id={chartId("Histórico de execuções")} tabIndex={-1} className="span-6 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Histórico de execuções</h2>
+          <p className="text-muted-foreground">Horário de Brasília.</p>
           <ul className="mt-2 grid gap-1">
-            {(runs.data ?? []).slice(0, 6).map((item, index) => (
+            {history.slice(0, 6).map((item, index) => (
               <li key={`${item.source ?? source}-${index}`}>
                 {item.finished_at ? formatDateTime(item.finished_at) : "—"} · {item.source ?? source} · {item.status ?? "success"} ·{" "}
                 {item.rows_out ? <Stat value={item.rows_out} name={`linhas-${index}`} /> : "—"} linhas

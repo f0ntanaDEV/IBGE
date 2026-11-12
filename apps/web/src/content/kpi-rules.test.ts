@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { evaluate } from "@/content/kpi-rules"
+import { contradictsRevision, selectNews } from "@/content/news-curated"
 import { detailText } from "@/features/facts/FactsCard"
 import type { FactItem } from "@/features/datasets/api"
 
@@ -30,5 +31,36 @@ describe("regras de status", () => {
     expect(text.match(/2026/g) ?? []).toHaveLength(0)
     expect(text).toContain("homens")
     expect(text).toContain("mulheres")
+  })
+
+  it("não trata o limiar de 2,1 como se fosse o valor de 2002", () => {
+    const text = detailText(
+      {
+        id: "tft",
+        label: "Filhos por mulher",
+        value: 1.51,
+        kind: "rate",
+        detail_values: [{ ano: 2002, valor: 2002, kind: "year", rotulo: "abaixo de 2,1 desde {valor}" }],
+      },
+      "technical",
+    )
+    expect(text).toBe("abaixo de 2,1 desde 2002")
+    expect(text).not.toContain("2002:")
+  })
+})
+
+describe("notícias que confirmam", () => {
+  it("deixa de fora matéria de revisão antiga com outro ano de pico", () => {
+    const old = {
+      id: "1",
+      titulo: "População do país vai parar de crescer em 2047",
+      introducao: "Projeção de 2018.",
+      data_publicacao: "2018",
+      link: "https://agenciadenoticias.ibge.gov.br/antiga",
+    }
+    expect(contradictsRevision(old)).toBe(true)
+    const chosen = selectNews("overview", [old])
+    expect(chosen.some((item) => String(item.titulo).includes("2047"))).toBe(false)
+    expect(chosen.some((item) => String(item.titulo).includes("2041"))).toBe(true)
   })
 })

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from app.api.deps import assert_nivel_compativel, known_territory_codes, territory_params
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.domain.clock import stamp_iso
 from app.domain.published_report import QualityReport as PublishedQualityReport
 from app.domain.published_report import publish_report
 from app.domain.dataset import load_catalog
@@ -63,7 +64,7 @@ def _reports(dataset_id: str) -> list[dict]:
         payload = json.loads(path.read_text(encoding="utf-8"))
         finished = finished_from_name(path)
         if finished is not None:
-            payload["finished_at"] = finished.isoformat()
+            payload["finished_at"] = stamp_iso(finished)
         payload.setdefault("status", "success")
         rows = payload.get("rows_out", payload.get("rows_after"))
         if not rows:
@@ -77,8 +78,8 @@ def _reports(dataset_id: str) -> list[dict]:
 def list_datasets() -> list[dict]:
     items = []
     for cfg in load_catalog().datasets:
-        reports = _reports(cfg.id)
-        last = reports[-1] if reports else None
+        runs = _listed_runs(cfg.id, "original") or _listed_runs(cfg.id)
+        last = max(runs, key=lambda item: item.get("finished_at") or "") if runs else None
         items.append(
             {
                 "id": cfg.id,
@@ -187,9 +188,7 @@ def quality_report(
     return published
 
 
-@router.get("/{dataset_id}/runs")
-def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
-    catalog_or_404(dataset_id)
+def _listed_runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
     try:
         from app.db import get_engine
         from app.repositories.etl_runs import list_runs
@@ -210,6 +209,19 @@ def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None =
     return [_public_run(item) for item in _with_source(_reports(dataset_id), source)]
 
 
+@router.get("/validations")
+def validations(source: Literal["original", "sujo"] = "original") -> dict:
+    from app.services.facts.quality import validation_overview
+
+    return validation_overview(source)
+
+
+@router.get("/{dataset_id}/runs")
+def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
+    catalog_or_404(dataset_id)
+    return _listed_runs(dataset_id, source)
+
+
 def _public_run(row: dict) -> dict:
     payload = row.get("report_json") if isinstance(row.get("report_json"), dict) else row
     rows = row.get("rows_out")
@@ -219,11 +231,17 @@ def _public_run(row: dict) -> dict:
         rows = payload.get("rows_after") or payload.get("rows_before") or row.get("rows_in")
     status = row.get("status") or (payload.get("status") if isinstance(payload, dict) else None) or "success"
     finished = row.get("finished_at") or (payload.get("finished_at") if isinstance(payload, dict) else None)
+    rows_in = row.get("rows_in")
+    if rows_in in (None, 0) and isinstance(payload, dict):
+        rows_in = payload.get("rows_in") or payload.get("rows_before")
+    duration = row.get("duration_s") if row.get("duration_s") is not None else (payload.get("duration_s") if isinstance(payload, dict) else None)
     return {
         "source": row.get("source") or (payload.get("source") if isinstance(payload, dict) else None) or "original",
         "status": status,
-        "finished_at": finished.isoformat() if hasattr(finished, "isoformat") else finished,
+        "finished_at": stamp_iso(finished) if finished else None,
+        "rows_in": int(rows_in or 0),
         "rows_out": int(rows or 0),
+        "duration_s": duration,
     }
 
 

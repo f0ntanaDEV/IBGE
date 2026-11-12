@@ -164,6 +164,17 @@ export function fetchClaims(id: string) {
   return send<Claim[]>(`/api/v1/datasets/${id}/claims`)
 }
 
+export type ValidationBoard = {
+  approved: number
+  total: number
+  text: string
+  items: { dataset_id: string; rule: string; ok: boolean; motivo?: string | null }[]
+}
+
+export function fetchValidations(source: "original" | "sujo") {
+  return send<ValidationBoard>(`/api/v1/datasets/validations${queryString({ source })}`)
+}
+
 export function fetchDatasetNews(id: string) {
   return send<{ available: boolean; items: NewsItem[] }>(`/api/v1/datasets/${id}/news`)
 }

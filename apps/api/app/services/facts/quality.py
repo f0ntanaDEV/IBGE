@@ -4,10 +4,13 @@ import json
 from datetime import datetime
 
 from app.core.config import get_settings
+from app.domain.clock import as_brasilia
 from app.domain.published_report import publish_report
 from app.domain.kpi_rules import evaluate
 from app.services.facts.models import Fact
 from app.services.quality_summary import summarize_validations
+
+DATASETS = ("ds1", "ds2", "ds3", "ds4", "ds5")
 
 
 def _finished(path) -> datetime:
@@ -26,10 +29,23 @@ def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
     return chosen
 
 
+def validation_overview(source: str) -> dict:
+    items = []
+    for dataset_id in DATASETS:
+        raw = _latest(dataset_id, source)
+        if raw is None:
+            continue
+        report = publish_report(raw[0], finished_at=raw[1], started_at=raw[1])
+        for check in report.validations:
+            items.append({"dataset_id": dataset_id, "rule": check.rule, "ok": check.ok, "motivo": check.motivo})
+    summary = summarize_validations(items)
+    return {**summary, "items": items}
+
+
 def build(_cod: int) -> list[Fact]:
     original = []
     dirty = []
-    for dataset_id in ("ds1", "ds2", "ds3", "ds4", "ds5"):
+    for dataset_id in DATASETS:
         raw = _latest(dataset_id, "original")
         if raw is not None:
             original.append(publish_report(raw[0], finished_at=raw[1], started_at=raw[1]))
@@ -40,18 +56,18 @@ def build(_cod: int) -> list[Fact]:
     duplicates = sum(item.duplicates.exact + item.duplicates.by_key for item in original)
     structural = sum(sum(item.nulls.structural.values()) for item in original)
     imputed = sum(item.nulls.total_imputed for item in original)
-    checks = [check for item in original for check in item.validations]
-    summary = summarize_validations(checks)
+    summary = validation_overview("original")
     approved = summary["approved"]
     outliers = sum(sum(item.outliers.by_column.values()) for item in original)
     outlier_pct = outliers / rows * 100 if rows else 0
-    validation_pct = (approved / len(checks) * 100) if checks else 100
+    validation_pct = (approved / summary["total"] * 100) if summary["total"] else 100
     validation_status = evaluate("validacoes", {"value": validation_pct})["status"]
     outlier_status = evaluate("atipicos", {"value": outlier_pct})["status"]
     demo_dup = sum(item.duplicates.exact + item.duplicates.by_key for item in dirty)
     demo_imputed = sum(item.nulls.total_imputed for item in dirty)
     finished = [item.finished_at for item in original if isinstance(item.finished_at, datetime)]
-    last = max(finished).strftime("%d/%m/%Y %H:%M") if finished else ""
+    zoned = as_brasilia(max(finished)) if finished else None
+    last = zoned.strftime("%d/%m/%Y %H:%M") if zoned else ""
     return [
         Fact(id="linhas", label="Linhas tratadas nas 5 bases", value=rows, kind="count"),
         Fact(id="duplicatas", label="Duplicatas removidas", value=duplicates, kind="count"),
@@ -59,7 +75,7 @@ def build(_cod: int) -> list[Fact]:
         Fact(id="nulos_imputados", label="Nulos imputados", value=imputed, kind="count"),
         Fact(
             id="validacoes",
-            label="Validações aprovadas",
+            label="Validações aprovadas nas 5 bases",
             value=approved,
             kind="count",
             detail=summary["text"],

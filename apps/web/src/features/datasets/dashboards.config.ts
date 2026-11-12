@@ -168,10 +168,10 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano"],
     showCensoReference: true,
     kpis: [
-      { key: "e0_t", format: "years", label: metricLabel("e0_t", true), hint: "Anos que se espera viver ao nascer.", unit: "anos", deltaYears: 10 },
-      { key: "tft", format: "decimal", label: metricLabel("tft", true), hint: "Número médio de filhos por mulher.", unit: "filhos por mulher", deltaYears: 10 },
-      { key: "tmi_t", format: "permil", label: metricLabel("tmi_t", true), hint: "Óbitos de menores de 1 ano para cada mil nascidos vivos.", unit: "por mil", deltaYears: 10 },
-      { key: "ie60", format: "decimal", label: metricLabel("ie60", true), hint: "Idosos de 60 anos ou mais para cada 100 pessoas de 0 a 14 anos.", unit: "índice", deltaYears: 10 },
+      { key: "e0_t", format: "years", label: metricLabel("e0_t"), hint: "Anos que se espera viver ao nascer.", unit: "anos", deltaYears: 10 },
+      { key: "tft", format: "decimal", label: metricLabel("tft"), hint: "Número médio de filhos por mulher.", unit: "filhos por mulher", deltaYears: 10 },
+      { key: "tmi_t", format: "permil", label: metricLabel("tmi_t"), hint: "Óbitos de menores de 1 ano para cada mil nascidos vivos.", unit: "por mil", deltaYears: 10 },
+      { key: "ie60", format: "decimal", label: metricLabel("ie60"), hint: "Idosos de 60 anos ou mais para cada 100 pessoas de 0 a 14 anos.", unit: "índice", deltaYears: 10 },
     ],
     charts: [
       {
@@ -188,10 +188,10 @@ export const dashboards: DashboardSpec[] = [
       { kind: "context", title: "Contexto", description: "Referência do Censo 2022.", span: 4 },
       {
         kind: "line",
-        title: "Taxa de fecundidade total",
+        title: "Filhos por mulher",
         series: [{ key: "tft", format: "decimal" }],
         refLine: { y: 2.1, label: "Reposição 2,1" },
-        description: "TFT comparada ao nível de reposição de 2,1 filhos por mulher.",
+        description: "Filhos por mulher, comparados ao nível de reposição de 2,1.",
         span: 6,
         refBrazil: true,
       },
@@ -224,7 +224,7 @@ export const dashboards: DashboardSpec[] = [
         title: "Quem mudou mais a esperança de vida",
         metric: "e0_t",
         format: "years",
-        description: "e0 em 2000 e no ano selecionado, por UF.",
+        description: "Esperança de vida ao nascer em 2000 e no ano selecionado, por UF.",
         span: 4,
       },
       {
@@ -256,7 +256,7 @@ export const dashboards: DashboardSpec[] = [
     filters: ["territorio", "ano", "sexo"],
     showCensoReference: false,
     kpis: [
-      { key: "e0", format: "years", label: metricLabel("e0"), hint: "Esperança de vida ao nascer (ex na idade 0).", unit: "anos" },
+      { key: "e0", format: "years", label: metricLabel("e0"), hint: "Anos de vida ao nascer na tábua.", unit: "anos" },
       { key: "e60", format: "years", label: metricLabel("e60"), hint: "Anos de vida que restam aos 60 anos.", unit: "anos" },
       { key: "nqx_0", format: "permil", label: metricLabel("nqx_0"), hint: "Óbitos por mil antes de completar 1 ano.", unit: "por mil" },
       { key: "lx_80", format: "decimal", label: metricLabel("lx_80"), hint: "De cada 100 nascidos, quantos chegam aos 80 anos.", unit: "de cada 100" },

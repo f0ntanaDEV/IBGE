@@ -1,11 +1,35 @@
 import { useTerritories } from "@/features/datasets/hooks"
 import type { FactItem } from "@/features/datasets/api"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { metricById } from "@/content/metricas"
 import { formatValue, type MetricKind } from "@/lib/format"
 import { CountUp } from "@/motion/CountUp"
 import { Reveal } from "@/motion/useMotion"
 import { CharFade, WordReveal } from "@/motion/WordReveal"
 import { useMode } from "@/stores/preferences"
+
+const FACT_METRIC: Record<string, string> = {
+  ie60: "ie60",
+  tft: "tft",
+  tmi: "tmi_t",
+  e0: "e0",
+  e0_sexo: "e0_t",
+  e0_longo: "e0_t",
+  e0_covid: "e0_t",
+  e60: "e60",
+  l80: "lx_80",
+  l80_longo: "lx_80",
+  l60: "lx_80",
+  q0: "nqx_0",
+  rd_min: "rdt65",
+  id_med: "id_med",
+}
+
+function factMetric(factId: string, kind: MetricKind) {
+  if (kind === "year" || kind === "percent" || kind === "count") return null
+  const id = FACT_METRIC[factId] ?? factId
+  return metricById(id) ? id : null
+}
 
 const NAMES: Record<number, string> = {
   0: "Brasil",
@@ -32,7 +56,10 @@ export function detailText(fact: FactItem, mode: "technical" | "simple") {
   if (!points) return fact.detail ?? ""
   return points
     .map((point) => {
-      const formatted = formatValue(point.valor, { key: fact.id, kind: point.kind as MetricKind }, mode)
+      const metricId = factMetric(fact.id, point.kind as MetricKind)
+      const formatted = metricId
+        ? formatValue(point.valor, metricId, mode)
+        : formatValue(point.valor, { key: fact.id, kind: point.kind as MetricKind }, mode)
       if (point.rotulo?.includes("{valor}")) return point.rotulo.replaceAll("{valor}", formatted)
       if (point.rotulo) return `${point.rotulo}: ${formatted}`
       return `${point.ano}: ${formatted}`
@@ -45,8 +72,10 @@ export function visibleFacts(facts: FactItem[] | undefined) {
 }
 
 function FactNumber({ value, metricKey, kind, mode }: { value: number; metricKey: string; kind: FactItem["kind"]; mode: "technical" | "simple" }) {
-  const metric = { key: metricKey, kind: kind as MetricKind }
+  const catalog = factMetric(metricKey, kind as MetricKind)
+  const metric = { key: catalog ?? metricKey, kind: kind as MetricKind }
   if (kind === "year") return <>{formatValue(value, metric, mode)}</>
+  if (catalog) return <CountUp value={value} metricKey={catalog} metric={{ key: catalog, kind: kind as MetricKind }} />
   return <CountUp value={value} metric={metric} />
 }
 
