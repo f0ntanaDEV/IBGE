@@ -259,7 +259,7 @@ const RAW: { pageId: string; title: string; route: string; items: { q: string; a
       {
         "q": "Como manter a base atualizada quando o IBGE publicar uma nova revisão?",
         "a": [
-          "As projeções são revisadas periodicamente, e esta aplicação usa a Revisão 2024. Para incorporar uma nova versão, basta enviar os novos arquivos pela opção de upload, ou substituí-los na pasta de dados, e reprocessar. O pipeline é idempotente: a carga no banco substitui os dados de forma atômica, sem duplicar registros, e cada execução fica registrada no histórico com seu relatório. Os testes com valores de referência, como o pico populacional e as datas de cruzamento, funcionam como alerta: se uma nova revisão mudar esses valores, os testes apontam exatamente o que mudou. Recomenda-se manter as duas revisões por um período e comparar os principais indicadores antes de atualizar análises e decisões."
+          "As projeções são revisadas periodicamente, e esta aplicação usa a Revisão 2024. Para incorporar uma nova versão, basta substituir os arquivos na pasta de dados e reprocessar. O pipeline é idempotente: a carga no banco substitui os dados de forma atômica, sem duplicar registros, e cada execução fica registrada no histórico com seu relatório. Os testes com valores de referência, como o pico populacional e as datas de cruzamento, funcionam como alerta: se uma nova revisão mudar esses valores, os testes apontam exatamente o que mudou. Recomenda-se manter as duas revisões por um período e comparar os principais indicadores antes de atualizar análises e decisões."
         ]
       }
     ]

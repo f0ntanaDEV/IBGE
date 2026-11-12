@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react"
 import { Reveal } from "@/motion/useMotion"
+import { CharFade } from "@/motion/WordReveal"
 import { formatDate } from "@/lib/format"
 
 type NewsCardProps = {
@@ -16,8 +17,8 @@ export function NewsCard({ title, summary, date, url, image, relatedMetric }: Ne
     <Reveal className="h-full">
     <article className="flex h-full flex-col rounded-lg border border-border bg-card p-4">
       {image ? <img src={image} alt="" className="mb-3 h-32 w-full rounded-md object-cover" /> : null}
-      <h3 className="text-sm font-medium">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{summary}</p>
+      <CharFade as="h3" className="text-sm font-medium" text={title} />
+      <CharFade as="p" className="mt-2 text-sm text-muted-foreground" text={summary} />
       <p className="mt-2 text-xs text-muted-foreground">
         <time dateTime={typeof date === "string" ? date : date.toISOString()}>{formatDate(date)}</time>
       </p>

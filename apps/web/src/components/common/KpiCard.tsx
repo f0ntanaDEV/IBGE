@@ -8,6 +8,7 @@ import type { Status } from "@/content/kpi-rules"
 import { metricById } from "@/content/metricas"
 import { formatDelta, formatValue, type NumberFormat } from "@/lib/format"
 import { CountUp, EndFade } from "@/motion/CountUp"
+import { CharFade } from "@/motion/WordReveal"
 import { Reveal } from "@/motion/useMotion"
 import { useMode } from "@/stores/preferences"
 
@@ -62,7 +63,7 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
       className="flex h-full min-h-[7rem] flex-col gap-1 p-4"
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="truncate text-sm text-muted-foreground">{label}</span>
+        <CharFade className="truncate text-sm text-muted-foreground" text={label} />
         <span className="flex items-center gap-1">
           {status ? (
             <EndFade>

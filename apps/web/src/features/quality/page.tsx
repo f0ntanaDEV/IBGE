@@ -8,11 +8,13 @@ import { FactsCard } from "@/features/facts/FactsCard"
 import { PageHeader } from "@/components/common/PageHeader"
 import { UpdateLine } from "@/components/common/UpdateLine"
 import { pageCopy } from "@/content/pages"
-import { formatDateTime } from "@/lib/format"
+import { CountUp } from "@/motion/CountUp"
+import { CharFade } from "@/motion/WordReveal"
+import { Reveal } from "@/motion/useMotion"
+import { formatDateTime, formatValue } from "@/lib/format"
 import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
 import { processDataset, type PublishedQuality } from "@/features/datasets/api"
 import { chartId, focusChart } from "@/lib/chartId"
-import { formatValue } from "@/lib/format"
 import { queryClient } from "@/lib/queryClient"
 import { fetchHealth } from "@/lib/api"
 import { useMode } from "@/stores/preferences"
@@ -219,10 +221,14 @@ function TechnicalQuality() {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <article data-card className="rounded-lg border border-border p-4 text-sm">
-      <h2 className="font-medium">{label}</h2>
-      <p>{formatValue(value, { key: label, kind: "count" })}</p>
-    </article>
+    <Reveal>
+      <article data-card className="rounded-lg border border-border p-4 text-sm">
+        <CharFade as="h2" className="font-medium" text={label} />
+        <p>
+          <CountUp value={value} metric={{ key: label, kind: "count" }} />
+        </p>
+      </article>
+    </Reveal>
   )
 }
 

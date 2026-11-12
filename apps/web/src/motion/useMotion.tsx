@@ -15,12 +15,12 @@ export type MotionSnapshot = {
 const IDLE: MotionSnapshot = { animate: false, delayMs: 0, durationMs: 0, groupId: null, start: 0 }
 
 export function useMotion(): MotionSnapshot {
-  const { enabled, update } = useMotionApi()
+  const { enabled, page, update } = useMotionApi()
   const local = useContext(GroupContext)
   if (!enabled) return IDLE
   const now = performance.now()
   const updateLive = update != null && now < update.start + update.duration + 32
-  const group = updateLive ? update : local
+  const group = updateLive ? update : (local ?? page)
   if (!group || group.duration <= 0) return IDLE
   if (now >= group.start + group.duration) {
     return { animate: false, delayMs: 0, durationMs: group.duration, groupId: group.id, start: group.start }
@@ -42,8 +42,14 @@ export function motionVars(motion: MotionSnapshot) {
   } as Record<string, string>
 }
 
+function liveGroup(group: MotionGroup): MotionGroup {
+  const now = performance.now()
+  if (now <= group.start + group.duration) return group
+  return { id: `${group.id}-replay`, start: now, duration: MOTION.page }
+}
+
 export function Reveal({ children, className, fade = true }: { children: ReactNode; className?: string; fade?: boolean }) {
-  const { enabled, page, observe } = useMotionApi()
+  const { enabled, page, observe, generation } = useMotionApi()
   const ref = useRef<HTMLDivElement>(null)
   const seen = useRef(false)
   const [group, setGroup] = useState<MotionGroup | null>(null)
@@ -52,8 +58,8 @@ export function Reveal({ children, className, fade = true }: { children: ReactNo
   useLayoutEffect(() => {
     seen.current = false
     setGroup(null)
-    setPhase("off")
-  }, [enabled, page?.id])
+    setPhase(enabled ? "pending" : "off")
+  }, [enabled, generation])
 
   useLayoutEffect(() => {
     if (!enabled || !page || seen.current) return
@@ -61,28 +67,23 @@ export function Reveal({ children, className, fade = true }: { children: ReactNo
     if (!node) return
     const box = node.getBoundingClientRect()
     const visible = box.width > 0 && box.bottom > 0 && box.top < window.innerHeight
-    if (visible) {
+    const play = (next: MotionGroup) => {
       seen.current = true
-      const now = performance.now()
-      if (now <= page.start + page.duration) {
-        setGroup(page)
-        setPhase(fade ? "run" : "done")
-      } else {
-        setPhase("done")
-      }
-      return
-    }
-    if (fade) setPhase("pending")
-    return observe(node, (next) => {
-      seen.current = true
-      if (next.duration <= 0) {
+      if (!fade || next.duration <= 0) {
+        setGroup(null)
         setPhase("done")
         return
       }
-      setGroup(next)
-      setPhase(fade ? "run" : "done")
-    })
-  }, [enabled, fade, observe, page])
+      setGroup(liveGroup(next))
+      setPhase("run")
+    }
+    if (visible) {
+      play(page)
+      return
+    }
+    if (fade) setPhase("pending")
+    return observe(node, (next) => play(next))
+  }, [enabled, fade, generation, observe, page])
 
   useEffect(() => {
     if (phase !== "run" || !group) return

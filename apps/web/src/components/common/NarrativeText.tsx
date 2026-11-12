@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom"
 import { Reveal } from "@/motion/useMotion"
+import { CharFade } from "@/motion/WordReveal"
 import { formatValue } from "@/lib/format"
 import type { Insight } from "@/lib/narratives/types"
 
@@ -12,7 +13,7 @@ export function NarrativeText({ insight }: { insight: Insight }) {
         /\d/.test(part) ? (
           <NarrativeNumber key={index} text={part} />
         ) : (
-          <span key={index}>{part}</span>
+          <CharFade key={index} text={part} />
         ),
       )}
       {insight.highlight ? (
@@ -55,7 +56,7 @@ export function ObservationsCard({ insights }: { insights: Insight[] }) {
   return (
     <Reveal>
     <section aria-label="Observações finais" className="rounded-lg border border-border p-4">
-      <h2 className="text-base font-medium">Observações finais</h2>
+      <CharFade as="h2" className="text-base font-medium" text="Observações finais" />
       <div className="mt-2 grid gap-2">
         {insights.map((insight) => (
           <div key={`${insight.type}-${insight.text}`}>

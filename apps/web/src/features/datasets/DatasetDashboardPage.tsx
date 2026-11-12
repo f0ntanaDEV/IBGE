@@ -34,7 +34,6 @@ import { LifeTableChart, type LifePoint } from "@/features/datasets/components/L
 import { PopulationPyramid } from "@/features/datasets/components/PopulationPyramid"
 import { ProjectionLine, type LinePoint } from "@/features/datasets/components/ProjectionLine"
 import { RankingBars, type RankRow } from "@/features/datasets/components/RankingBars"
-import { UploadDialog } from "@/features/datasets/components/UploadDialog"
 import { packRows } from "@/features/datasets/board"
 import { ContextCard } from "@/features/context/ContextCard"
 import { EnrichmentChart, isEnrichment } from "@/features/datasets/components/EnrichmentChart"
@@ -177,7 +176,6 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
     spec.id === "ds5",
   )
   const [compareYear, setCompareYear] = useState(2000)
-  const [uploadOpen, setUploadOpen] = useState(false)
   const info = catalog.data?.find((item) => item.id === spec.id)
   const yearRows = useMemo(() => rowsForYear(pyramid.data ?? [], effective.ano), [effective.ano, pyramid.data])
   const priorPyramid = useMemo(() => rowsForYear(pyramid.data ?? [], effective.ano - 10), [effective.ano, pyramid.data])
@@ -309,7 +307,6 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={() => setUploadOpen(true)}>Enviar arquivo</Button>
           </div>
         }
       />
@@ -469,7 +466,6 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           return { rows: page.items, total: page.total }
         }}
       />
-      <UploadDialog datasetId={spec.id} open={uploadOpen} onOpenChange={setUploadOpen} />
     </div>
   )
 }

@@ -9,7 +9,11 @@ export function Toaster() {
       theme={theme === "system" ? "system" : theme}
       richColors={false}
       closeButton
-      position="bottom-right"
+      expand
+      gap={12}
+      offset={16}
+      visibleToasts={4}
+      position="bottom-left"
       toastOptions={{
         closeButtonAriaLabel: "Fechar aviso",
         style: {

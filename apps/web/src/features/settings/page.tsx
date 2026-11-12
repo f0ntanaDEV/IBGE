@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { ModeSwitch } from "@/app/layout/Header"
 import { PageHeader } from "@/components/common/PageHeader"
 import { motionEmergency } from "@/motion/tokens"
 import { usePreferences, type ThemeChoice } from "@/stores/preferences"
@@ -7,10 +8,8 @@ import { usePreferences, type ThemeChoice } from "@/stores/preferences"
 export function SettingsPage() {
   const theme = usePreferences((state) => state.theme)
   const contrast = usePreferences((state) => state.contrast)
-  const mode = usePreferences((state) => state.mode)
   const setTheme = usePreferences((state) => state.setTheme)
   const setContrast = usePreferences((state) => state.setContrast)
-  const setMode = usePreferences((state) => state.setMode)
   const motion = usePreferences((state) => state.motion)
   const setMotion = usePreferences((state) => state.setMotion)
   const high = contrast === "high"
@@ -85,14 +84,7 @@ export function SettingsPage() {
       </div>
       <fieldset className="grid gap-3 rounded-lg border border-border p-4">
         <legend className="px-1 text-sm font-medium">Modo de navegação</legend>
-        <div className="flex gap-2" role="group" aria-label="Modo de navegação">
-          <button type="button" className="h-9 rounded-md border border-border px-3 text-sm" aria-pressed={mode === "technical"} onClick={() => setMode("technical")}>
-            Técnico
-          </button>
-          <button type="button" className="h-9 rounded-md border border-border px-3 text-sm" aria-pressed={mode === "simple"} onClick={() => setMode("simple")}>
-            Simples
-          </button>
-        </div>
+        <ModeSwitch />
         <p className="text-sm text-muted-foreground">Técnico mostra gráficos, tabelas e números exatos.</p>
         <p className="text-sm text-muted-foreground">Simples mostra os mesmos filtros e indicadores em frases curtas, sem gráficos.</p>
       </fieldset>

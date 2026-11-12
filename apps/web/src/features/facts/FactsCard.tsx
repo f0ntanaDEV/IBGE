@@ -3,7 +3,7 @@ import type { FactItem } from "@/features/datasets/api"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { formatValue, type MetricKind } from "@/lib/format"
 import { Reveal } from "@/motion/useMotion"
-import { WordReveal } from "@/motion/WordReveal"
+import { CharFade, WordReveal } from "@/motion/WordReveal"
 import { useMode } from "@/stores/preferences"
 
 const NAMES: Record<number, string> = {
@@ -71,11 +71,8 @@ export function FactsCard({ facts, factsCod, territoryCod, loading }: { facts: F
   return (
     <Reveal>
     <section data-card className="rounded-lg border border-border p-4" aria-label="Fatos">
-      <h2 className="text-sm font-medium">Fatos</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Fatos de: {name}
-        {note}
-      </p>
+      <CharFade as="h2" className="text-sm font-medium" text="Fatos" />
+      <CharFade as="p" className="mt-1 text-sm text-muted-foreground" text={`Fatos de: ${name}${note}`} />
       {loading ? <p className="mt-3 text-sm">Carregando fatos…</p> : null}
       {shown.length ? (
         <div className="mt-3">

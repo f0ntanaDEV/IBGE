@@ -1,6 +1,6 @@
 import { CountUp } from "@/motion/CountUp"
 import { Reveal } from "@/motion/useMotion"
-import { WordReveal } from "@/motion/WordReveal"
+import { CharFade, WordReveal } from "@/motion/WordReveal"
 import { useMode } from "@/stores/preferences"
 import { buildHeadline, type HeadlineInput } from "@/lib/narratives/headline"
 
@@ -23,11 +23,11 @@ export function Headline({ pageId, input }: { pageId: string; input: HeadlineInp
                 {segment.value != null && segment.metric ? (
                   <CountUp value={segment.value} metric={segment.metric} compact={segment.compact} className="font-bold tabular-nums" />
                 ) : (
-                  segment.text
+                  <CharFade text={segment.text} />
                 )}
               </strong>
             ) : (
-              <span key={index}>{segment.text}</span>
+              <CharFade key={index} text={segment.text} />
             ),
           )}
         </p>

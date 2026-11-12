@@ -9,13 +9,42 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { usePreferences, type ThemeChoice } from "@/stores/preferences"
+import { usePreferences, type NavigationMode, type ThemeChoice } from "@/stores/preferences"
 
 type HeaderProps = {
   onOpenMenu: () => void
 }
 
 const themeIcon = { light: Sun, dark: Moon, system: Monitor }
+
+const modes = [
+  ["technical", "Técnico"],
+  ["simple", "Simples"],
+] as const
+
+export function ModeSwitch() {
+  const mode = usePreferences((state) => state.mode)
+  const setMode = usePreferences((state) => state.setMode)
+  return (
+    <div className="flex items-center gap-1" role="group" aria-label="Modo de navegação">
+      <span className="mr-1 text-xs text-muted-foreground">Modo</span>
+      {modes.map(([value, label]) => {
+        const active = mode === value
+        return (
+          <button
+            key={value}
+            type="button"
+            className={active ? "h-8 rounded-md border border-foreground bg-muted px-2.5 text-sm font-medium" : "h-8 rounded-md border border-border px-2.5 text-sm text-muted-foreground"}
+            aria-pressed={active}
+            onClick={() => setMode(value as NavigationMode)}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 export function Header({ onOpenMenu }: HeaderProps) {
   const { pathname, search } = useLocation()
@@ -24,7 +53,7 @@ export function Header({ onOpenMenu }: HeaderProps) {
   const ThemeIcon = themeIcon[choice]
   const dataset = datasetNav.find((item) => item.to === pathname)
   const page = mainNav.find((item) => item.to === pathname)
-  const current = dataset?.title ?? page?.title ?? "Página"
+  const current = dataset?.title ?? page?.title ?? (pathname === "/sobre" ? "Como ler este painel" : "Página")
   const crumbs =
     pathname === "/"
       ? [{ label: "Visão geral", to: "/" }]

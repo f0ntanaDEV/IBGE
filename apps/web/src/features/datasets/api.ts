@@ -80,14 +80,6 @@ export type CensoReference = {
   nota: string
 }
 
-export type UploadResult = {
-  dataset_id: string
-  filename: string
-  bytes: number
-  columns: string[]
-  preview: Record<string, unknown>[]
-}
-
 export type QualityReport = {
   dataset_id?: string
   source?: string
@@ -198,12 +190,6 @@ export function fetchData(id: string, query: DataQuery) {
 
 export function fetchRuns(id: string, source?: string) {
   return send<QualityReport[]>(`/api/v1/datasets/${id}/runs${queryString({ source })}`)
-}
-
-export function uploadDataset(id: string, file: File) {
-  const body = new FormData()
-  body.append("file", file)
-  return send<UploadResult>(`/api/v1/datasets/${id}/upload`, { method: "POST", body })
 }
 
 export function processDataset(

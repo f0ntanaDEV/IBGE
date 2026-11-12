@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect } from "react"
+import { CharFade } from "@/motion/WordReveal"
 
 type PageHeaderProps = {
   title: string
@@ -17,11 +18,11 @@ export function PageHeader({ title, description, lead, meta, audience, actions }
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-xl font-medium">{title}</h1>
-        {lead ? <p className="lead mt-1 text-lg text-foreground">{lead}</p> : null}
+        <CharFade as="h1" className="text-xl font-medium" text={title} />
+        {lead ? <CharFade as="p" className="lead mt-1 text-lg text-foreground" text={lead} /> : null}
         {meta ? <div className="meta mt-1 text-sm text-muted-foreground">{meta}</div> : null}
-        {audience ? <p className="mt-1 text-xs text-muted-foreground">Para: {audience}</p> : null}
-        {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
+        {audience ? <CharFade as="p" className="mt-1 text-xs text-muted-foreground" text={`Para: ${audience}`} /> : null}
+        {description ? <CharFade as="p" className="mt-1 text-sm text-muted-foreground" text={description} /> : null}
       </div>
       {actions}
     </header>

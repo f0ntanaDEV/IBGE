@@ -1,6 +1,7 @@
 import { toPng } from "html-to-image"
 import { MotionBoundary } from "@/motion/MotionBoundary"
 import { Reveal } from "@/motion/useMotion"
+import { CharFade } from "@/motion/WordReveal"
 import { Download } from "lucide-react"
 import { type ReactNode, useRef } from "react"
 import { ErrorState } from "@/components/common/ErrorState"
@@ -50,10 +51,16 @@ export function ChartCard({ title, description, metricKey, chartId, actions, loa
       <CardHeader className="shrink-0 flex-row items-start justify-between">
         <div className="min-w-0">
           <div className="flex items-start gap-1">
-            <CardTitle>{title}</CardTitle>
+            <CardTitle>
+              <CharFade text={title} />
+            </CardTitle>
             {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}
           </div>
-          {description ? <CardDescription>{description}</CardDescription> : null}
+          {description ? (
+            <CardDescription>
+              <CharFade text={description} />
+            </CardDescription>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-start gap-2">
           {actions}

@@ -11,10 +11,10 @@ import { usePreferences } from "@/stores/preferences"
 describe("countUpStart", () => {
   it("cobre inteiro, decimal, negativo, módulo pequeno e texto", () => {
     expect(countUpStart(214211951)).toBe(0)
-    expect(countUpStart(77.03)).toBe(0.1)
-    expect(countUpStart(-1.5)).toBe(-0.1)
-    expect(countUpStart(0.04)).toBeNull()
-    expect(countUpStart(-0.02)).toBeNull()
+    expect(countUpStart(77.03)).toBe(0)
+    expect(countUpStart(-1.5)).toBe(0)
+    expect(countUpStart(0.04)).toBe(0)
+    expect(countUpStart(-0.02)).toBe(0)
     expect(countUpStart("2041")).toBeNull()
     expect(countUpStart("40–44")).toBeNull()
     expect(countUpStart("DF")).toBeNull()

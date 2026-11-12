@@ -1,13 +1,13 @@
-html:not([data-motion="on"]) *,
-html:not([data-motion="on"]) *::before,
-html:not([data-motion="on"]) *::after {
+html:not([data-motion="on"]) *:not([data-sonner-toaster]):not([data-sonner-toaster] *),
+html:not([data-motion="on"]) *:not([data-sonner-toaster]):not([data-sonner-toaster] *)::before,
+html:not([data-motion="on"]) *:not([data-sonner-toaster]):not([data-sonner-toaster] *)::after {
   animation: none !important;
   transition: none !important;
 }
 
-html[data-motion="on"] *,
-html[data-motion="on"] *::before,
-html[data-motion="on"] *::after {
+html[data-motion="on"] *:not([data-sonner-toaster]):not([data-sonner-toaster] *),
+html[data-motion="on"] *:not([data-sonner-toaster]):not([data-sonner-toaster] *)::before,
+html[data-motion="on"] *:not([data-sonner-toaster]):not([data-sonner-toaster] *)::after {
   transition: none !important;
 }
 
@@ -48,6 +48,10 @@ html[data-motion="on"] [data-allow-motion="fill"] {
   animation: motion-grow-x-right var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
   transform-box: fill-box;
   transform-origin: left center;
+}
+
+[data-motion="on"] [data-anim="char"] {
+  animation: motion-fade 240ms var(--anim-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 [data-motion="on"] [data-anim="fade"],
@@ -100,4 +104,28 @@ html[data-motion="on"] [data-allow-motion="fill"] {
 @keyframes motion-map {
   from { transform: scale(0.98); }
   to { transform: scale(1); }
+}
+
+[data-sonner-toast][data-expanded="false"][data-front="false"] {
+  height: var(--initial-height) !important;
+  transform: translateY(calc(var(--lift) * var(--offset))) !important;
+}
+
+[data-sonner-toast][data-expanded="false"][data-front="false"][data-styled="true"] > * {
+  opacity: 1 !important;
+}
+
+[data-sonner-toast][data-expanded="true"]::after {
+  content: none !important;
+}
+
+[data-sonner-toast][data-styled="true"] {
+  padding-left: 32px !important;
+}
+
+[data-sonner-toast][data-styled="true"] [data-close-button] {
+  top: 8px !important;
+  left: 8px !important;
+  right: auto !important;
+  transform: none !important;
 }

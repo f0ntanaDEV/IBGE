@@ -4,9 +4,7 @@ import { formatCompact, formatValue, type MetricMeta, type Mode, type NumberForm
 export function countUpStart(value: unknown): number | null {
   if (typeof value === "string") return null
   if (typeof value !== "number" || !Number.isFinite(value)) return null
-  if (Number.isInteger(value)) return 0
-  if (Math.abs(value) < 0.1) return null
-  return value < 0 ? -0.1 : 0.1
+  return 0
 }
 
 export function decimalsOf(value: number, metric?: { casas?: number }): number {

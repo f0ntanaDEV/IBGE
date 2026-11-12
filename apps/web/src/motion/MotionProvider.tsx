@@ -36,7 +36,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
   const preference = usePreferences((state) => state.motion)
   const emergency = motionEmergency()
-  const enabled = !emergency && preference === "on"
+  const enabled = !emergency && preference === "on" && pathname !== "/configuracoes"
   const [page, setPage] = useState<MotionGroup | null>(null)
   const [update, setUpdate] = useState<MotionGroup | null>(null)
   const [generation, setGeneration] = useState(0)
