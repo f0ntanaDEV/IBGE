@@ -99,7 +99,8 @@ def summary(
     scoped = apply_filters(base, ano=year, cod=cod, sexo=sexo)
     additive = is_count(metric)
     value = _aggregate(scoped, metric, additive)
-    kpis = [{"id": metric, "label": _label(metric), "value": value, "unidade": _unit(metric)}]
+    shown, unit = _kpi_value(metric, value)
+    kpis = [{"id": metric, "label": _label(metric), "value": shown, "unidade": unit}]
     if year is not None:
         previous = _aggregate(
             apply_filters(base, ano=int(year) - 1, cod=cod, sexo=sexo),
@@ -319,8 +320,16 @@ def _label(metric: str) -> str:
         "tmi_t": "Mortalidade infantil",
         "ex": "Esperança de vida",
         "variacao": "Variação",
+        "nmx": "Mortalidade no primeiro ano",
     }
     return labels.get(metric, metric)
+
+
+def _kpi_value(metric: str, value: float | None) -> tuple[float | None, str]:
+    """nmx na idade 0 vira óbitos por mil; a taxa crua não se lê no card."""
+    if metric == "nmx" and value is not None:
+        return value * 1000, "por mil"
+    return value, _unit(metric)
 
 
 def _unit(metric: str) -> str:

@@ -39,7 +39,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <div className="px-3 py-4">
         <p className="text-xs text-muted-foreground">IBGE</p>
-        <p className="text-sm font-medium">Projeções</p>
+        <p className="text-sm font-medium">Analytics</p>
       </div>
       <nav aria-label="Navegação principal" className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 pb-4">

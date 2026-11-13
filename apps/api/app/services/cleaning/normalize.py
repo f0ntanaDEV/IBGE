@@ -96,6 +96,7 @@ def _describe(name: str, rotulo: str) -> str:
         "tcg_t": "Taxa de crescimento geométrico, ambos os sexos",
         "tmi_t": "Taxa de mortalidade infantil, ambos os sexos",
         "nqx": "Probabilidade de morte entre as idades",
+        "nmx": "Taxa central de mortalidade na idade. No resumo, o valor é o da idade 0, em óbitos por mil.",
         "lx": "Sobreviventes à idade exata",
         "ex": "Esperança de vida à idade exata",
     }

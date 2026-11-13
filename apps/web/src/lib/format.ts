@@ -12,6 +12,7 @@ const onePlace = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maxi
 const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 })
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" })
 const percent0 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 })
+const percent2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const compactLoose = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 })
 const compactTight = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 0 })
 
@@ -65,7 +66,11 @@ export function formatAgeBand(raw: string | number) {
 function formatSimple(v: number, metric: MetricMeta) {
   if (metric.kind === "year") return String(Math.trunc(v))
   if (metric.kind === "count") return formatCompact(v)
-  if (metric.kind === "percent") return `${normalize(percent0.format(v * 100))}%`
+  if (metric.kind === "percent") {
+    const pct = v * 100
+    if (pct !== 0 && Math.abs(Math.round(pct)) === 0) return `${normalize(percent2.format(pct))}%`
+    return `${normalize(percent0.format(pct))}%`
+  }
   if (metric.kind === "permil") return `${normalize(percent0.format(v))} a cada mil`
   if (metric.kind === "years") return `${normalize(percent0.format(v))} anos`
   if (metric.kind === "rate" || metric.kind === "index") {

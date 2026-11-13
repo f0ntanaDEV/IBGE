@@ -65,6 +65,7 @@ function metricKind(unidade: string): MetricKind {
 function kpiFormat(unidade: string): NumberFormat {
   if (unidade === "proporção") return "percent"
   if (unidade === "anos") return "years"
+  if (unidade === "por mil") return "permil"
   return "integer"
 }
 

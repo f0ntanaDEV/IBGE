@@ -11,13 +11,13 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, description, lead, meta, audience, actions }: PageHeaderProps) {
   useEffect(() => {
-    document.title = `${title} · Projeções IBGE`
+    document.title = `${title} · Analytics`
   }, [title])
 
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-xl font-medium">{title}</h1>
+        <h1 className="text-2xl font-medium tracking-tight">{title}</h1>
         {lead ? <p className="lead mt-1 text-lg text-foreground">{lead}</p> : null}
         {meta ? <div className="meta mt-1 text-sm text-muted-foreground">{meta}</div> : null}
         {audience ? <p className="mt-1 text-xs text-muted-foreground">Para: {audience}</p> : null}

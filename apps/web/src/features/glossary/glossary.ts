@@ -170,6 +170,12 @@ export const glossary: GlossaryEntry[] = [
     explicacao: "Quantas pessoas de 60 anos ou mais existem para cada cem crianças de até 14.",
   },
   {
+    key: "nmx",
+    kind: "permil",
+    rotuloTecnico: "Mortalidade no primeiro ano",
+    explicacao: "Óbitos no primeiro ano de vida para cada mil bebês, pela taxa central da tábua. A sigla nmx, sozinha, não diz esse número.",
+  },
+  {
     key: "nqx",
     kind: "rate",
     rotuloTecnico: "Probabilidade de morte",

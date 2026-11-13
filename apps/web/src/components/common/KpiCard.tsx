@@ -25,6 +25,10 @@ type KpiCardProps = {
 }
 
 function bareNumber(value: number, format: NumberFormat, mode: "technical" | "simple", metricKey?: string) {
+  if (metricKey === "variacao") {
+    const text = formatValue(value, { key: "variacao", kind: "percent" }, mode)
+    return value > 0 ? `+${text}` : text
+  }
   if (metricKey && metricById(metricKey)) return formatValue(value, metricKey, mode).replace(/ anos$/, "")
   if (format === "percent") return formatValue(value, { key: "kpi", kind: "percent" }, mode)
   if (format === "integer") return formatValue(value, { key: "kpi", kind: "count" }, mode)

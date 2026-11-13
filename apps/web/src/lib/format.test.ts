@@ -52,6 +52,8 @@ describe("modo simples", () => {
     expect(formatValue(1284, count, "simple")).toBe("1,3 mil")
     expect(formatValue(999, count, "simple")).toBe("999")
     expect(formatValue(0.1713, percent, "simple")).toBe("17%")
+    expect(formatValue(0.0037, percent, "simple")).toBe("0,37%")
+    expect(formatValue(-0.0012, percent, "simple")).toBe("-0,12%")
     expect(formatValue(11.83, permil, "simple")).toBe("12 a cada mil")
     expect(formatValue(77.03, years, "simple")).toBe("77 anos")
     expect(formatValue(1.51, { key: "tft", kind: "rate", unitSimple: "filho por mulher" }, "simple")).toBe("1,5 filho por mulher")
