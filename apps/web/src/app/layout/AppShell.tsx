@@ -23,26 +23,30 @@ export function AppShell() {
   const mobile = useMaxWidth(767)
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex h-dvh overflow-hidden bg-muted text-foreground">
       <a
         href="#conteudo"
         className="absolute top-2 left-2 z-50 -translate-y-16 bg-background px-3 py-2 focus:translate-y-0"
       >
         Ir para o conteúdo
       </a>
-      {mobile ? null : (
-        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border md:flex">
-          <Sidebar />
-        </aside>
-      )}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header onOpenMenu={() => setMenuOpen(true)} />
-        <main id="conteudo" className="page-pad min-w-0 flex-1">
-          <MotionProvider>
-            <Outlet />
-          </MotionProvider>
-        </main>
-        <Footer />
+      <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        {mobile ? null : (
+          <aside className="hidden h-full w-60 shrink-0 flex-col md:flex">
+            <Sidebar />
+          </aside>
+        )}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <Header onOpenMenu={() => setMenuOpen(true)} />
+          <div className="mx-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background p-1">
+            <main id="conteudo" className="page-pad min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+              <MotionProvider>
+                <Outlet />
+              </MotionProvider>
+            </main>
+          </div>
+          <Footer />
+        </div>
       </div>
       <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
         <Sidebar onNavigate={() => setMenuOpen(false)} />

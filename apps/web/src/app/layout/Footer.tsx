@@ -8,7 +8,7 @@ function mysqlLabel(health: HealthStatus) {
   return "MySQL indisponível"
 }
 
-export function Footer() {
+export function ApiStatus() {
   const health = useQuery({
     queryKey: ["health"],
     queryFn: fetchHealth,
@@ -25,8 +25,19 @@ export function Footer() {
   }
 
   return (
-    <footer className="flex items-center justify-between gap-4 border-t border-border px-[var(--space-page-x,var(--density-pad))] py-3 text-sm">
-      <p aria-live="polite">{label}</p>
+    <p className="truncate" aria-live="polite">
+      {label}
+    </p>
+  )
+}
+
+export function Footer() {
+  return (
+    <footer className="flex h-12 shrink-0 items-center gap-2 overflow-hidden px-2 text-sm md:px-4">
+      <span className="size-9 shrink-0 md:hidden" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <ApiStatus />
+      </div>
       <a
         href="https://github.com/f0ntanaDEV"
         target="_blank"

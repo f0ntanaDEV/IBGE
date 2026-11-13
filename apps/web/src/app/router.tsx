@@ -10,6 +10,7 @@ const NewsPage = lazy(() => import("@/features/news/page").then((mod) => ({ defa
 const SettingsPage = lazy(() => import("@/features/settings/page").then((mod) => ({ default: mod.SettingsPage })))
 const InsightsPage = lazy(() => import("@/features/insights/InsightsPage").then((mod) => ({ default: mod.InsightsPage })))
 const AboutPage = lazy(() => import("@/features/about/page").then((mod) => ({ default: mod.AboutPage })))
+const NovidadesPage = lazy(() => import("@/features/novidades/page").then((mod) => ({ default: mod.NovidadesPage })))
 
 function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando…</p>}>{children}</Suspense>
@@ -65,6 +66,14 @@ export const router = createBrowserRouter([
         element: (
           <Lazy>
             <AboutPage />
+          </Lazy>
+        ),
+      },
+      {
+        path: "novidades",
+        element: (
+          <Lazy>
+            <NovidadesPage />
           </Lazy>
         ),
       },

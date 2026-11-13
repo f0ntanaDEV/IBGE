@@ -1,6 +1,6 @@
 import { Menu, Monitor, Moon, Sun } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
-import { datasetNav, mainNav } from "@/app/navigation"
+import { bottomNav, datasetNav, mainNav } from "@/app/navigation"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -52,8 +52,8 @@ export function Header({ onOpenMenu }: HeaderProps) {
   const choice = usePreferences((state) => state.theme)
   const ThemeIcon = themeIcon[choice]
   const dataset = datasetNav.find((item) => item.to === pathname)
-  const page = mainNav.find((item) => item.to === pathname)
-  const current = dataset?.title ?? page?.title ?? (pathname === "/sobre" ? "Como ler este painel" : "Página")
+  const page = [...mainNav, ...bottomNav].find((item) => item.to === pathname)
+  const current = dataset?.title ?? page?.title ?? "Página"
   const crumbs =
     pathname === "/"
       ? [{ label: "Visão geral", to: "/" }]
@@ -63,7 +63,7 @@ export function Header({ onOpenMenu }: HeaderProps) {
         ]
 
   return (
-    <header className="flex min-h-14 min-w-0 flex-wrap items-center gap-2 border-b border-border px-2 md:px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 overflow-hidden px-2 md:px-4">
       <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menu" onClick={onOpenMenu}>
         <Menu />
       </Button>
