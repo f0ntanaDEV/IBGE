@@ -11,8 +11,15 @@ export type NovidadeGrupo = {
 /** Alterações registradas em specs/DECISIONS.md, da mais recente para a mais antiga. */
 export const NOVIDADES: NovidadeGrupo[] = [
   {
+    date: "2026-11-14",
+    items: [
+      { area: "Databricks", text: "As mesmas bases tratadas agora têm consultas para um painel no Databricks: visão geral, as cinco bases e qualidade. A pirâmide vira gráfico de barras. Mapa, animação e notícias continuam só neste site." },
+    ],
+  },
+  {
     date: "2026-11-13",
     items: [
+      { area: "Interface", text: "O painel passou a se chamar Analytics. A barra superior troca a trilha por busca. No modo simples, variação anual abaixo de 0,5% mantém duas casas. No resumo, a mortalidade no primeiro ano aparece em óbitos por mil." },
       { area: "Interface", text: "Novidades ficou no canto inferior esquerdo da sidebar e abre este histórico. O status da API saiu da sidebar e permanece no rodapé, alinhado a Visão geral." },
       { area: "Interface", text: "Configurações e Como ler este painel foram para o mesmo bloco inferior, junto com Novidades." },
     ],
