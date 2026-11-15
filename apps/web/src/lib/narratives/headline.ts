@@ -1,4 +1,4 @@
-import { formatCompact, formatValue, type MetricMeta } from "@/lib/format"
+import { formatAgeBand, formatCompact, formatValue, type MetricMeta } from "@/lib/format"
 
 export type HeadlineSegment = { text: string; strong?: boolean; value?: number; metric?: MetricMeta; compact?: boolean }
 
@@ -15,10 +15,28 @@ export type HeadlineInput = {
   lx80?: number | null
   median?: number | null
   band?: string | null
+  p60?: number | null
+  p60Futuro?: number | null
+  anoFuturo?: number | null
+  gMax?: string | null
+  vMax?: number | null
+  gMin?: string | null
+  vMin?: number | null
 }
 
 function years(value: number) {
   return formatValue(value, { key: "e0_t", kind: "years" }).replace(/ anos$/, "")
+}
+
+function pct(value: number) {
+  return formatValue(value, { key: "p60", kind: "percent" })
+}
+
+function signed(value: number) {
+  const text = pct(Math.abs(value))
+  if (value > 0) return `+${text}`
+  if (value < 0) return `−${text}`
+  return text
 }
 
 export function buildHeadline(pageId: string, input: HeadlineInput): HeadlineSegment[] {
@@ -54,14 +72,14 @@ export function buildHeadline(pageId: string, input: HeadlineInput): HeadlineSeg
     ]
   }
   if (pageId === "ds4" && input.e0 != null && input.tft != null) {
+    const child = input.tft < 2 ? "filho" : "filhos"
+    const side = input.tft < 2.1 ? "abaixo" : "acima"
     return [
       { text: "Vivemos " },
       { text: `${years(input.e0)} anos`, strong: true, value: input.e0, metric: { key: "e0_t", kind: "years" } },
       { text: " em média, e cada mulher tem " },
       { text: formatValue(input.tft, "tft"), strong: true, value: input.tft, metric: { key: "tft", kind: "rate" } },
-      { text: input.tft < 2.1 ? ", abaixo da reposição" : "" },
-      ...compare,
-      { text: "." },
+      { text: ` ${child}, ${side} da reposição de 2,1.` },
     ]
   }
   if (pageId === "ds5" && input.lx80 != null) {
@@ -70,17 +88,27 @@ export function buildHeadline(pageId: string, input: HeadlineInput): HeadlineSeg
       { text: " de cada 100 nascidos chegam aos 80 anos." },
     ]
   }
-  if (pageId === "ds1" && input.median != null) {
+  if (pageId === "ds1" && input.p60 != null && input.p60Futuro != null && input.anoFuturo) {
     return [
-      { text: "A idade mediana é " },
-      { text: `${years(input.median)} anos`, strong: true, value: input.median, metric: { key: "idade_mediana", kind: "years" } },
-      { text: "." },
+      { text: "Hoje, " },
+      { text: pct(input.p60), strong: true, value: input.p60, metric: { key: "p60", kind: "percent" } },
+      { text: " da população tem 60 anos ou mais; em " },
+      { text: String(input.anoFuturo), strong: true },
+      { text: " serão " },
+      { text: pct(input.p60Futuro), strong: true, value: input.p60Futuro, metric: { key: "p60", kind: "percent" } },
+      { text: ". A demanda se desloca para adultos e idosos." },
     ]
   }
-  if (pageId === "ds2" && input.band) {
+  if (pageId === "ds2" && input.gMax && input.gMin && input.vMax != null && input.vMin != null) {
     return [
-      { text: "A maior faixa é " },
-      { text: input.band, strong: true },
+      { text: "Até 2070, o grupo de " },
+      { text: formatAgeBand(input.gMax), strong: true },
+      { text: " cresce " },
+      { text: signed(input.vMax), strong: true },
+      { text: ", e o de " },
+      { text: formatAgeBand(input.gMin), strong: true },
+      { text: " encolhe " },
+      { text: signed(input.vMin), strong: true },
       { text: "." },
     ]
   }

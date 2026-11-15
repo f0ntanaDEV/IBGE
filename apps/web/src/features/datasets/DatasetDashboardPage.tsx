@@ -70,6 +70,7 @@ import {
   useMetrics,
   usePyramid,
   useRows,
+  useSummary,
   useTerritories,
 } from "@/features/datasets/hooks"
 import { chartId, focusChart } from "@/lib/chartId"
@@ -133,7 +134,8 @@ function lifePoints(items: Record<string, unknown>[], metric: string, sexes: ("h
     if (!Number.isFinite(age) || !sexes.includes(kind)) continue
     const point: LifePoint = byAge.get(age) ?? { idade: age }
     const key = kind === "h" ? "homens" : kind === "m" ? "mulheres" : "ambos"
-    point[key] = num(row[metric])
+    const raw = num(row[metric])
+    point[key] = metric === "lx" && raw != null ? raw / 1000 : raw
     byAge.set(age, point)
   }
   return [...byAge.values()].sort((a, b) => a.idade - b.idade)
@@ -143,6 +145,17 @@ function valueAtAge(items: Record<string, unknown>[], sexo: string, age: number,
   const kind = sexKind(sexo)
   const row = items.find((item) => Number(item.idade) === age && sexKind(String(item.sexo ?? "")) === kind)
   return num(row?.[metric])
+}
+
+function lifeKpis(items: Record<string, unknown>[], sexo: string) {
+  const risk = valueAtAge(items, sexo, 0, "nqx")
+  const survivors = valueAtAge(items, sexo, 80, "lx")
+  return new Map<string, number | null>([
+    ["e0", valueAtAge(items, sexo, 0, "ex")],
+    ["e60", valueAtAge(items, sexo, 60, "ex")],
+    ["nqx_0", risk == null ? null : risk * 1000],
+    ["lx_80", survivors == null ? null : survivors / 1000],
+  ])
 }
 
 export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
@@ -159,6 +172,8 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const news = useDatasetNews(spec.id)
   const context = useContext(spec.id, effective)
   const facts = useFacts(spec.id)
+  const summary = useSummary(spec.id, { ano: effective.ano, cod: effective.cod, sexo: effective.sexo })
+  const officialMedian = useSummary("ds4", { ano: effective.ano, cod: effective.cod }, spec.id === "ds1")
   const brazil = useRows(spec.id, { cod: 0, pageSize: 200 }, effective.cod !== 0 && (spec.id === "ds3" || spec.id === "ds4"))
   const scope = ufsForScope(effective.cod, territories.data?.length ? territories.data : TERRITORIES)
   const { hash } = useLocation()
@@ -173,6 +188,11 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const life = useRows(
     spec.id,
     { ano: effective.ano, cod: effective.cod, pageSize: 200 },
+    spec.id === "ds5",
+  )
+  const lifePast = useRows(
+    spec.id,
+    { ano: effective.ano - 10, cod: effective.cod, pageSize: 200 },
     spec.id === "ds5",
   )
   const [compareYear, setCompareYear] = useState(2000)
@@ -206,16 +226,13 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
     if (spec.id === "ds1") {
       const current = ageKpis(yearRows, sexo)
       for (const [key, value] of Object.entries(current)) map.set(key, value)
+      const official = officialMedian.data?.kpis.find((item) => item.id === "id_med")?.value
+      if (official != null) map.set("idade_mediana", official)
     } else if (spec.id === "ds2") {
       const current = groupKpis(yearRows, sexo)
       for (const [key, value] of Object.entries(current)) map.set(key, value)
     } else if (spec.id === "ds5") {
-      map.set("e0", valueAtAge(lifeItems, sexo, 0, "ex"))
-      map.set("e60", valueAtAge(lifeItems, sexo, 60, "ex"))
-      const risk = valueAtAge(lifeItems, sexo, 0, "nqx")
-      map.set("nqx_0", risk == null ? null : risk * 1000)
-      const survivors = valueAtAge(lifeItems, sexo, 80, "lx")
-      map.set("lx_80", survivors == null ? null : survivors / 1000)
+      for (const [key, value] of lifeKpis(lifeItems, sexo)) map.set(key, value)
     } else if (currentRow) {
       const cross = crossingYear(
         linePoints(tableItems, ["p_0_14_t", "p_60_mais_t"]).map((row) => ({
@@ -228,7 +245,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
       for (const kpi of spec.kpis) map.set(kpi.key, num(currentRow[kpi.key]))
     }
     return map
-  }, [currentRow, lifeItems, sexo, spec.id, tableItems, yearRows])
+  }, [currentRow, lifeItems, officialMedian.data, sexo, spec.id, tableItems, yearRows])
 
   const dictionary = new Map((metrics.data ?? []).map((item) => [item.coluna, item]))
   const reprocess = useMutation({
@@ -266,6 +283,10 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
   const processedAt = info?.last_run?.finished_at
   const yearBefore = tableItems.find((row) => Number(row.ano) === effective.ano - 1)
   const year2000 = tableItems.find((row) => Number(row.ano) === 2000)
+  const pastLife = useMemo(
+    () => (spec.id === "ds5" ? lifeKpis(lifePast.data?.items ?? [], sexo) : null),
+    [lifePast.data?.items, sexo, spec.id],
+  )
   const brazilNow = (brazil.data?.items ?? []).find((row) => Number(row.ano) === effective.ano)
   const actions = activeKpis.flatMap((kpi) => {
     const raw = values.get(kpi.key)
@@ -273,7 +294,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
     const view = kpiView(kpi.key, {
       value: numeric,
       prevYear: num(yearBefore?.[kpi.key]),
-      past10: priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
+      past10: spec.id === "ds5" ? (pastLife?.get(kpi.key) ?? null) : priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
       brazil: num(brazilNow?.[kpi.key]),
       year2000: num(year2000?.[kpi.key]),
       cod: effective.cod,
@@ -343,6 +364,13 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           lx80: num(values.get("lx_80")),
           median: num(values.get("idade_mediana")),
           band: typeof values.get("maior_grupo") === "string" ? String(values.get("maior_grupo")) : null,
+          p60: summary.data?.headline?.p60 ?? null,
+          p60Futuro: summary.data?.headline?.p60_futuro ?? null,
+          anoFuturo: summary.data?.headline?.ano_futuro ?? null,
+          gMax: summary.data?.headline?.g_max ?? null,
+          vMax: summary.data?.headline?.v_max ?? null,
+          gMin: summary.data?.headline?.g_min ?? null,
+          vMin: summary.data?.headline?.v_min ?? null,
         }}
       />
       <section className="dashboard-grid" aria-label="Indicadores">
@@ -352,7 +380,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           const view = kpiView(kpi.key, {
             value: numeric,
             prevYear: num(yearBefore?.[kpi.key]),
-            past10: priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
+            past10: spec.id === "ds5" ? (pastLife?.get(kpi.key) ?? null) : priorValue(spec.id, kpi.key, priorPyramid, priorRow, sexo),
             brazil: num(brazilNow?.[kpi.key]),
             year2000: num(year2000?.[kpi.key]),
             cod: effective.cod,
@@ -368,7 +396,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
               delta={view.delta}
               status={view.status}
               reference={view.reference}
-              loading={pyramidEnabled ? pyramid.isLoading : spec.id === "ds5" ? life.isLoading : series.isLoading}
+              loading={pyramidEnabled ? pyramid.isLoading : spec.id === "ds5" ? life.isLoading || lifePast.isLoading : series.isLoading}
             />
           )
         })}
@@ -665,6 +693,7 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
     return (
       <LifeTableChart
         data={data}
+        per100={spec.metric === "lx"}
         series={[
           { key: "homens", label: "Homens" },
           { key: "mulheres", label: "Mulheres" },

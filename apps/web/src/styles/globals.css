@@ -250,6 +250,19 @@ html.dark {
   *::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--border));
   }
+
+  [data-chart-id="contexto"] .overflow-y-auto {
+    scrollbar-color: hsl(var(--muted)) hsl(var(--card));
+  }
+
+  [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-track,
+  [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-corner {
+    background: hsl(var(--card));
+  }
+
+  [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-thumb {
+    border-color: hsl(var(--card));
+  }
 }
 
 .page-pad {

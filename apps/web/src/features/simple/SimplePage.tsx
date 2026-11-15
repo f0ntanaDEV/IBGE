@@ -104,6 +104,8 @@ export function SimplePage({ pageId }: { pageId: string }) {
   const kpis = (summary.data?.kpis ?? []).slice(0, 4)
   const place = territories.data?.find((item) => item.cod === filters.cod)?.local ?? "Brasil"
   const series = summary.data?.series ?? []
+  const main = kpis[0]
+  const seriesKind = main ? metricKind(main.unidade) : "count"
   const at = (year: number) => series.find((point) => point.ano === year)?.valor
   const raw2000 = at(2000)
   const raw2070 = at(2070)
@@ -190,12 +192,12 @@ export function SimplePage({ pageId }: { pageId: string }) {
             <RelatedNews item={related[2] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2000" title="Como era em 2000">
-            <p className="text-2xl font-semibold tabular-nums">{raw2000 == null ? "—" : <CountUp value={raw2000} metric={{ key: "serie", kind: "count" }} />}</p>
+            <p className="text-2xl font-semibold tabular-nums">{raw2000 == null ? "—" : <CountUp value={raw2000} metric={{ key: main?.id ?? "serie", kind: seriesKind }} />}</p>
             <WordReveal className="mt-2 text-muted-foreground" text="Indicador principal no início da série." />
             <RelatedNews item={related[3] ?? related[0]} />
           </SectionCard>
           <SectionCard id="ano-2070" title="Para onde vamos (2070)">
-            <p className="text-2xl font-semibold tabular-nums">{raw2070 == null ? "—" : <CountUp value={raw2070} metric={{ key: "serie", kind: "count" }} />}</p>
+            <p className="text-2xl font-semibold tabular-nums">{raw2070 == null ? "—" : <CountUp value={raw2070} metric={{ key: main?.id ?? "serie", kind: seriesKind }} />}</p>
             <WordReveal className="mt-2 text-muted-foreground" text="Projeção no fim da série." />
             <RelatedNews item={related[4] ?? related[1] ?? related[0]} />
           </SectionCard>

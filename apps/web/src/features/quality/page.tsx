@@ -158,10 +158,15 @@ function TechnicalQuality() {
           <h2 className="font-medium">Validações</h2>
           <p className="mt-2">{board.data?.text ?? (board.isPending ? "Carregando validações…" : "Sem validações")}</p>
           <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
-            {(board.data?.items ?? []).filter((item) => !item.ok).map((item) => (
-              <li key={`${item.dataset_id}-${item.rule}`}>
-                falha · {item.dataset_id} · {item.rule}
-                {item.motivo ? ` · ${item.motivo}` : ""}
+            {(board.data?.items ?? []).filter((item) => item.status !== "ok" && !item.ok || item.status === "ok_arredondamento").map((item) => (
+              <li key={`${item.dataset_id}-${item.rule}`} className="flex items-start gap-2">
+                <span>{item.status === "ok_arredondamento" ? "ok com arredondamento" : "falha"} · {item.dataset_id} · {item.rule}</span>
+                {item.motivo ? <span>{item.motivo}</span> : null}
+                {item.status === "ok_arredondamento" ? (
+                  <button type="button" className="inline-flex size-5 items-center justify-center rounded-full border border-border text-[11px]" aria-label="Sobre o arredondamento da fonte" title="O IBGE arredonda nascimentos e óbitos de cada território; a soma das UFs pode diferir do total em poucas unidades">
+                    i
+                  </button>
+                ) : null}
               </li>
             ))}
           </ul>

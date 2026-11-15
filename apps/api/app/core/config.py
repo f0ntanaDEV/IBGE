@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     mysql_required: bool = False
     load_mysql_on_start: bool = False
     auto_seed: bool = True
+    databricks_embed_mode: str = "preview"
+    databricks_host: str = ""
+    databricks_dashboard_id: str = ""
+    databricks_warehouse_id: str = ""
+    databricks_client_id: str = ""
+    databricks_client_secret: str = ""
     data_dir: Path = Path("data")
     datasets_path: Path = API_ROOT / "datasets.yaml"
     max_upload_mb: int = 50

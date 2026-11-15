@@ -32,6 +32,8 @@ def context_for(page: str, cod: int, ano: int, sexo: str) -> list[ContextItem]:
     if cached is not None:
         return cached
     built = PAGES[page](int(cod), int(ano), kind)
+    if len(_cache) > 2048:
+        _cache.pop(next(iter(_cache)))
     _cache[key] = built
     return built
 

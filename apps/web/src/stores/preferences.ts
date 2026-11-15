@@ -15,6 +15,7 @@ export type PreferenceValues = {
   contrast: ContrastChoice
   mode: NavigationMode
   motion: MotionChoice
+  sidebarCollapsed: boolean
 }
 
 export const initialPreferences: PreferenceValues = {
@@ -23,6 +24,7 @@ export const initialPreferences: PreferenceValues = {
   contrast: null,
   mode: "technical",
   motion: "off",
+  sidebarCollapsed: false,
 }
 
 type PreferencesState = PreferenceValues & {
@@ -31,6 +33,7 @@ type PreferencesState = PreferenceValues & {
   setContrast: (contrast: ContrastChoice) => void
   setMode: (mode: NavigationMode) => void
   setMotion: (motion: MotionChoice) => void
+  setSidebarCollapsed: (sidebarCollapsed: boolean) => void
 }
 
 export function readStoredPreferences(raw: string | null): PreferenceValues {
@@ -45,6 +48,7 @@ export function readStoredPreferences(raw: string | null): PreferenceValues {
       contrast,
       mode: state.mode === "simple" ? "simple" : "technical",
       motion: state.motion === "on" ? "on" : "off",
+      sidebarCollapsed: state.sidebarCollapsed === true,
     }
   } catch {
     return initialPreferences
@@ -75,16 +79,39 @@ export function resolveContrast(contrast: ContrastChoice) {
   return systemPrefersContrast()
 }
 
-export function applyDocumentPreferences(state: PreferenceValues) {
+let preferencesReady = false
+let pendingTheme: boolean | null = null
+
+export function applyDocumentPreferences(state: Omit<PreferenceValues, "sidebarCollapsed">) {
   const root = document.documentElement
   const dark = resolveTheme(state.theme) === "dark"
-  root.classList.toggle("dark", dark)
-  root.dataset.density = state.density
-  root.dataset.mode = state.mode
-  if (resolveContrast(state.contrast)) root.dataset.contrast = "high"
-  else delete root.dataset.contrast
-  root.dataset.motion = state.motion === "on" && import.meta.env.VITE_MOTION_ENABLED !== "false" ? "on" : "off"
-  root.style.colorScheme = dark ? "dark" : "light"
+  const apply = () => {
+    pendingTheme = null
+    root.classList.toggle("dark", dark)
+    root.dataset.density = state.density
+    root.dataset.mode = state.mode
+    if (resolveContrast(state.contrast)) root.dataset.contrast = "high"
+    else delete root.dataset.contrast
+    root.dataset.motion = state.motion === "on" && import.meta.env.VITE_MOTION_ENABLED !== "false" ? "on" : "off"
+    root.style.colorScheme = dark ? "dark" : "light"
+  }
+  const motionOn = state.motion === "on" && import.meta.env.VITE_MOTION_ENABLED !== "false"
+  const changed = root.classList.contains("dark") !== dark
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const start = document.startViewTransition?.bind(document)
+  const canAnimate = preferencesReady && changed && motionOn && !reduce && start !== undefined
+  preferencesReady = true
+  if (!canAnimate || !start) {
+    apply()
+    return
+  }
+  if (pendingTheme === dark) return
+  pendingTheme = dark
+  try {
+    start(apply)
+  } catch {
+    apply()
+  }
 }
 
 export function useMode() {
@@ -100,6 +127,7 @@ export const usePreferences = create<PreferencesState>()(
       setContrast: (contrast) => set({ contrast }),
       setMode: (mode) => set({ mode }),
       setMotion: (motion) => set({ motion }),
+      setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
     }),
     {
       name: PREFERENCES_KEY,
@@ -110,6 +138,7 @@ export const usePreferences = create<PreferencesState>()(
         contrast: state.contrast,
         mode: state.mode,
         motion: state.motion,
+        sidebarCollapsed: state.sidebarCollapsed,
       }),
     },
   ),

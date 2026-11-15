@@ -9,6 +9,9 @@ class ValidationResult(BaseModel):
     rule: str
     ok: bool
     max_diff: float | None = None
+    reference: float | None = None
+    status: str | None = None
+    note: str | None = None
 
 
 class QualityReport(BaseModel):

@@ -1,5 +1,5 @@
 import type { PyramidRow } from "@/features/datasets/api"
-import { formatValue } from "@/lib/format"
+import { formatAgeBand, formatValue } from "@/lib/format"
 export const YEAR_MIN = 2000
 export const YEAR_MAX = 2070
 
@@ -152,7 +152,7 @@ export function groupKpis(rows: PyramidRow[], sexo: string) {
   const young = items.filter((item) => item.start === 0).reduce((sum, item) => sum + item.pop, 0)
   const old = items.filter((item) => item.start >= 80).reduce((sum, item) => sum + item.pop, 0)
   return {
-    maior_grupo: best?.label ?? null,
+    maior_grupo: best ? formatAgeBand(best.label) : null,
     maior_inicio: best ? startAge(best.label) : null,
     pop_0_4: young || null,
     pop_80: old || null,

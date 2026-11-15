@@ -24,6 +24,8 @@ describe("formatValue", () => {
   it("mantém o valor exato em pt-BR", () => {
     expect(formatValue(214211951, count)).toBe("214.211.951")
     expect(formatValue(0.146732, percent)).toBe("14,7%")
+    expect(formatValue(0.12, percent)).toBe("12,0%")
+    expect(formatValue(0.06, percent)).toBe("6,0%")
     expect(formatValue(12.42, permil)).toBe("12,42 por mil")
     expect(formatValue(76.6057, years)).toBe("76,61 anos")
     expect(formatValue(1.5468, rate)).toBe("1,55")

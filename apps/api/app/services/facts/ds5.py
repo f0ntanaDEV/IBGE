@@ -3,7 +3,7 @@
 import pandas as pd
 
 from app.services.facts.common import REF_YEAR, round_num, sex, territory, total_sex
-from app.services.facts.models import DetailPoint, Fact
+from app.services.facts.models import DetailPoint, Fact, FactPart
 
 
 def _row(data: pd.DataFrame, year: int, age: int) -> pd.Series | None:
@@ -87,7 +87,12 @@ def build(cod: int) -> list[Fact]:
             label="Chegam aos 80: 2000 → 2070",
             value=round_num(l80_2070 or 0, 1),
             kind="rate",
-            detail_values=None if l80_2000 is None else [DetailPoint(ano=2000, valor=round_num(l80_2000, 1), kind="rate")],
+            parts=[]
+            if l80_2000 is None or l80_2070 is None
+            else [
+                FactPart(label="{v} (2000)", value=round_num(l80_2000, 1), kind="rate"),
+                FactPart(label="→ {v} (2070)", value=round_num(l80_2070, 1), kind="rate"),
+            ],
         ),
         Fact(
             id="q20",
@@ -95,7 +100,12 @@ def build(cod: int) -> list[Fact]:
             value=round_num(qh or 0, 2),
             kind="permil",
             reference_year=REF_YEAR,
-            detail_values=None if qm is None else [DetailPoint(ano=REF_YEAR, valor=round_num(qm, 2), kind="permil")],
+            parts=[]
+            if qm is None
+            else [
+                FactPart(label="homens {v}", value=round_num(qh or 0, 2), kind="rate"),
+                FactPart(label="mulheres {v} por mil", value=round_num(qm, 2), kind="rate"),
+            ],
         ),
         Fact(
             id="sobremort",
@@ -103,6 +113,11 @@ def build(cod: int) -> list[Fact]:
             value=band,
             kind="raw",
             reference_year=REF_YEAR,
-            detail_values=None if excess is None else [DetailPoint(ano=REF_YEAR, valor=round_num(excess[1], 2), kind="rate")],
+            parts=[]
+            if excess is None
+            else [
+                FactPart(value=f"{band} anos", kind="raw"),
+                FactPart(label="{v}×", value=round_num(excess[1], 2), kind="rate"),
+            ],
         ),
     ]

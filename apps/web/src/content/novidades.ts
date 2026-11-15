@@ -11,6 +11,19 @@ export type NovidadeGrupo = {
 /** Alterações registradas em specs/DECISIONS.md, da mais recente para a mais antiga. */
 export const NOVIDADES: NovidadeGrupo[] = [
   {
+    date: "2026-11-15",
+    items: [
+      { area: "Qualidade", text: "Validações de nascimentos e óbitos aceitam o arredondamento da fonte (até 10 pessoas ou 0,001%). As 113 regras da base original ficam aprovadas e o status volta a Favorável." },
+      { area: "Qualidade", text: "A limpeza de execuções guarda a mais recente de cada base e de cada fonte. A base de demonstração continua disponível mesmo quando a original é mais nova." },
+      { area: "Fatos", text: "Os rótulos deixam de repetir 2026 e passam a dizer o que o número é: queda, homens e mulheres, relação com o pico." },
+      { area: "Indicadores", text: "Idade mediana passa a ser só a oficial, com uma casa. A calculada na pirâmide se chama idade central da distribuição. Percentuais mantêm uma casa e as faixas usam meia-risca." },
+      { area: "Manchetes", text: "População por idade, grupos quinquenais e indicadores passam a responder a pergunta da página." },
+      { area: "Databricks", text: "A página deixa de abrir a tela de login. Mostra o que o painel contém e o botão para quem já tem acesso." },
+      { area: "Interface", text: "O título das páginas passou a ser Projeções IBGE." },
+      { area: "Interface", text: "A busca por página ou território permanece na barra superior." },
+    ],
+  },
+  {
     date: "2026-11-14",
     items: [
       { area: "Interface", text: "O Painel Databricks entrou no menu e ocupa a área de conteúdo com o dashboard publicado." },

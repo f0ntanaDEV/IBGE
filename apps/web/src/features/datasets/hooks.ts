@@ -65,11 +65,12 @@ export function useMetrics(id: string) {
   })
 }
 
-export function useSummary(id: string, filters: { ano: number; cod: number; sexo?: string }) {
+export function useSummary(id: string, filters: { ano: number; cod: number; sexo?: string }, enabled = true) {
   return useQuery({
     queryKey: ["dataset", id, "summary", filters],
     queryFn: () => fetchSummary(id, filters),
     staleTime: STALE_TIME,
+    enabled,
   })
 }
 

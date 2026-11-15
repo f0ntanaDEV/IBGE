@@ -65,7 +65,7 @@ def build(cod: int) -> list[Fact]:
             value="" if older is None else older[0],
             kind="raw",
             reference_year=REF_YEAR,
-            detail_values=None if older is None else [DetailPoint(ano=REF_YEAR, valor=older[1], kind="percent")],
+            detail_values=None if older is None else [DetailPoint(ano=REF_YEAR, valor=older[1], kind="percent", rotulo="{valor}")],
         ),
         Fact(
             id="uf_mais_jovem",
@@ -73,6 +73,6 @@ def build(cod: int) -> list[Fact]:
             value="" if younger is None else younger[0],
             kind="raw",
             reference_year=REF_YEAR,
-            detail_values=None if younger is None else [DetailPoint(ano=REF_YEAR, valor=younger[1], kind="percent")],
+            detail_values=None if younger is None else [DetailPoint(ano=REF_YEAR, valor=younger[1], kind="percent", rotulo="{valor}")],
         ),
     ]

@@ -43,7 +43,14 @@ def build(cod: int) -> list[Fact]:
             reference_year=2070,
             detail_values=None
             if peak_value is None or pop_2070 is None
-            else [DetailPoint(ano=2070, valor=round_num(pop_2070 / peak_value - 1, 4), kind="percent")],
+            else [
+                DetailPoint(
+                    ano=2070,
+                    valor=round_num(abs(pop_2070 / peak_value - 1), 4),
+                    kind="percent",
+                    rotulo="−{valor} em relação ao pico" if pop_2070 < peak_value else "+{valor} em relação ao pico",
+                )
+            ],
         ),
         Fact(id="idosos_criancas", label="Idosos (60+) passam a superar crianças (0–14)", value=older or 0, kind="year"),
         Fact(id="obitos_nasc", label="Óbitos passam a superar nascimentos", value=deaths or 0, kind="year"),

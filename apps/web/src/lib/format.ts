@@ -9,7 +9,7 @@ const integer = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 })
 const number = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 })
 const decimal = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const onePlace = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 })
+const percent = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" })
 const percent0 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 })
 const percent2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -20,6 +20,10 @@ function normalize(text: string) {
   return text.replace(/[\u00a0\u202f]/g, " ")
 }
 
+export function formatFixed(value: number, digits: number) {
+  return normalize(new Intl.NumberFormat("pt-BR", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value))
+}
+
 export function formatCompact(v: number): string {
   if (!Number.isFinite(v)) return "—"
   const sign = v < 0 ? "-" : ""
@@ -28,7 +32,11 @@ export function formatCompact(v: number): string {
   const parts = compactLoose.formatToParts(abs)
   const digits = (parts.find((part) => part.type === "integer")?.value ?? "").replace(/\D/g, "")
   const text = digits.length >= 3 ? compactTight.format(abs) : compactLoose.format(abs)
-  return sign + normalize(text)
+  return sign + spacedUnit(normalize(text))
+}
+
+function spacedUnit(text: string) {
+  return text.replace(/(\d)\s*(mil|mi|bi)\b/gi, "$1 $2")
 }
 
 function formatFull(v: number, metric: MetricMeta) {
@@ -49,8 +57,9 @@ export function formatAxisValue(value: number, metric: MetricMeta, digits: 0 | 1
   if (!Number.isFinite(value)) return "—"
   if (metric.kind === "percent") return `${percent0.format(value * 100)}%`
   if (metric.kind === "year") return String(Math.trunc(value))
-  if (metric.kind === "count") return digits === 1 ? normalize(compactLoose.format(value)) : formatCompact(value)
-  if (metric.kind === "years" || metric.kind === "rate" || metric.kind === "permil" || metric.kind === "index" || metric.kind === "raw") {
+  if (metric.kind === "count") return digits === 1 ? spacedUnit(normalize(compactLoose.format(value))) : formatCompact(value)
+  if (metric.kind === "years") return `${normalize(integer.format(value))} anos`
+  if (metric.kind === "rate" || metric.kind === "permil" || metric.kind === "index" || metric.kind === "raw") {
     return normalize(onePlace.format(value))
   }
   return formatCompact(value)
@@ -58,8 +67,9 @@ export function formatAxisValue(value: number, metric: MetricMeta, digits: 0 | 1
 
 export function formatAgeBand(raw: string | number) {
   const text = String(raw).trim()
+  if (/\+$/.test(text)) return text
   const range = text.match(/(\d+)\s*[-–a]\s*(\d+)/)
-  if (range) return `${range[1]}–${range[2]}`
+  if (range) return `${Number(range[1])}–${Number(range[2])}`
   return text
 }
 

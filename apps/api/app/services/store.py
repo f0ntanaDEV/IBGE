@@ -30,7 +30,9 @@ class ParquetStore:
 
     def latest_file(self, dataset_id: str, suffix: str) -> Path | None:
         files = sorted(self.processed_dir.glob(f"{dataset_id}_*{suffix}"))
-        return files[-1] if files else None
+        official = [path for path in files if _report_source(path) != "sujo"]
+        chosen = official or files
+        return chosen[-1] if chosen else None
 
     def get(self, dataset_id: str) -> pd.DataFrame:
         cached = self._frames.get(dataset_id)
@@ -50,6 +52,19 @@ class ParquetStore:
                     _shared[key] = (*_stamp(path), frame)
         self._frames[dataset_id] = frame
         return frame
+
+
+def _report_source(path: Path) -> str:
+    report = path.with_name(f"{path.stem}.report.json")
+    if not report.exists():
+        return "original"
+    try:
+        import json
+
+        payload = json.loads(report.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "original"
+    return str(payload.get("source") or "original")
 
 
 def _stamp(path: Path) -> tuple[int, int]:

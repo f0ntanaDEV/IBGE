@@ -3,9 +3,7 @@
 import pandas as pd
 
 from app.domain.dataset import DatasetConfig
-
-COUNT_TOLERANCE = 1.0
-PROP_TOLERANCE = 0.05
+from app.domain.validation_rules import evaluate, rule_for
 _RATE_PREFIXES = (
     "tcg",
     "e0",
@@ -68,7 +66,8 @@ def _territorial(frame: pd.DataFrame) -> list[dict]:
                 continue
             diff = (grouped["brasil"] - grouped[level]).abs()
             max_diff = float(diff.max()) if len(diff) else 0.0
-            output.append({"rule": f"{rule}:{col}", "ok": max_diff <= COUNT_TOLERANCE, "max_diff": max_diff})
+            reference = float(grouped["brasil"].abs().max()) if len(grouped) else 0.0
+            output.append(_result(f"{rule}:{col}", max_diff, reference))
     return output
 
 
@@ -89,8 +88,8 @@ def _sex_sums(frame: pd.DataFrame) -> list[dict]:
         diff = (frame[f"{prefix}_h"] + frame[f"{prefix}_m"] - total).abs()
         comparable = total.notna() & frame[f"{prefix}_h"].notna() & frame[f"{prefix}_m"].notna()
         max_diff = float(diff[comparable].max()) if bool(comparable.any()) else 0.0
-        tolerance = COUNT_TOLERANCE if kind == "count" else PROP_TOLERANCE
-        output.append({"rule": f"h_mais_m:{prefix}", "ok": max_diff <= tolerance, "max_diff": max_diff})
+        reference = float(total.abs().max()) if len(total) else 0.0
+        output.append(_result(f"h_mais_m:{prefix}", max_diff, reference))
     return output
 
 
@@ -110,9 +109,24 @@ def _ages_match_pop(ds1: pd.DataFrame, ds4: pd.DataFrame) -> dict:
     right = ds4.groupby(["cod", "ano"])["pop_t"].sum()
     aligned = left.to_frame("populacao").join(right.rename("pop_t"), how="inner")
     if aligned.empty:
-        return {"rule": "ds1_idades_eq_ds4_pop", "ok": False, "max_diff": None}
+        return _result("ds1_idades_eq_ds4_pop", None, 0)
     max_diff = float((aligned["populacao"] - aligned["pop_t"]).abs().max())
-    return {"rule": "ds1_idades_eq_ds4_pop", "ok": max_diff <= COUNT_TOLERANCE, "max_diff": max_diff}
+    reference = float(aligned["pop_t"].abs().max())
+    return _result("ds1_idades_eq_ds4_pop", max_diff, reference)
+
+
+def _result(rule_id: str, max_diff: float | None, reference: float) -> dict:
+    diff = 0.0 if max_diff is None else float(max_diff)
+    rule = rule_for(rule_id)
+    status = "falha" if max_diff is None else evaluate(rule, diff, reference)
+    return {
+        "rule": rule_id,
+        "ok": status != "falha",
+        "max_diff": None if max_diff is None else diff,
+        "reference": reference,
+        "status": status,
+        "note": rule.note,
+    }
 
 
 def _is_ambos(value: object) -> bool:

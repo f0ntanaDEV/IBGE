@@ -34,7 +34,7 @@ def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
     modal = rows[rows["idade"].between(0, 89)]
     if not modal.empty:
         age = int(modal.loc[modal["populacao"].idxmax(), "idade"])
-        items.append(item("idade_modal", "Idade com mais pessoas", age, "year", CHART, "Pirâmide etária · Mapa de calor", "{idade} anos", [("idade", age, "raw")]))
+        items.append(item("idade_modal", "Idade com mais pessoas", age, "year", CHART, "Pirâmide etária · Mapa de calor"))
     total = float(rows["populacao"].sum()) if not rows.empty else 0
     if total:
         young = _sum(rows, 0, 14) / total
@@ -55,7 +55,11 @@ def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
         ordered = rows.sort_values("idade")
         passed = ordered.loc[ordered["populacao"].cumsum() >= total / 2, "idade"]
         if not passed.empty:
-            items.append(item("mediana", "Idade mediana", int(passed.iloc[0]), "year", CHART, "Pirâmide etária", "{idade} anos", [("idade", int(passed.iloc[0]), "raw")]))
+            from app.services.facts.common import cell, territory
+
+            official = cell(territory("ds4", cod), ano, "id_med")
+            shown = round(float(official), 1) if official is not None else int(passed.iloc[0])
+            items.append(item("id_med", "Idade mediana", shown, "years", CHART, "Pirâmide etária"))
     older90 = rows[rows["idade"] == 90]
     if not older90.empty:
         items.append(item("noventa", "Pessoas com 90 anos ou mais", int(round(float(older90.iloc[0]["populacao"]))), "count", HEAT, "Mapa de calor"))

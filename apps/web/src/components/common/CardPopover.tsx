@@ -8,12 +8,18 @@ type CardPopoverProps = {
   trigger: ReactNode
   children: ReactNode
   title: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onContentEnter?: () => void
+  onContentLeave?: () => void
+  hover?: boolean
 }
 
-export function CardPopover({ cardRef, trigger, children, title }: CardPopoverProps) {
+export function CardPopover({ cardRef, trigger, children, title, open, onOpenChange, onContentEnter, onContentLeave, hover = false }: CardPopoverProps) {
   const side = useCardSide(cardRef)
+  const hold = hover ? (event: { preventDefault: () => void }) => event.preventDefault() : undefined
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverAnchor virtualRef={cardRef} />
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
@@ -22,6 +28,12 @@ export function CardPopover({ cardRef, trigger, children, title }: CardPopoverPr
         sideOffset={8}
         collisionPadding={16}
         avoidCollisions
+        data-glossary-panel={hover ? "" : undefined}
+        onMouseEnter={onContentEnter}
+        onMouseLeave={onContentLeave}
+        onOpenAutoFocus={hold}
+        onCloseAutoFocus={hold}
+        onFocusOutside={hold}
         className={cn(
           "max-h-[var(--radix-popover-content-available-height)] overflow-auto",
           side === "bottom" ? "w-[var(--radix-popper-anchor-width)]" : "w-[min(20rem,var(--radix-popover-content-available-width))]",

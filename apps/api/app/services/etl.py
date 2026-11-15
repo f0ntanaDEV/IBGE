@@ -110,7 +110,11 @@ def process_dataset(
     report_path.write_text(report.model_dump_json(), encoding="utf-8")
     metrics_path = settings.processed_dir / f"{cfg.id}_metrics.json"
     metrics_path.write_text(json.dumps(metrics, ensure_ascii=False), encoding="utf-8")
-    store.put(cfg.id, frame)
+    from app.services.retention import keep_latest
+
+    keep_latest(settings.processed_dir)
+    if source == "original":
+        store.put(cfg.id, frame)
     if settings.mysql_required:
         from app.db import get_engine
 

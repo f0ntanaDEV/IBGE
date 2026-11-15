@@ -65,12 +65,30 @@ def is_region(cod: int) -> bool:
 
 
 def people(dataset_id: str, cod: int, kind: str) -> pd.DataFrame:
-    data = territory(dataset_id, cod)
+    from app.services.facts.registry import cache_token
+
+    key = (dataset_id, int(cod), kind, cache_token())
+    cached = _PEOPLE.get(key)
+    if cached is not None:
+        return cached
+    data = frame(dataset_id)
+    data = data[data["cod"] == int(cod)]
+    if dataset_id == "ds1":
+        keep = [column for column in ("ano", "idade", "sexo", "populacao", "cod") if column in data.columns]
+        data = data[keep]
     if kind == "h":
-        return sex(data, "h")
-    if kind == "m":
-        return sex(data, "m")
-    return total_sex(data)
+        chosen = sex(data, "h")
+    elif kind == "m":
+        chosen = sex(data, "m")
+    else:
+        chosen = total_sex(data)
+    if len(_PEOPLE) > 256:
+        _PEOPLE.pop(next(iter(_PEOPLE)))
+    _PEOPLE[key] = chosen
+    return chosen
+
+
+_PEOPLE: dict[tuple, pd.DataFrame] = {}
 
 
 def year_rows(data: pd.DataFrame, year: int) -> pd.DataFrame:

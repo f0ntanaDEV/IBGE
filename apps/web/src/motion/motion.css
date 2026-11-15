@@ -15,6 +15,51 @@ html[data-motion="on"] [data-allow-motion="fill"] {
   transition: fill var(--anim-duration, 800ms) var(--anim-ease, cubic-bezier(0.22, 1, 0.36, 1)) !important;
 }
 
+html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]):not([data-sonner-toaster] *) {
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]) [data-sidebar-fade] {
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), max-width 520ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]) [data-sidebar-mark] {
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html[data-motion="on"] aside[data-allow-motion="sidebar"][data-collapsed="true"]:not([data-sonner-toaster]) [data-sidebar-mark] {
+  transition-delay: 520ms !important;
+}
+
+html[data-motion="on"] [data-allow-motion="search"]:not([data-sonner-toaster]):not([data-sonner-toaster] *) {
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1), margin-left 520ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html[data-motion="on"]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-motion="on"]::view-transition-new(root) {
+  animation: theme-in 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes theme-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]):not([data-sonner-toaster] *),
+  html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]) [data-sidebar-fade],
+  html[data-motion="on"] aside[data-allow-motion="sidebar"]:not([data-sonner-toaster]) [data-sidebar-mark],
+  html[data-motion="on"] [data-allow-motion="search"]:not([data-sonner-toaster]):not([data-sonner-toaster] *),
+  html[data-motion="on"]::view-transition-old(root),
+  html[data-motion="on"]::view-transition-new(root) {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 @media print {
   [data-anim],
   [data-anim-state] {
@@ -31,6 +76,10 @@ html[data-motion="on"] [data-allow-motion="fill"] {
 }
 
 [data-motion="on"] [data-anim-state="run"] {
+  animation: motion-fade-up var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
+}
+
+[data-motion="on"] [data-anim="rise"] {
   animation: motion-fade-up var(--anim-duration) var(--anim-ease) var(--anim-delay, 0ms) both;
 }
 

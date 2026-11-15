@@ -46,7 +46,22 @@ def test_contexto_brasil_e_bahia():
             assert all(item.value not in (None, "—") for item in items)
 
 
-def test_contexto_numeros_da_spec():
+def test_contexto_ds1_no_segundo_passe_fica_abaixo_de_2s():
+    from time import perf_counter
+
+    from app.domain.territory import REGIOES, UFS
+    from app.services.context.registry import PAGES, context_for
+
+    codes = [0, *REGIOES.keys(), *UFS.keys()]
+    pages = list(PAGES)
+    for page in pages:
+        for cod in codes:
+            context_for(page, cod, 2026, "T")
+    for page in pages:
+        for cod in codes:
+            started = perf_counter()
+            context_for(page, cod, 2026, "T")
+            assert perf_counter() - started < 2, f"{page} {cod}"
     ds1 = by_id("ds1", 0)
     assert ds1["razao_sexo"].value == pytest.approx(95.1, abs=0.05)
     assert ds1["idade_modal"].value == 41

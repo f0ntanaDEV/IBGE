@@ -2,7 +2,7 @@ import { useTerritories } from "@/features/datasets/hooks"
 import type { FactItem } from "@/features/datasets/api"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { metricById } from "@/content/metricas"
-import { formatValue, type MetricKind } from "@/lib/format"
+import { formatFixed, formatValue, type MetricKind } from "@/lib/format"
 import { CountUp } from "@/motion/CountUp"
 import { Reveal } from "@/motion/useMotion"
 import { CharFade, WordReveal } from "@/motion/WordReveal"
@@ -22,7 +22,8 @@ const FACT_METRIC: Record<string, string> = {
   l60: "lx_80",
   q0: "nqx_0",
   rd_min: "rdt65",
-  id_med: "id_med",
+  rs_90: "rs_90",
+  mediana_simples: "idade_central_simples",
 }
 
 function factMetric(factId: string, kind: MetricKind) {
@@ -38,6 +39,32 @@ const NAMES: Record<number, string> = {
   3: "Sudeste",
   4: "Sul",
   5: "Centro-Oeste",
+}
+
+function renderParts(fact: FactItem, mode: "technical" | "simple") {
+  const chunks = (fact.parts ?? []).map((part) => {
+    const formatted =
+      typeof part.value !== "number"
+        ? part.value
+        : part.kind === "percent"
+          ? formatValue(part.value, { key: fact.id, kind: "percent" }, mode)
+          : part.kind === "count"
+            ? formatValue(part.value, { key: fact.id, kind: "count" }, mode)
+            : part.kind === "rate" || part.kind === "years"
+              ? formatFixed(part.value, Math.abs(part.value - Math.round(part.value * 10) / 10) < 1e-9 ? 1 : 2)
+              : formatValue(part.value, { key: fact.id, kind: part.kind }, mode)
+    if (part.label?.includes("{v}")) return part.label.replaceAll("{v}", formatted)
+    if (!part.label) return formatted
+    return part.position === "suffix" ? `${formatted} ${part.label}` : `${part.label} ${formatted}`
+  })
+  let out = ""
+  for (const chunk of chunks) {
+    if (!chunk) continue
+    if (!out) out = chunk
+    else if (out.endsWith("→") || chunk.startsWith("→")) out = `${out} ${chunk}`
+    else out = `${out} · ${chunk}`
+  }
+  return out
 }
 
 function detailPoints(fact: FactItem) {
@@ -80,6 +107,9 @@ function FactNumber({ value, metricKey, kind, mode }: { value: number; metricKey
 }
 
 function FactFigures({ fact, mode }: { fact: FactItem; mode: "technical" | "simple" }) {
+  if (fact.parts?.length) {
+    return <>{renderParts(fact, mode)}</>
+  }
   const detail = detailText(fact, mode)
   const points = detailPoints(fact)
   if (typeof fact.value !== "number") return <>{`${fact.value}${detail ? ` · ${detail}` : ""}`}</>

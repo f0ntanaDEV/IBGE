@@ -3,8 +3,8 @@ import { SimplePage } from "@/features/simple/SimplePage"
 import { useMode } from "@/stores/preferences"
 import { DatasetDashboardPage } from "@/features/datasets/DatasetDashboardPage"
 import { dashboardById } from "@/features/datasets/dashboards.config"
-import { ErrorState } from "@/components/common/ErrorState"
-import { Link, useParams } from "react-router-dom"
+import { ErrorPage } from "@/features/error/page"
+import { useParams } from "react-router-dom"
 
 export function DatasetPage() {
   const mode = useMode()
@@ -13,14 +13,10 @@ export function DatasetPage() {
   const spec = dashboardById(id)
   if (!dataset || !spec) {
     return (
-      <ErrorState
+      <ErrorPage
+        code="404"
         title="Dataset não encontrado"
-        message="Esse identificador não está no catálogo."
-        action={
-          <Link to="/" className="text-sm underline">
-            Voltar à visão geral
-          </Link>
-        }
+        message="Esse identificador não está no catálogo. Escolha uma base no menu ou volte para a visão geral."
       />
     )
   }

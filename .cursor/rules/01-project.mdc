@@ -11,3 +11,4 @@ alwaysApply: true
 - Arquitetura limpa: routers finos → services (casos de uso) → repositories/integrations. Regra de negócio nunca fica em router ou componente de UI.
 - Visual: neutro e sóbrio (zinc/slate + um único acento dessaturado). Proibido usar cores vibrantes, gradientes chamativos ou sombras pesadas.
 - Toda animação precisa respeitar o "Modo leve" (`data-reduced-motion` no `<html>`).
+- A barra "Buscar página ou território" permanece. Specs anteriores que pedem "sem busca" não prevalecem.

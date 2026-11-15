@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ReactNode } from "react"
-import { Link, createBrowserRouter } from "react-router-dom"
+import { createBrowserRouter } from "react-router-dom"
 import { AppShell } from "@/app/layout/AppShell"
-import { ErrorState } from "@/components/common/ErrorState"
+import { NotFoundPage, RouteErrorPage } from "@/features/error/page"
 
 const OverviewPage = lazy(() => import("@/features/overview/page").then((mod) => ({ default: mod.OverviewPage })))
 const DatasetPage = lazy(() => import("@/features/datasets/page").then((mod) => ({ default: mod.DatasetPage })))
@@ -17,96 +17,33 @@ function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando…</p>}>{children}</Suspense>
 }
 
+function page(node: ReactNode) {
+  return (
+    <Lazy>
+      {node}
+    </Lazy>
+  )
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppShell />,
     children: [
       {
-        index: true,
-        element: (
-          <Lazy>
-            <OverviewPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "databricks",
-        element: (
-          <Lazy>
-            <DatabricksPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "datasets/:id",
-        element: (
-          <Lazy>
-            <DatasetPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "qualidade",
-        element: (
-          <Lazy>
-            <QualityPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "insights",
-        element: (
-          <Lazy>
-            <InsightsPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "noticias",
-        element: (
-          <Lazy>
-            <NewsPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "sobre",
-        element: (
-          <Lazy>
-            <AboutPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "novidades",
-        element: (
-          <Lazy>
-            <NovidadesPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "configuracoes",
-        element: (
-          <Lazy>
-            <SettingsPage />
-          </Lazy>
-        ),
-      },
-      {
-        path: "*",
-        element: (
-          <ErrorState
-            title="Página não encontrada"
-            message="Esse endereço não existe."
-            action={
-              <Link to="/" className="text-sm underline">
-                Ir para a visão geral
-              </Link>
-            }
-          />
-        ),
+        errorElement: <RouteErrorPage />,
+        children: [
+          { index: true, element: page(<OverviewPage />) },
+          { path: "databricks", element: page(<DatabricksPage />) },
+          { path: "datasets/:id", element: page(<DatasetPage />) },
+          { path: "qualidade", element: page(<QualityPage />) },
+          { path: "insights", element: page(<InsightsPage />) },
+          { path: "noticias", element: page(<NewsPage />) },
+          { path: "sobre", element: page(<AboutPage />) },
+          { path: "novidades", element: page(<NovidadesPage />) },
+          { path: "configuracoes", element: page(<SettingsPage />) },
+          { path: "*", element: <NotFoundPage /> },
+        ],
       },
     ],
   },

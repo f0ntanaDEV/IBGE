@@ -41,10 +41,10 @@ def _median(data: pd.DataFrame, year: int) -> int | None:
 
 def _points(data: pd.DataFrame, age: int) -> list[DetailPoint]:
     points = []
-    for year in (2000, REF_YEAR, 2070):
+    for year in (2000, 2070):
         value = _at_age(data, year, age)
         if value is not None:
-            points.append(DetailPoint(ano=year, valor=as_int(value), kind="count"))
+            points.append(DetailPoint(ano=year, valor=as_int(value), kind="count", rotulo=f"em {year}"))
     return points
 
 
@@ -66,8 +66,8 @@ def build(cod: int) -> list[Fact]:
     men_90 = _at_age(men, REF_YEAR, 90)
     women_90 = _at_age(women, REF_YEAR, 90)
     ratio = None if not women_90 else round_num(men_90 / women_90 * 100, 1)
-    current_babies = next((point.valor for point in babies if point.ano == REF_YEAR), 0)
-    current_ninety = next((point.valor for point in ninety if point.ano == REF_YEAR), 0)
+    current_babies = _at_age(base, REF_YEAR, 0) or 0
+    current_ninety = _at_age(base, REF_YEAR, 90) or 0
     return [
         Fact(
             id="idade_modal_2026",
@@ -81,5 +81,12 @@ def build(cod: int) -> list[Fact]:
         Fact(id="noventa", label="Pessoas com 90 anos ou mais", value=current_ninety, kind="count", detail_values=ninety),
         Fact(id="idade_mulheres", label="Idade a partir da qual há mais mulheres que homens", value=women_age or 0, kind="year", reference_year=REF_YEAR),
         Fact(id="rs_90", label="Homens para cada 100 mulheres com 90+", value=ratio or 0, kind="rate", reference_year=REF_YEAR),
-        Fact(id="mediana_simples", label="Idade mediana pela distribuição por idade", value=_median(base, REF_YEAR) or 0, kind="year", reference_year=REF_YEAR),
+        Fact(
+            id="mediana_simples",
+            label="Idade central da distribuição (em anos completos)",
+            value=_median(base, REF_YEAR) or 0,
+            kind="year",
+            reference_year=REF_YEAR,
+            detail="Calculada com idades inteiras; pode diferir da idade mediana oficial",
+        ),
     ]

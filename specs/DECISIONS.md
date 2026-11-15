@@ -92,3 +92,23 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-14 | interface | `/databricks` embute o dashboard publicado e ocupa só a área de conteúdo | A navegação existente permanece; o iframe usa a URL de embed do mesmo painel.
 - 2026-11-14 | animação | Como ler, Novidades, Insights, Notícias, Qualidade e o iframe do Databricks entram no relógio da página | Essas telas não chamavam `usePageReady` nem usavam `Reveal`. Configurações continua fora.
 - 2026-11-14 | dados | Snapshots antigos de `data/processed` (csv, xlsx, parquet) foram apagados, ficando o mais recente de cada dataset | A API lê só o arquivo mais novo de cada formato; os JSON de relatório e as planilhas de `data/raw` continuam.
+- 2026-11-15 | interface | O selo de status do KPI fica na mesma altura da variação, à direita da última linha | O ícone absoluto ficava abaixo do texto.
+- 2026-11-15 | interface | O "?" do KPI abre no hover e o selo fica logo abaixo desse ícone | O texto permanece ao lado do card. O selo saiu da linha da variação.
+- 2026-11-15 | interface | O selo do KPI fica fora do fluxo, abaixo do "?", para o valor seguir a descrição | O selo na coluna do título empurrava o número para a linha seguinte.
+- 2026-11-15 | interface | O hover do "?" do KPI só vale em cima do ícone e o valor cola na descrição | O painel seguia aberto no restante do card. O botão no fluxo afastava o número.
+- 2026-11-15 | interface | Crítico, Atenção e Favorável em "O que fazer" usam a cor do selo da KPI | O rótulo estava no cinza do texto secundário.
+- 2026-11-15 | interface | A trilha da rolagem de Contexto usa o fundo do card da KPI | A trilha global usa o fundo da página, mais escuro que o card.
+- 2026-11-15 | interface | As KPIs da tábua mostram a variação absoluta em 10 anos | A página só lia o ano selecionado, então não havia base para o aumento ou a redução.
+- 2026-11-15 | interface | No topo de Insights, cada pergunta fica numa linha com o nome da página e as seções viram chips | Os dois blocos eram links sublinhados seguidos, sem separação visual.
+- 2026-11-15 | interface | A sidebar retrai para ícones e troca a marca por "A"; a escolha fica salva | O menu largo ocupa a área dos gráficos. No celular o menu continua com os nomes.
+- 2026-11-15 | interface | O "A" retraído usa o traço dos ícones e a largura anima em 280 ms com animações ligadas | A letra preenchida lia mais clara que os ícones. Com movimento reduzido a troca continua imediata.
+- 2026-11-15 | interface | A marca da sidebar é a imagem preta no tema claro e a branca no escuro; o ícone não se desloca ao retrair | O texto "IBGE Analytics" e o "A" saíram. A largura passa a 520 ms e os ícones ficam no mesmo eixo.
+- 2026-11-15 | etapa 15 | Fluxos de nascimento e óbito aceitam até 10 pessoas ou 0,001%; diferença 0 continua "ok" e o pó de ponto flutuante nas proporções também | Quatro regras de fluxo com 1 pessoa, antes contadas como aprovadas pela tolerância de 1, passam a "ok com arredondamento". O total aprovado fica 113 de 113 (99 exatas e 14 com arredondamento).
+- 2026-11-15 | etapa 15 | A base suja some em produção porque a limpeza guardava só o arquivo mais novo de cada dataset e `AUTO_SEED=false` não recria a fonte | O relatório passa a cair no MySQL quando o disco não tem a fonte, e a retenção guarda a execução mais recente de cada dataset e de cada fonte.
+- 2026-11-15 | etapa 15 | O Databricks externo usa o token de embed do Lakeview; sem credencial o padrão é `preview` | A documentação atual não entrega o dashboard a visitante anônimo sem um service principal. A página deixa de mostrar o iframe de login.
+- 2026-11-15 | etapa 15 | O título do painel volta a "Projeções IBGE" | "Analytics" tirava a referência ao IBGE.
+- 2026-11-15 | etapa 15 | A busca "Buscar página ou território" permanece | Pedido de 15/11: não alterar nem remover nada da interface. A decisão de 13/11 que trocou a trilha por busca fica confirmada.
+- 2026-11-15 | etapa 15 | A lista de territórios fica em memória depois da primeira consulta | Sem o MySQL, cada `/context` esperava o tempo de conexão e passava de 2 s.
+- 2026-11-15 | interface | Endereço inexistente, dataset fora do catálogo e falha de rota usam a mesma página de erro dentro do painel | O aviso compacto e a tela padrão do React Router saíam do visual e não ofereciam volta nem nova tentativa.
+- 2026-11-15 | interface | A página de erro sobe em quatro tempos quando as animações estão ligadas | O código, o título, o texto e as ações usam o mesmo fade do restante do painel. Com animações desligadas o conteúdo aparece inteiro.
+- 2026-11-15 | interface | `/databricks` mostra só a tabela da população por idade | Galeria, login e iframe saíram. A página passa a ler a mesma base tratada da ds1.

@@ -28,6 +28,7 @@ describe("tema", () => {
       contrast: null,
       mode: "technical",
       motion: "off",
+      sidebarCollapsed: false,
     })
   })
 

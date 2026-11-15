@@ -21,7 +21,7 @@ export default defineConfig({
     {
       command: "python -m uvicorn app.main:app --host 127.0.0.1 --port 8000",
       cwd: "apps/api",
-      env: { DATA_DIR: dataDir, MYSQL_REQUIRED: "false" },
+      env: { DATA_DIR: dataDir, MYSQL_REQUIRED: "false", AUTO_SEED: "false" },
       url: "http://127.0.0.1:8000/api/v1/health",
       reuseExistingServer: true,
       timeout: 60_000,

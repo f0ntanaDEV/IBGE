@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
+from app.domain.validation_rules import evaluate, rule_for
+
 
 class StepCount(BaseModel):
     before: int
@@ -34,6 +36,8 @@ class Validation(BaseModel):
     ok: bool
     max_diff: float
     motivo: str | None = None
+    status: Literal["ok", "ok_arredondamento", "falha"] = "ok"
+    note: str | None = None
 
 
 class ValidationSummary(BaseModel):
@@ -81,6 +85,16 @@ class QualityReport(BaseModel):
     ids_recovered: int = 0
 
 
+def _motivo(status: str, diff: float, reference: float, note: str | None, fallback: object) -> str | None:
+    if status == "ok":
+        return None
+    if status == "ok_arredondamento":
+        people = int(round(diff))
+        relative = f" ({diff / reference * 100:.4f}%)".replace(".", ",") if reference else ""
+        return f"diferença máxima de {people} pessoas{relative} · {note or 'arredondamento da fonte IBGE'}"
+    return str(fallback or f"diferença máxima de {diff:g}")
+
+
 def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime | None = None, finished_at: datetime | None = None) -> QualityReport:
     """Aceita o JSON novo ou o relatório interno do pipeline."""
     if "nulls" in raw and "rows_in" in raw:
@@ -124,14 +138,21 @@ def publish_report(raw: dict[str, Any], *, run_id: int = 0, started_at: datetime
     now = datetime.now()
     validations = []
     for item in raw.get("validations") or []:
-        ok = bool(item.get("ok"))
         diff = float(item.get("max_diff") or 0)
+        reference = float(item.get("reference") or 0)
+        rule = rule_for(str(item.get("rule")), str(raw.get("dataset_id") or ""))
+        status = item.get("status") if item.get("status") in {"ok", "ok_arredondamento", "falha"} else evaluate(rule, diff, reference)
+        if item.get("max_diff") is None and not item.get("ok", True):
+            status = "falha"
+        motivo = _motivo(status, diff, reference, rule.note, item.get("motivo"))
         validations.append(
             Validation(
                 rule=str(item.get("rule")),
-                ok=ok,
+                ok=status != "falha",
                 max_diff=diff,
-                motivo=None if ok else str(item.get("motivo") or f"diferença máxima de {diff:g}"),
+                motivo=motivo,
+                status=status,
+                note=rule.note,
             )
         )
     approved = sum(1 for item in validations if item.ok)

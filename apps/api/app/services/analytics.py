@@ -116,7 +116,7 @@ def summary(
                     "unidade": "proporção",
                 }
             )
-    for extra in ("tft", "e0_t", "tmi_t"):
+    for extra in ("tft", "e0_t", "tmi_t", "id_med"):
         if extra in frame.columns and extra != metric:
             kpis.append(
                 {
@@ -128,7 +128,7 @@ def summary(
             )
     series = _series(apply_filters(base, cod=cod, sexo=sexo), metric, additive)
     rankings = _rankings(scoped if year is not None else current, metric, additive)
-    return {"kpis": kpis, "series": series, "rankings": rankings}
+    return {"kpis": kpis, "series": series, "rankings": rankings, "headline": _headline(base, cfg, year, cod, sexo)}
 
 
 def pyramid(frame: pd.DataFrame, cfg: DatasetConfig, ano: int | None, cod: int | None, compare_ano: int | None) -> list[dict]:
@@ -252,12 +252,20 @@ def _aggregate(frame: pd.DataFrame, metric: str, additive: bool) -> float | None
 
 
 def _series(frame: pd.DataFrame, metric: str, additive: bool) -> list[dict]:
+    """Mesma leitura do KPI: contagem soma; taxa fica na idade 0 e na escala do card."""
     if "ano" not in frame.columns or metric not in frame.columns or frame.empty:
         return []
-    grouped = frame.groupby("ano")[metric]
+    scoped = frame
+    if not additive and "idade" in frame.columns and frame["idade"].eq(0).any():
+        scoped = frame[frame["idade"].eq(0)]
+    grouped = scoped.groupby("ano")[metric]
     values = grouped.sum() if additive else grouped.mean()
-    table = values.rename("valor").reset_index()
-    return json_loads(table)
+    rows = json_loads(values.rename("valor").reset_index())
+    for row in rows:
+        raw = row["valor"]
+        shown, _unit = _kpi_value(metric, None if raw is None else float(raw))
+        row["valor"] = shown
+    return rows
 
 
 def _rankings(frame: pd.DataFrame, metric: str, additive: bool) -> list[dict]:
@@ -417,6 +425,38 @@ def milestones(frames: dict[str, pd.DataFrame], cod: int) -> dict:
 def _require_metric(frame: pd.DataFrame, metric: str) -> None:
     if metric not in frame.columns:
         raise AppError("invalid_metric", f"Métrica inexistente: {metric}", 422, {"metric": metric})
+
+
+def _headline(base: pd.DataFrame, cfg: DatasetConfig, year: int | None, cod: int | None, sexo: str | None) -> dict:
+    """Campos da manchete para o ano selecionado."""
+    if cfg.id == "ds1" and year is not None and {"idade", "populacao"} <= set(base.columns):
+        future = min(int(year) + 14, 2070)
+
+        def share(target: int) -> float | None:
+            rows = apply_filters(base, ano=target, cod=cod)
+            total = float(rows["populacao"].sum()) if not rows.empty else 0.0
+            if total <= 0:
+                return None
+            older = float(rows.loc[rows["idade"] >= 60, "populacao"].sum())
+            return older / total
+
+        return {"p60": share(int(year)), "p60_futuro": share(future), "ano_futuro": future}
+    if cfg.id == "ds2" and year is not None and "grupo_etario" in base.columns and "populacao" in base.columns:
+        changes = []
+        groups = [str(name) for name in base["grupo_etario"].dropna().unique()]
+        for group in groups:
+            now_rows = apply_filters(base, ano=int(year), cod=cod, grupo=group)
+            later_rows = apply_filters(base, ano=2070, cod=cod, grupo=group)
+            now = float(now_rows["populacao"].sum()) if not now_rows.empty else 0.0
+            later = float(later_rows["populacao"].sum()) if not later_rows.empty else None
+            if now and later is not None:
+                changes.append((group, later / now - 1))
+        if not changes:
+            return {}
+        grows = max(changes, key=lambda item: item[1])
+        falls = min(changes, key=lambda item: item[1])
+        return {"g_max": grows[0], "v_max": grows[1], "g_min": falls[0], "v_min": falls[1]}
+    return {}
 
 
 def _sexo_total(frame: pd.DataFrame) -> pd.DataFrame:

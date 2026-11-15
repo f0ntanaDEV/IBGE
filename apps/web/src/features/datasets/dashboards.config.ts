@@ -262,10 +262,10 @@ export const dashboards: DashboardSpec[] = [
       { key: "lx_80", format: "decimal", label: metricLabel("lx_80"), hint: "De cada 100 nascidos, quantos chegam aos 80 anos.", unit: "de cada 100" },
     ],
     charts: [
-      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "lx de homens e mulheres por idade.", span: 8 },
+      { kind: "lifeTable", title: "Curva de sobrevivência", metric: "lx", description: "Sobreviventes de cada 100 nascidos, por idade (homens e mulheres).", span: 8 },
       { kind: "context", title: "Contexto", description: "Indicadores da tábua no ano e sexo selecionados.", span: 4 },
       { kind: "lifeTable", title: "Probabilidade de morte", metric: "nqx", logY: true, compareYears: true, description: "Risco de morrer por idade, em escala logarítmica, em dois anos." },
-      { kind: "lifeTable", title: "Esperança de vida por idade", metric: "ex", description: "ex de homens e mulheres por idade." },
+      { kind: "lifeTable", title: "Esperança de vida por idade", metric: "ex", description: "Anos de vida restantes por idade (homens e mulheres)." },
       {
         kind: "diverging",
         title: "Diferença entre mulheres e homens",

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { pickFilters } from "@/features/datasets/search"
+import { cn } from "@/lib/cn"
 import { TERRITORIES } from "@/features/datasets/territories"
 import { usePreferences, type NavigationMode, type ThemeChoice } from "@/stores/preferences"
 
@@ -184,6 +185,7 @@ function NavSearch() {
 export function Header({ onOpenMenu }: HeaderProps) {
   const setTheme = usePreferences((state) => state.setTheme)
   const choice = usePreferences((state) => state.theme)
+  const collapsed = usePreferences((state) => state.sidebarCollapsed)
   const ThemeIcon = themeIcon[choice]
 
   return (
@@ -191,7 +193,15 @@ export function Header({ onOpenMenu }: HeaderProps) {
       <Button variant="ghost" size="icon" className="z-10 md:hidden" aria-label="Abrir menu" onClick={onOpenMenu}>
         <Menu />
       </Button>
-      <div className="absolute top-1/2 left-1/2 z-20 w-[min(28rem,calc(100%-5.5rem))] -translate-x-1/2 -translate-y-1/2 md:left-[calc(50%-7.5rem)] md:w-[min(28rem,calc(100vw-31.5rem))]">
+      <div
+        data-allow-motion="search"
+        className={cn(
+          "absolute top-1/2 left-1/2 z-20 w-[min(28rem,calc(100%-5.5rem))] -translate-x-1/2 -translate-y-1/2",
+          collapsed
+            ? "md:ml-[-2rem] md:w-[min(39rem,calc(100vw-9.5rem))]"
+            : "md:ml-[-7.5rem] md:w-[min(28rem,calc(100vw-31.5rem))]",
+        )}
+      >
         <NavSearch />
       </div>
       <div className="z-10 ml-auto flex">

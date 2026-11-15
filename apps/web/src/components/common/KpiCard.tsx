@@ -66,11 +66,22 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
       data-population={metricKey === "pop_t" || metricKey === "populacao" ? value ?? undefined : undefined}
       className="relative flex h-full min-h-[7rem] flex-col gap-1 p-4"
     >
-      <div className="flex items-start justify-between gap-2">
-        <CharFade className="text-sm leading-snug text-muted-foreground" text={label} />
-        {metricKey ? <GlossaryPopover metricKey={metricKey} cardRef={cardRef} /> : null}
+      <div className="pr-8">
+        <CharFade className="text-sm leading-tight text-muted-foreground" text={label} />
       </div>
-      <div className="flex min-w-0 items-baseline gap-1.5">
+      {metricKey ? (
+        <span className="absolute top-4 right-4">
+          <GlossaryPopover metricKey={metricKey} cardRef={cardRef} hover />
+        </span>
+      ) : null}
+      {status ? (
+        <span className="absolute top-11 right-4 inline-flex size-7 items-center justify-center">
+          <EndFade>
+            <StatusBadge status={status} compact />
+          </EndFade>
+        </span>
+      ) : null}
+      <div className={`flex min-w-0 items-baseline gap-1.5 whitespace-nowrap ${status ? "pr-8" : ""}`}>
         {numeric ? (
           <CountUp
             className="text-2xl font-semibold tabular-nums"
@@ -84,21 +95,14 @@ export function KpiCard({ label, value, format, metricKey, display, delta, loadi
         )}
         {unit ? <span className="truncate text-sm text-muted-foreground">{unit}</span> : null}
       </div>
-      {reference ? <p className="pr-6 text-xs text-muted-foreground">{reference}</p> : null}
-      <p className="pr-6 text-sm text-muted-foreground">
+      {reference ? <p className="text-xs text-muted-foreground">{reference}</p> : null}
+      <p className="text-sm text-muted-foreground">
         {metricKey && typeof delta === "number" ? (
           <CountUp value={delta} metricKey={metricKey} renderValue={(current) => formatDelta(current, metricKey) || "\u00a0"} />
         ) : (
           deltaText || "\u00a0"
         )}
       </p>
-      {status ? (
-        <span className="absolute bottom-3 right-3">
-          <EndFade>
-            <StatusBadge status={status} compact />
-          </EndFade>
-        </span>
-      ) : null}
     </Card>
     </Reveal>
   )

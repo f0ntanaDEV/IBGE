@@ -11,7 +11,7 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, description, lead, meta, audience, actions }: PageHeaderProps) {
   useEffect(() => {
-    document.title = `${title} · Analytics`
+    document.title = `${title} · Projeções IBGE`
   }, [title])
 
   return (

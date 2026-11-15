@@ -1,7 +1,7 @@
 """Fatos dos indicadores."""
 
 from app.services.facts.common import REF_YEAR, cell, first_year, frame, round_num, territory, ufs_do_territorio
-from app.services.facts.models import DetailPoint, Fact
+from app.services.facts.models import DetailPoint, Fact, FactPart
 
 
 def _pair(cod: int) -> tuple[str, str] | None:
@@ -62,11 +62,12 @@ def build(cod: int) -> list[Fact]:
             label="Queda na pandemia",
             value=round_num(e0_2021 or 0, 2),
             kind="years",
-            detail_values=None
+            parts=[]
             if e0_2019 is None or e0_2021 is None
             else [
-                DetailPoint(ano=2019, valor=round_num(e0_2019, 2), kind="years"),
-                DetailPoint(ano=2021, valor=round_num(e0_2021 - e0_2019, 2), kind="years"),
+                FactPart(label="{v} (2019)", value=round_num(e0_2019, 2), kind="rate"),
+                FactPart(label="→ {v} (2021)", value=round_num(e0_2021, 2), kind="rate"),
+                FactPart(label="queda de {v} anos", value=round_num(abs(e0_2021 - e0_2019), 2), kind="rate"),
             ],
         ),
         Fact(
@@ -91,8 +92,8 @@ def build(cod: int) -> list[Fact]:
             detail_values=None
             if tmi is None or tmi_2000 is None
             else [
-                DetailPoint(ano=2000, valor=round_num(tmi_2000, 2), kind="permil"),
-                DetailPoint(ano=REF_YEAR, valor=round_num(tmi / tmi_2000 - 1, 4), kind="percent"),
+                DetailPoint(ano=2000, valor=round_num(tmi_2000, 2), kind="rate", rotulo="em 2000"),
+                DetailPoint(ano=REF_YEAR, valor=round_num(abs(tmi / tmi_2000 - 1), 4), kind="percent", rotulo="queda de {valor}"),
             ],
         ),
         Fact(
@@ -101,7 +102,12 @@ def build(cod: int) -> list[Fact]:
             value=round_num(tbn or 0, 2),
             kind="permil",
             reference_year=REF_YEAR,
-            detail_values=None if tbm is None else [DetailPoint(ano=REF_YEAR, valor=round_num(tbm, 2), kind="permil")],
+            parts=[]
+            if tbn is None or tbm is None
+            else [
+                FactPart(label="nascimentos {v}", value=round_num(tbn, 2), kind="rate"),
+                FactPart(label="óbitos {v} por mil", value=round_num(tbm, 2), kind="rate"),
+            ],
         ),
         Fact(
             id="obitos_nasc",

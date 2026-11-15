@@ -2,7 +2,7 @@ import { stableHash } from "@/lib/narratives/grammar"
 import type { NarrativeContext } from "@/lib/narratives/types"
 
 const TEMPLATES: Record<string, string[]> = {
-  trend: ["{onde}, {serie} {verbo} {pct} no período.", "Entre os anos observados {onde}, {serie} {verbo} {pct}."],
+  trend: ["{onde}, {serie} {verbo} {pct} entre 2000 e 2070.", "Entre os anos observados, {onde}, {serie} {verbo} {pct}."],
   peak: ["{serie} foi máxima em {ano} {onde}.", "{ondeCap}, {serie} chega ao pico em {ano}."],
   crossing: ["As séries se cruzam em {ano}.", "O cruzamento {onde} acontece em {ano}."],
   rank: ["É a {posicao} {ondeRank} entre {n}.", "No ranking, fica na {posicao} posição entre {n}."],

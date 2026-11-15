@@ -45,6 +45,17 @@ export function preposicaoTerritorio(nome: string) {
   return PREP[nome] ?? `em ${nome}`
 }
 
+const MID_NAME: Record<string, string> = {
+  População: "a população",
+  "Filhos por mulher": "o número de filhos por mulher",
+}
+
+export function metricName(label: string) {
+  if (MID_NAME[label]) return MID_NAME[label]
+  if (!label) return label
+  return label.charAt(0).toLowerCase() + label.slice(1)
+}
+
 export function stableHash(text: string) {
   let hash = 0
   for (const char of text) hash = (hash * 33 + char.charCodeAt(0)) >>> 0

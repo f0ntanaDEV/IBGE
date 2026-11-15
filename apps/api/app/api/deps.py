@@ -6,8 +6,14 @@ from app.core.errors import AppError
 from app.domain.territory import nivel_de, territorios_padrao
 
 
+_codes: set[int] | None = None
+
+
 def known_territory_codes() -> set[int]:
     """Cadastro padrão mais o que estiver em dim_territorio. O Brasil (0) nunca sai."""
+    global _codes
+    if _codes is not None:
+        return _codes
     codes = {int(row["cod"]) for row in territorios_padrao()}
     try:
         from sqlalchemy import select
@@ -20,6 +26,7 @@ def known_territory_codes() -> set[int]:
         codes.update(int(code) for code in rows)
     except Exception:
         pass
+    _codes = codes
     return codes
 
 

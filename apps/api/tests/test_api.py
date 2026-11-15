@@ -133,6 +133,9 @@ def test_brasil_permanece_se_o_banco_nao_tem_cod_zero(monkeypatch):
             return _Conn()
 
     monkeypatch.setattr("app.db.get_engine", lambda: _Engine())
+    import app.api.deps as deps
+
+    deps._codes = None
     from app.api.deps import known_territory_codes
 
     codes = known_territory_codes()

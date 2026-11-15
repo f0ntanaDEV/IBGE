@@ -46,6 +46,9 @@ def create_app() -> FastAPI:
     app.include_router(facts.router, prefix="/api/v1")
     app.include_router(context.router, prefix="/api/v1")
     app.include_router(metrics.router, prefix="/api/v1")
+    from app.api.v1 import databricks
+
+    app.include_router(databricks.router, prefix="/api/v1")
     from app.domain.kpi_rules import load_rules
     from app.domain.metricas import load_metricas
 

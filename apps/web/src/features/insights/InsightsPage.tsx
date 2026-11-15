@@ -37,20 +37,25 @@ export function InsightsPage() {
   return (
     <div className="page-stack">
       <PageHeader title="Insights" description="Valores das Projeções da População, Revisão 2024; ano de referência 2026." />
-      <nav aria-label="Perguntas centrais" className="grid gap-2 text-sm">
-        {PAGE_COPY.map((item) => (
-          <Link key={item.id} to={item.to} className="underline">
-            {item.question}
-          </Link>
-        ))}
+      <nav aria-label="Perguntas centrais" className="overflow-hidden rounded-lg border border-border">
+        <ul>
+          {PAGE_COPY.map((item) => (
+            <li key={item.id} className="border-b border-border last:border-b-0">
+              <Link to={item.to} className="flex flex-col gap-1 px-4 py-3 text-sm hover:bg-muted sm:flex-row sm:items-baseline sm:gap-6">
+                <span className="shrink-0 text-muted-foreground sm:w-44">{item.title}</span>
+                <span className="font-medium leading-snug">{item.question}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </nav>
-      <nav aria-label="Seções" className="flex flex-wrap gap-3 text-sm">
+      <nav aria-label="Seções" className="flex flex-wrap gap-2">
         {INSIGHTS.map((section) => (
-          <a key={section.pageId} href={`#${section.pageId}`} className="underline">
+          <a key={section.pageId} href={`#${section.pageId}`} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">
             {section.title}
           </a>
         ))}
-        <a href="#padroes" className="underline">
+        <a href="#padroes" className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">
           Padrões dos dados
         </a>
       </nav>

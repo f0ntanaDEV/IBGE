@@ -151,7 +151,12 @@ export function fetchMetricCatalog() {
 }
 
 export function fetchSummary(id: string, filters: { ano?: number; cod?: number; sexo?: string }) {
-  return send<{ kpis: { id: string; label: string; value: number | null; unidade: string }[]; series: { ano: number; valor: number }[]; rankings: Record<string, unknown>[] }>(
+  return send<{
+    kpis: { id: string; label: string; value: number | null; unidade: string }[]
+    series: { ano: number; valor: number }[]
+    rankings: Record<string, unknown>[]
+    headline?: { p60?: number | null; p60_futuro?: number | null; ano_futuro?: number | null; g_max?: string | null; v_max?: number | null; g_min?: string | null; v_min?: number | null }
+  }>(
     `/api/v1/datasets/${id}/summary${queryString(filters)}`,
   )
 }
@@ -168,7 +173,7 @@ export type ValidationBoard = {
   approved: number
   total: number
   text: string
-  items: { dataset_id: string; rule: string; ok: boolean; motivo?: string | null }[]
+  items: { dataset_id: string; rule: string; ok: boolean; status?: string | null; motivo?: string | null; note?: string | null }[]
 }
 
 export function fetchValidations(source: "original" | "sujo") {
@@ -258,6 +263,7 @@ export type FactItem = {
   kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw"
   detail?: string | null
   detail_values?: { ano: number; valor: number; kind: FactItem["kind"]; rotulo?: string | null }[] | null
+  parts?: { label?: string | null; value: number | string; kind: FactItem["kind"]; position?: "prefix" | "suffix" }[]
   reference_year?: number | null
   status?: "good" | "warn" | "bad" | null
 }

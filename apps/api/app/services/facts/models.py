@@ -15,6 +15,13 @@ class DetailPoint(BaseModel):
     rotulo: str | None = None
 
 
+class FactPart(BaseModel):
+    label: str | None = None
+    value: float | int | str
+    kind: Kind
+    position: Literal["prefix", "suffix"] = "prefix"
+
+
 class Fact(BaseModel):
     id: str
     label: str
@@ -22,5 +29,6 @@ class Fact(BaseModel):
     kind: Kind
     detail: str | None = None
     detail_values: list[DetailPoint] | None = None
+    parts: list[FactPart] = []
     reference_year: int | None = None
     status: Status | None = None

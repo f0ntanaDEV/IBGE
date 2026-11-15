@@ -10,15 +10,17 @@ type LifeTableChartProps = {
   data: LifePoint[]
   series: { key: string; label: string }[]
   logY?: boolean
+  per100?: boolean
   summary: string
 }
 
-function LifeTableChartView({ data, series, logY = false, summary }: LifeTableChartProps) {
+function LifeTableChartView({ data, series, logY = false, per100 = false, summary }: LifeTableChartProps) {
   const { colors, chartAnim } = useChartTheme()
   const simple = false
   const shown = simple ? series.slice(0, 3) : series
   const log = logY && !simple
-  const kind: MetricKind = log ? "rate" : "count"
+  const kind: MetricKind = per100 ? "rate" : log ? "rate" : "count"
+  const formatTick = (value: number) => (per100 ? formatValue(value, { key: "lx_80", kind: "rate" }) : formatValue(value, { key: "lx", kind }))
   const config = useMemo<ChartConfig>(() => {
     const next: ChartConfig = {}
     shown.forEach((item, index) => {
@@ -39,7 +41,6 @@ function LifeTableChartView({ data, series, logY = false, summary }: LifeTableCh
       }),
     [data, log, shown],
   )
-  const formatTick = (value: number) => formatValue(value, { key: "lx", kind })
 
   return (
     <div role="img" aria-label={summary} className="flex h-full min-h-0 flex-col">
@@ -49,7 +50,7 @@ function LifeTableChartView({ data, series, logY = false, summary }: LifeTableCh
           <XAxis dataKey="idade" stroke="hsl(var(--muted-foreground))" tickCount={simple ? 5 : undefined} />
           <YAxis
             scale={log ? "log" : "auto"}
-            domain={["auto", "auto"]}
+            domain={per100 ? [0, 100] : ["auto", "auto"]}
             stroke="hsl(var(--muted-foreground))"
             width={56}
             tickCount={simple ? 5 : undefined}

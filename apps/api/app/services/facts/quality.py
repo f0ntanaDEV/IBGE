@@ -13,9 +13,54 @@ from app.services.quality_summary import summarize_validations
 DATASETS = ("ds1", "ds2", "ds3", "ds4", "ds5")
 
 
+def _manifest_demo() -> tuple[int, int]:
+    folder = get_settings().raw_dir
+    duplicates = 0
+    nulls = 0
+    for dataset_id in DATASETS:
+        path = folder / f"{dataset_id}_sujo.manifest.json"
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        duplicates += int(payload.get("exact_duplicates") or 0) + int(payload.get("key_duplicates") or 0)
+        nulls += sum(int(value) for value in (payload.get("nulls_injected") or {}).values())
+    return duplicates, nulls
+
+
 def _finished(path) -> datetime:
     token = path.name.split("_", 1)[1][:15]
     return datetime.strptime(token, "%Y%m%dT%H%M%S")
+
+
+def latest_raw(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
+    """Relatório mais recente no disco ou, se a limpeza apagou a fonte, no MySQL."""
+    found = _latest(dataset_id, source)
+    if found is not None:
+        return found
+    try:
+        from app.db import get_engine
+        from app.repositories.etl_runs import list_runs
+
+        with get_engine().connect() as connection:
+            rows = list_runs(connection, dataset_id)
+    except Exception:
+        return None
+    for row in rows:
+        payload = row.get("report_json")
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except json.JSONDecodeError:
+                continue
+        if not isinstance(payload, dict):
+            continue
+        found_source = payload.get("source") or row.get("source") or "original"
+        if found_source != source:
+            continue
+        finished = row.get("finished_at")
+        when = finished if isinstance(finished, datetime) else datetime.now()
+        return payload, when
+    return None
 
 
 def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
@@ -32,12 +77,22 @@ def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
 def validation_overview(source: str) -> dict:
     items = []
     for dataset_id in DATASETS:
-        raw = _latest(dataset_id, source)
+        raw = latest_raw(dataset_id, source)
         if raw is None:
             continue
         report = publish_report(raw[0], finished_at=raw[1], started_at=raw[1])
         for check in report.validations:
-            items.append({"dataset_id": dataset_id, "rule": check.rule, "ok": check.ok, "motivo": check.motivo})
+            items.append(
+                {
+                    "dataset_id": dataset_id,
+                    "rule": check.rule,
+                    "ok": check.ok,
+                    "status": check.status,
+                    "motivo": check.motivo,
+                    "max_diff": check.max_diff,
+                    "note": check.note,
+                }
+            )
     summary = summarize_validations(items)
     return {**summary, "items": items}
 
@@ -46,10 +101,10 @@ def build(_cod: int) -> list[Fact]:
     original = []
     dirty = []
     for dataset_id in DATASETS:
-        raw = _latest(dataset_id, "original")
+        raw = latest_raw(dataset_id, "original")
         if raw is not None:
             original.append(publish_report(raw[0], finished_at=raw[1], started_at=raw[1]))
-        messy = _latest(dataset_id, "sujo")
+        messy = latest_raw(dataset_id, "sujo")
         if messy is not None:
             dirty.append(publish_report(messy[0], finished_at=messy[1], started_at=messy[1]))
     rows = sum(item.rows_out for item in original)
@@ -65,6 +120,8 @@ def build(_cod: int) -> list[Fact]:
     outlier_status = evaluate("atipicos", {"value": outlier_pct})["status"]
     demo_dup = sum(item.duplicates.exact + item.duplicates.by_key for item in dirty)
     demo_imputed = sum(item.nulls.total_imputed for item in dirty)
+    if dirty and demo_dup == 0 and demo_imputed == 0:
+        demo_dup, demo_imputed = _manifest_demo()
     finished = [item.finished_at for item in original if isinstance(item.finished_at, datetime)]
     zoned = as_brasilia(max(finished)) if finished else None
     last = zoned.strftime("%d/%m/%Y %H:%M") if zoned else ""
@@ -82,6 +139,12 @@ def build(_cod: int) -> list[Fact]:
             status=validation_status,
         ),
         Fact(id="outliers", label="Valores atípicos", value=outliers, kind="count", status=outlier_status),
-        Fact(id="demo", label="Base de demonstração (suja)", value=demo_dup, kind="count", detail=f"nulos imputados: {demo_imputed}"),
+        Fact(
+            id="demo",
+            label="Base de demonstração (suja)",
+            value=demo_dup if dirty else "execução ainda não registrada",
+            kind="count" if dirty else "raw",
+            detail=None if not dirty else f"{demo_dup} duplicatas removidas · {demo_imputed} nulos imputados",
+        ),
         Fact(id="ultima", label="Última execução bem-sucedida", value=last, kind="raw"),
     ]

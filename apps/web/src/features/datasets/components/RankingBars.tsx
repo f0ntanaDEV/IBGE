@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { formatValue, metricFromFormat, type NumberFormat } from "@/lib/format"
+import { formatAxis } from "@/lib/chart-axes"
 
 export type RankRow = { cod: number; label: string; value: number }
 
@@ -30,7 +31,11 @@ function RankingBarsView({ rowsByMetric, options, selectedCod, summary }: Rankin
     const ordered = [...(rowsByMetric[metric] ?? [])].sort((a, b) => b.value - a.value)
     return simple ? ordered.slice(0, 5) : ordered
   }, [metric, rowsByMetric, simple])
-  const formatTick = (value: number) => formatValue(value, metricFromFormat(format, metric))
+  const formatTick = (value: number) => {
+    const axis = metricFromFormat(format, metric)
+    if (axis.kind === "years") return formatAxis(value, axis)
+    return formatValue(value, axis)
+  }
   const plotRef = useRef<HTMLDivElement>(null)
   const [bodyHeight, setBodyHeight] = useState(320)
   useEffect(() => {

@@ -19,7 +19,7 @@ export function ActionStrip({ items }: { items: ActionItem[] }) {
           {shown.map((item) => (
             <li key={item.id} className="flex flex-wrap items-baseline gap-x-2">
               <span className="font-medium">{item.label}</span>
-              <span className="text-muted-foreground">{STATUS_LABEL[item.status]}.</span>
+              <span style={{ color: `hsl(var(--status-${item.status}))` }}>{STATUS_LABEL[item.status]}.</span>
               <span>{item.action}</span>
               <button type="button" className="underline" onClick={() => document.querySelector<HTMLButtonElement>(`[data-kpi="${item.id}"] button`)?.click()}>
                 Ver regra

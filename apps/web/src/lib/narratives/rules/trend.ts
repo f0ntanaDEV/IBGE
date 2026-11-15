@@ -1,4 +1,4 @@
-import { preposicaoTerritorio } from "@/lib/narratives/grammar"
+import { preposicaoTerritorio, metricName } from "@/lib/narratives/grammar"
 import { namedSeries } from "@/lib/narratives/series"
 import { renderTemplate } from "@/lib/narratives/templates"
 import type { Insight, NarrativeContext, SeriesPoint } from "@/lib/narratives/types"
@@ -15,7 +15,7 @@ export function trend(ctx: NarrativeContext): Insight | null {
   return {
     type: "trend",
     relevance: 0.7,
-    text: renderTemplate("trend", ctx, { serie: named.label, onde, ondeCap: capitalize(onde), verbo, pct }),
+    text: renderTemplate("trend", ctx, { serie: metricName(named.label), onde, ondeCap: capitalize(onde), verbo, pct }),
     highlight: { chartId: ctx.chartId ?? "", x: series[series.length - 1].ano },
   }
 }

@@ -170,14 +170,12 @@ def quality_report(
     source: Literal["original", "sujo"] = "original",
 ) -> PublishedQualityReport:
     catalog_or_404(dataset_id)
-    from datetime import datetime
+    from app.services.facts.quality import latest_raw
 
-    reports = [item for item in _reports(dataset_id) if (item.get("source") or "original") == source]
-    if not reports:
+    found = latest_raw(dataset_id, source)
+    if found is None:
         raise AppError("no_run_for_source", "Não há execução para esta fonte", 404, {"source": source})
-    raw = reports[-1]
-    finished = raw.get("finished_at")
-    when = datetime.fromisoformat(finished) if isinstance(finished, str) else None
+    raw, when = found
     published = publish_report(raw, finished_at=when, started_at=when)
     if source == "sujo":
         manifest_path = get_settings().raw_dir / f"{dataset_id}_sujo.manifest.json"
