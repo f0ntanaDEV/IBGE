@@ -13,6 +13,9 @@ export const NOVIDADES: NovidadeGrupo[] = [
   {
     date: "2026-11-14",
     items: [
+      { area: "Interface", text: "O Painel Databricks entrou no menu e ocupa a área de conteúdo com o dashboard publicado." },
+      { area: "Animação", text: "Como ler este painel, Novidades, Insights, Notícias, Qualidade e o Painel Databricks passam a entrar com o mesmo fade das outras páginas. Configurações continua sem animação." },
+      { area: "Dados", text: "As versões antigas das bases tratadas saíram do disco. Permanece a execução mais recente de cada dataset." },
       { area: "Databricks", text: "As mesmas bases tratadas agora têm consultas para um painel no Databricks: visão geral, as cinco bases e qualidade. A pirâmide vira gráfico de barras. Mapa, animação e notícias continuam só neste site." },
     ],
   },

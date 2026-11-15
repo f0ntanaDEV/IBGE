@@ -1,8 +1,11 @@
 import { PageHeader } from "@/components/common/PageHeader"
 import { NOVIDADES } from "@/content/novidades"
 import { formatDate } from "@/lib/format"
+import { usePageReady } from "@/motion/usePageReady"
+import { Reveal } from "@/motion/useMotion"
 
 export function NovidadesPage() {
+  usePageReady(true)
   return (
     <div className="page-stack">
       <PageHeader
@@ -10,7 +13,8 @@ export function NovidadesPage() {
         lead="O que mudou no painel, na data em que cada alteração foi registrada nas especificações."
       />
       {NOVIDADES.map((group) => (
-        <section key={group.date} className="overflow-hidden rounded-lg border border-border">
+        <Reveal key={group.date}>
+        <section className="overflow-hidden rounded-lg border border-border">
           <h2 className="border-b border-border px-4 py-3 text-sm font-medium">
             <time dateTime={group.date}>{formatDate(group.date)}</time>
           </h2>
@@ -23,6 +27,7 @@ export function NovidadesPage() {
             ))}
           </ul>
         </section>
+        </Reveal>
       ))}
     </div>
   )

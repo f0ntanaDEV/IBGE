@@ -11,6 +11,7 @@ const SettingsPage = lazy(() => import("@/features/settings/page").then((mod) =>
 const InsightsPage = lazy(() => import("@/features/insights/InsightsPage").then((mod) => ({ default: mod.InsightsPage })))
 const AboutPage = lazy(() => import("@/features/about/page").then((mod) => ({ default: mod.AboutPage })))
 const NovidadesPage = lazy(() => import("@/features/novidades/page").then((mod) => ({ default: mod.NovidadesPage })))
+const DatabricksPage = lazy(() => import("@/features/databricks/page").then((mod) => ({ default: mod.DatabricksPage })))
 
 function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando…</p>}>{children}</Suspense>
@@ -26,6 +27,14 @@ export const router = createBrowserRouter([
         element: (
           <Lazy>
             <OverviewPage />
+          </Lazy>
+        ),
+      },
+      {
+        path: "databricks",
+        element: (
+          <Lazy>
+            <DatabricksPage />
           </Lazy>
         ),
       },

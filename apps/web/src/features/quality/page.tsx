@@ -10,6 +10,7 @@ import { UpdateLine } from "@/components/common/UpdateLine"
 import { pageCopy } from "@/content/pages"
 import { CountUp } from "@/motion/CountUp"
 import { CharFade } from "@/motion/WordReveal"
+import { usePageReady } from "@/motion/usePageReady"
 import { Reveal } from "@/motion/useMotion"
 import { formatDateTime } from "@/lib/format"
 import { useFacts, useQualityReport, useRuns } from "@/features/datasets/hooks"
@@ -75,6 +76,7 @@ function TechnicalQuality() {
     },
     onError: (error: Error) => toast.error(error.message),
   })
+  usePageReady(report.isSuccess || report.isError)
   const { hash } = useLocation()
   useEffect(() => {
     if (!hash.startsWith("#chart-")) return
@@ -142,6 +144,7 @@ function TechnicalQuality() {
         </section>
       ) : null}
       <div className="chart-board">
+        <Reveal className="span-8">
         <section data-chart-id={chartId("Original × Demonstração")} tabIndex={-1} className="span-8 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Base original × Base de demonstração</h2>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
@@ -149,6 +152,8 @@ function TechnicalQuality() {
             <SourceColumn title="Base de demonstração" report={dirty.data} />
           </div>
         </section>
+        </Reveal>
+        <Reveal className="span-4">
         <section data-chart-id={chartId("Validações")} tabIndex={-1} className="span-4 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Validações</h2>
           <p className="mt-2">{board.data?.text ?? (board.isPending ? "Carregando validações…" : "Sem validações")}</p>
@@ -161,7 +166,9 @@ function TechnicalQuality() {
             ))}
           </ul>
         </section>
+        </Reveal>
         {source === "sujo" && rows.length ? (
+          <Reveal className="span-12">
           <section data-chart-id={chartId("Inserido · Detectado · Corrigido")} tabIndex={-1} className="span-12 rounded-lg border border-border p-4 text-sm">
             <h2 className="font-medium">Inserido · Detectado · Corrigido</h2>
             <table className="mt-3 w-full text-left">
@@ -194,7 +201,9 @@ function TechnicalQuality() {
               </tbody>
             </table>
           </section>
+          </Reveal>
         ) : null}
+        <Reveal className="span-6">
         <section data-chart-id={chartId("Nulos por coluna")} tabIndex={-1} className="span-6 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Nulos por coluna</h2>
           <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
@@ -205,6 +214,8 @@ function TechnicalQuality() {
             ))}
           </ul>
         </section>
+        </Reveal>
+        <Reveal className="span-6">
         <section data-chart-id={chartId("Histórico de execuções")} tabIndex={-1} className="span-6 rounded-lg border border-border p-4 text-sm">
           <h2 className="font-medium">Histórico de execuções</h2>
           <p className="text-muted-foreground">Horário de Brasília.</p>
@@ -217,6 +228,7 @@ function TechnicalQuality() {
             ))}
           </ul>
         </section>
+        </Reveal>
       </div>
       <FactsCard facts={facts.data} factsCod={facts.factsCod} territoryCod={facts.territoryCod} loading={facts.isLoading} />
     </div>

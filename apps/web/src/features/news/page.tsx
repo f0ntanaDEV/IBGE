@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { fetchDatasetNews } from "@/features/datasets/api"
 import { dashboards } from "@/features/datasets/dashboards.config"
 import { STALE_TIME } from "@/lib/queryClient"
+import { usePageReady } from "@/motion/usePageReady"
 
 const PAGE = 9
 
@@ -22,6 +23,7 @@ export function NewsPage() {
       staleTime: STALE_TIME,
     })),
   })
+  usePageReady(queries.some((query) => query.isSuccess || query.isError))
   const cached = queries.some((query) => query.data?.available === false)
   const items = useMemo(() => {
     return dashboards.flatMap((spec, index) => {

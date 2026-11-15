@@ -1,4 +1,4 @@
-import { Activity, BookOpen, HeartPulse, History, Layers, LayoutDashboard, Lightbulb, Newspaper, Settings, ShieldCheck, Users, UsersRound, type LucideIcon } from "lucide-react"
+import { Activity, BarChart3, BookOpen, HeartPulse, History, Layers, LayoutDashboard, Lightbulb, Newspaper, Settings, ShieldCheck, Users, UsersRound, type LucideIcon } from "lucide-react"
 
 export type NavItem = {
   to: string
@@ -18,6 +18,7 @@ export const datasetNav: NavItem[] = [
 
 export const mainNav: NavItem[] = [
   { to: "/", label: "Visão geral", title: "Visão geral", icon: LayoutDashboard, end: true },
+  { to: "/databricks", label: "Painel Databricks", title: "Painel Databricks", icon: BarChart3 },
   ...datasetNav,
   { to: "/qualidade", label: "Qualidade de dados", title: "Qualidade de dados", icon: ShieldCheck },
   { to: "/insights", label: "Insights", title: "Insights", icon: Lightbulb },

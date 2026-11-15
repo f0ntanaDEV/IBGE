@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { ChevronDown } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { CharFade } from "@/motion/WordReveal"
+import { usePageReady } from "@/motion/usePageReady"
 import { Reveal } from "@/motion/useMotion"
 import { INSIGHTS, PATTERNS } from "@/content/insights"
 import { PAGE_COPY } from "@/content/pages"
 import { cn } from "@/lib/cn"
 
 export function InsightsPage() {
+  usePageReady(true)
   const location = useLocation()
   const navigate = useNavigate()
   const first = `${INSIGHTS[0]?.pageId}-1`

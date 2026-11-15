@@ -4,6 +4,8 @@ import { KPI_RULES } from "@/content/kpi-rules"
 import { METRICAS, metricById } from "@/content/metricas"
 import { PAGE_COPY, PERSONAS } from "@/content/pages"
 import { useMetricCatalog } from "@/features/datasets/hooks"
+import { usePageReady } from "@/motion/usePageReady"
+import { Reveal } from "@/motion/useMotion"
 
 function uniqueMetrics<T extends { id: string; nome: string }>(rows: T[]) {
   const seen = new Set<string>()
@@ -16,18 +18,22 @@ function uniqueMetrics<T extends { id: string; nome: string }>(rows: T[]) {
 
 export function AboutPage() {
   const metrics = useMetricCatalog()
+  usePageReady(true)
   const rows = uniqueMetrics(metrics.data?.length ? metrics.data : METRICAS)
   return (
     <div className="page-stack">
       <PageHeader title="Como ler este painel" lead="Quem usa o painel, o que cada página responde, como ler o status e de onde vêm os números." />
       <section className="grid gap-3 md:grid-cols-3">
         {PERSONAS.map((item) => (
-          <article key={item.title} className="rounded-lg border border-border p-4">
-            <h2 className="text-sm font-medium">{item.title}</h2>
-            <p className="mt-2 text-sm text-muted-foreground">{item.text}</p>
-          </article>
+          <Reveal key={item.title} className="h-full">
+            <article className="h-full rounded-lg border border-border p-4">
+              <h2 className="text-sm font-medium">{item.title}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{item.text}</p>
+            </article>
+          </Reveal>
         ))}
       </section>
+      <Reveal>
       <section className="overflow-hidden rounded-lg border border-border">
         <h2 className="border-b border-border px-4 py-3 text-sm font-medium">O que cada página responde</h2>
         <ul>
@@ -41,6 +47,8 @@ export function AboutPage() {
           ))}
         </ul>
       </section>
+      </Reveal>
+      <Reveal>
       <section className="overflow-hidden rounded-lg border border-border">
         <div className="border-b border-border px-4 py-3">
           <h2 className="text-sm font-medium">Como ler o status</h2>
@@ -60,6 +68,8 @@ export function AboutPage() {
           ))}
         </ul>
       </section>
+      </Reveal>
+      <Reveal>
       <section className="rounded-lg border border-border p-4">
         <h2 className="text-sm font-medium">Fonte e limites</h2>
         <ul className="mt-2 grid gap-2 text-sm text-muted-foreground">
@@ -69,6 +79,8 @@ export function AboutPage() {
           <li>O saldo migratório é estimado.</li>
         </ul>
       </section>
+      </Reveal>
+      <Reveal>
       <section className="overflow-hidden rounded-lg border border-border">
         <div className="border-b border-border px-4 py-3">
           <h2 className="text-sm font-medium">Dicionário de métricas</h2>
@@ -89,6 +101,7 @@ export function AboutPage() {
           ))}
         </dl>
       </section>
+      </Reveal>
     </div>
   )
 }
