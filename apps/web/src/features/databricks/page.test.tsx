@@ -49,10 +49,10 @@ describe("página databricks", () => {
     instances.length = 0
     initialized.length = 0
     sessionStorage.clear()
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => ({
         ok: true,
         json: async () => ({
-          token: "emitido-pelo-servidor",
+          token: input ? "emitido-pelo-servidor" : "",
           instance_url: "https://dbc-e7ffba4b-1a76.cloud.databricks.com",
           workspace_id: "7474648187013488",
           dashboard_id: "01f1e08bd1d71ca9b49a4604ee008ce0",
