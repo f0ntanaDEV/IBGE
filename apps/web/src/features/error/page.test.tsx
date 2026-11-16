@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { createMemoryRouter, MemoryRouter, Route, RouterProvider, Routes } from "react-router-dom"
@@ -45,7 +46,7 @@ describe("página de erro", () => {
   })
 
   it("mostra nova tentativa quando a rota falha ao montar", async () => {
-    function Boom() {
+    function Boom(): ReactNode {
       throw new Error("falha")
     }
     const router = createMemoryRouter(
