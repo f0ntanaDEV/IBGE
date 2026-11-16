@@ -118,14 +118,13 @@ test("títulos e subtítulos sem lx, ex e TFT", async ({ page }) => {
   expect(blob).not.toMatch(/\bTFT\b/)
 })
 
-test("painel databricks mostra só a tabela", async ({ page }) => {
+test("painel databricks mostra só o iframe", async ({ page }) => {
   await prepare(page)
   await page.goto("/databricks")
   await expect(page.getByText("Carregando…")).toHaveCount(0)
-  await expect(page.getByRole("region", { name: "Tabela" })).toBeVisible()
-  await expect(page.getByRole("button", { name: "População" })).toBeVisible()
-  await expect(page.locator("iframe")).toHaveCount(0)
-  await expect(page.getByText(/sign in|log in/i)).toHaveCount(0)
+  await expect(page.getByTitle("Painel Databricks")).toBeVisible()
+  await expect(page.locator("iframe")).toHaveCount(1)
+  await expect(page.getByRole("region", { name: "Tabela" })).toHaveCount(0)
   await expect(page).toHaveTitle(/Projeções IBGE/)
 })
 

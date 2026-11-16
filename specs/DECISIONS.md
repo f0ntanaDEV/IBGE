@@ -112,3 +112,4 @@ Uma linha por decisão: `AAAA-MM-DD | etapa | decisão | motivo`.
 - 2026-11-15 | interface | Endereço inexistente, dataset fora do catálogo e falha de rota usam a mesma página de erro dentro do painel | O aviso compacto e a tela padrão do React Router saíam do visual e não ofereciam volta nem nova tentativa.
 - 2026-11-15 | interface | A página de erro sobe em quatro tempos quando as animações estão ligadas | O código, o título, o texto e as ações usam o mesmo fade do restante do painel. Com animações desligadas o conteúdo aparece inteiro.
 - 2026-11-15 | interface | `/databricks` mostra só a tabela da população por idade | Galeria, login e iframe saíram. A página passa a ler a mesma base tratada da ds1.
+- 2026-11-15 | interface | `/databricks` volta a ser só o iframe do painel publicado | A tabela saiu. O iframe ocupa a área de conteúdo e usa a URL de embed do mesmo dashboard.

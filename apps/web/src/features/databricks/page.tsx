@@ -1,48 +1,8 @@
-import { useMemo } from "react"
-import type { ColumnDef } from "@tanstack/react-table"
-import { DataTable } from "@/components/common/DataTable"
-import { fetchData } from "@/features/datasets/api"
-import { formatBy } from "@/lib/format"
 import { usePageReady } from "@/motion/usePageReady"
 
-const COLUMNS = [
-  ["ano", "Ano"],
-  ["idade", "Idade"],
-  ["sexo", "Sexo"],
-  ["local", "Local"],
-  ["sigla", "Sigla"],
-  ["populacao", "População"],
-] as const
+const SRC = "https://dbc-e7ffba4b-1a76.cloud.databricks.com/embed/dashboardsv3/01f1e08bd1d71ca9b49a4604ee008ce0?o=7474648187013488"
 
 export function DatabricksPage() {
   usePageReady(true)
-  const columns = useMemo<ColumnDef<Record<string, unknown>, unknown>[]>(
-    () =>
-      COLUMNS.map(([key, header]) => ({
-        id: key,
-        accessorFn: (row) => row[key],
-        header,
-        cell: (context) => {
-          const value = context.getValue()
-          if (key === "populacao" && typeof value === "number") return formatBy("integer", value, "populacao")
-          return value == null ? "" : String(value)
-        },
-      })),
-    [],
-  )
-  return (
-    <DataTable
-      columns={columns}
-      queryKey={["databricks", "ds1"]}
-      fetcher={async (params) => {
-        const page = await fetchData("ds1", {
-          page: params.page,
-          pageSize: params.pageSize,
-          sort: params.sort,
-          desc: params.desc,
-        })
-        return { rows: page.items, total: page.total }
-      }}
-    />
-  )
+  return <iframe title="Painel Databricks" src={SRC} className="min-h-0 w-full flex-1 border-0" allow="fullscreen" />
 }
