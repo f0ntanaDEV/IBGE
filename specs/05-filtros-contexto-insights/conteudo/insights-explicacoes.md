@@ -1,6 +1,6 @@
 # Explicações das perguntas dos Insights
 
-Complementa `specs/10-modos-acessibilidade-insights/conteudo/insights.md` (mesma ordem e numeração). Para cada pergunta:
+Complementa `specs/04-modos-acessibilidade-insights/conteudo/insights.md` (mesma ordem e numeração). Para cada pergunta:
 - **Por que importa**: linha exibida no cabeçalho da caixa, com até 25 palavras;
 - **Números-chave**: 3 chips no formato `rótulo: valor`;
 - **Gráfico**: destino do link "Ver na página".

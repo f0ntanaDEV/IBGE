@@ -123,6 +123,7 @@ export function OverviewPage() {
   return (
     <div className="page-stack">
       <PageHeader title="Visão geral" lead={copy?.question} audience={copy?.audience} meta={<UpdateLine processedAt={processed} latestRevision={datasets.data?.[0]?.latest_revision} />} />
+      <Headline pageId="overview" input={{ cod, place, ano: year, pop: num(current?.pop_t), peakYear: peak?.ano ?? null, e0: num(current?.e0_t), e0Brazil: num(brazilNow?.e0_t) }} />
       <FilterBar
         territories={filters.territories}
         filters={["territorio", "ano"]}
@@ -133,7 +134,6 @@ export function OverviewPage() {
         onAno={filters.setAno}
         onSexo={() => undefined}
       />
-      <Headline pageId="overview" input={{ cod, place, ano: year, pop: num(current?.pop_t), peakYear: peak?.ano ?? null, e0: num(current?.e0_t), e0Brazil: num(brazilNow?.e0_t) }} />
       <section className="dashboard-grid" aria-label="Indicadores do Brasil">
         {views.map((kpi) => (
           <KpiCard

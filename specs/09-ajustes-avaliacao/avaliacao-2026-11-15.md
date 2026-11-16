@@ -1,6 +1,6 @@
 # Reavaliação local (15/11/2026)
 
-A suíte da API, a suíte web (47 testes) e o e2e da etapa 15 passaram na máquina local. A produção (`ibge-eight.vercel.app` / Railway) continua no deploy anterior: as mudanças desta spec ainda não foram publicadas.
+A suíte da API, a suíte web (47 testes) e o e2e da etapa 9 passaram na máquina local. A produção (`ibge-eight.vercel.app` / Railway) continua no deploy anterior: as mudanças desta spec ainda não foram publicadas.
 
 Legenda: ✅ atende · ⚠️ parcial · ❌ não atende
 
@@ -17,7 +17,7 @@ Legenda: ✅ atende · ⚠️ parcial · ❌ não atende
 | Hierarquia topo / meio / base | ✅ | ✅ |
 | Grandes números e storytelling | ⚠️ | ✅ |
 
-## O que a etapa 15 fechou
+## O que a etapa 9 fechou
 - **Validações:** 113 de 113 aprovadas e status Favorável, com "ok com arredondamento" e a nota da fonte.
 - **Base de demonstração:** comparação Inserido × Detectado × Corrigido com selos ok e fato com duplicatas e nulos reais.
 - **Fatos:** rótulos da tabela do R3, sem "2026:" no ano de referência.

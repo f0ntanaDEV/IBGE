@@ -126,6 +126,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
   return (
     <div className="page-stack">
       <PageHeader title={copy.title} lead={pageCopy(pageId)?.question} audience={pageCopy(pageId)?.audience} meta={<UpdateLine />} />
+      <Headline pageId={pageId} input={{ cod: filters.cod, place, ano: filters.ano, pop: kpis.find((item) => item.id === "pop_t")?.value ?? null }} />
       <FilterBar
         territories={filters.territories}
         filters={["territorio", "ano"]}
@@ -142,7 +143,6 @@ export function SimplePage({ pageId }: { pageId: string }) {
         ))}
       </section>
       <section className="grid gap-4" aria-label="Entenda os dados">
-        <Headline pageId={pageId} input={{ cod: filters.cod, place, ano: filters.ano, pop: kpis.find((item) => item.id === "pop_t")?.value ?? null }} />
         <h2 className="text-base font-medium">Entenda os dados</h2>
         <Card className="p-4">
           <nav className="flex flex-wrap gap-2" aria-label="Categorias">

@@ -1,4 +1,4 @@
-# Spec 14: Design
+# Etapa 7: Design
 
 ## 1. Estrutura
 ```

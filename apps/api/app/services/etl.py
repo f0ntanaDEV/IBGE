@@ -1,4 +1,4 @@
-"""Caso de uso: processar um dataset, exportar, cachear e carregar no MySQL."""
+"""Camadas raw e silver: lê o xlsx de data/raw, trata e grava o Parquet em data/processed."""
 
 import json
 from pathlib import Path

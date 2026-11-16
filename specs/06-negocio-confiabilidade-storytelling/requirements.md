@@ -1,6 +1,6 @@
-# Spec 13: Requisitos (Negócio, confiabilidade, atualização e storytelling)
+# Etapa 6: Requisitos (Negócio, confiabilidade, atualização e storytelling)
 
-Baseada na avaliação do app em produção (`avaliacao.md`, nesta pasta). Prevalece sobre as specs anteriores. A spec 12 (Power BI) foi descartada e **não deve ser implementada**.
+Baseada na avaliação do app em produção (`avaliacao.md`, nesta pasta). Prevalece sobre as etapas anteriores. O Power BI foi descartado e **não deve ser implementado**.
 Conteúdo pronto: `conteudo/regras-kpi.md` (status e ações dos KPIs).
 
 ---
@@ -43,7 +43,7 @@ Conteúdo pronto: `conteudo/regras-kpi.md` (status e ações dos KPIs).
 ## Parte 2: Dados
 
 ### R4. Confiabilidade: correções obrigatórias
-- R4.1 **Falsos atípicos**: as bases oficiais não podem exibir centenas de milhares de valores atípicos. Diagnosticar a regra atual (registrar em `DECISIONS.md`) e ajustá-la para que, nas bases **originais**, os sinalizados fiquem abaixo de 0,5% das linhas e nenhuma idade do Brasil em 2026 apareça como "Atípica". Sugestão: limiar sobre a variação ano a ano relativa **à própria série**, com `factor = 3` no IQR das variações e mínimo absoluto de variação de 5%; excluir 2020–2021 das referências da série (choque real da pandemia). A base suja continua detectando ≥ 90% dos outliers inseridos (spec 11).
+- R4.1 **Falsos atípicos**: as bases oficiais não podem exibir centenas de milhares de valores atípicos. Diagnosticar a regra atual (registrar em `DECISIONS.md`) e ajustá-la para que, nas bases **originais**, os sinalizados fiquem abaixo de 0,5% das linhas e nenhuma idade do Brasil em 2026 apareça como "Atípica". Sugestão: limiar sobre a variação ano a ano relativa **à própria série**, com `factor = 3` no IQR das variações e mínimo absoluto de variação de 5%; excluir 2020–2021 das referências da série (choque real da pandemia). A base suja continua detectando ≥ 90% dos outliers inseridos (etapa 5).
 - R4.2 **Validações**: os Fatos e a página de Qualidade usam a **mesma** contagem. "103/113" deve virar "X de Y aprovadas" coerente com a lista; regras com falha aparecem na lista com o motivo. O status "Validações aprovadas" segue a regra de `regras-kpi.md`.
 - R4.3 **Histórico**: cada execução mostra data e hora (`dd/mm/aaaa hh:mm`), fonte, linhas processadas (nunca 0 para execução bem-sucedida) e status.
 - R4.4 **Nulos por coluna**: colunas criadas pelo tratamento (`is_outlier`, `outlier_motivo`, `row_uid`) não entram na contagem de nulos.

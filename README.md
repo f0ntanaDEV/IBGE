@@ -1,7 +1,7 @@
 # Dashboard IBGE
 
 Painel das Projeções da População (revisão 2024): API FastAPI, frontend React e pacote compartilhado.  
-AL: [https://dash.clevo.com.br](https://ibge-eight.vercel.app/)
+URL: dash.clevo.com.br
 
 ```bash
 docker compose up --build
@@ -9,11 +9,19 @@ docker compose up --build
 
 O site fica em `http://localhost:8082` (nginx), a API em `http://localhost:8001` e o MySQL em `3306`. Sem Docker: a API em `apps/api/README.md` e o frontend com `npm run dev -w @ibge/web` em `http://127.0.0.1:5173`.
 
+## Camadas
+
+Não há pasta duplicada. O mesmo fluxo usa três camadas:
+
+- **raw:** planilhas em `data/raw/*.xlsx`.
+- **silver:** Parquet gerado em `data/processed/` (gitignored; regenerado pelo ETL).
+- **ouro:** tabelas MySQL de `apps/api/app/repositories/schema.py` e views `ibge.gold.`* em `databricks/02_gold.sql`.
+
+A carga ouro é `python -m app.tools.load_mysql_from_parquet` (Alembic + Parquet silver → MySQL). O painel da rubrica é o Databricks (Lakeview); não há arquivo Power BI nem medida DAX.
+
 ## Telas
 
 ![Visão geral](docs/screenshots/visao-geral.png)
-
-
 
 ## Débitos
 
@@ -22,3 +30,55 @@ O site fica em `http://localhost:8082` (nginx), a API em `http://localhost:8001`
 - Notícias da Agência IBGE podem vir fora do tema quando a busca é ampla.
 - Nesta máquina o MySQL local estava parado; o compose sobe o banco e exige a carga.
 - A tabela paginada pede a página de novo a cada ano, enquanto a pirâmide já fica em memória.
+
+## Prompts de IA
+
+# Prompts para o Cursor
+
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as dez pastas `specs/01-` a `specs/10-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+
+| Arquivo original | Renomear para |
+|---|---|
+| `projecoes_2024_tab1_idade_simples.xlsx` | `tab1_idade_simples.xlsx` |
+| `projecoes_2024_tab2_grupo_quinquenal.xlsx` | `tab2_grupo_quinquenal.xlsx` |
+| `projecoes_2024_tab3_grupos_etarios_especificos.xlsx` | `tab3_grupos_etarios_especificos.xlsx` |
+| `projecoes_2024_tab4_indicadores.xlsx` | `tab4_indicadores.xlsx` |
+| `projecoes_2024_tab5_tabuas_mortalidade.xlsx` | `tab5_tabuas_mortalidade.xlsx` |
+
+Use o modo Agent.
+
+Os prompts são curtos de propósito: o conteúdo está nas specs e as regras de economia de tokens são carregadas automaticamente.
+
+---
+
+## Prompt 1: Backend e pipeline de dados
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 1 seguindo @specs/01-backend/requirements.md, @specs/01-backend/design.md e @specs/01-backend/tasks.md, com @specs/DATA_PROFILE.md como referência dos dados.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 2: Design system e base do frontend
+
+```
+Atue como desenvolvedor Frontend sênior e Product Designer. Implemente a Etapa 2 seguindo @specs/02-frontend-base/requirements.md, @specs/02-frontend-base/design.md e @specs/02-frontend-base/tasks.md.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 3: Dashboards, notícias e acabamento
+
+```
+Atue como desenvolvedor Fullstack sênior e Product Designer. Implemente a Etapa 3 seguindo @specs/03-dashboards/requirements.md, @specs/03-dashboards/design.md e @specs/03-dashboards/tasks.md, usando @datasets.yaml e @specs/DECISIONS.md como contexto.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 4: Modos de navegação, acessibilidade, fatos, Insights e correções de backend
+
+```
+Atue como desenvolvedor Fullstack sênior, especialista em acessibilidade e Product Designer. Implemente a Etapa 4 seguindo @specs/04-modos-acessibilidade-insights/requirements.md, @specs/04-modos-acessibilidade-insights/design.md e @specs/04-modos-acessibilidade-insights/tasks.md. Use os conteúdos prontos de @specs/04-modos-acessibilidade-insights/conteudo sem reescrevê-los. Esta etapa prevalece sobre as etapas 1–3.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a spec ou encontrar um bloqueio.
+```
+
+---
+
+**Se o Cursor parar no meio de uma etapa** (limite de contexto ou erro), abra um chat novo e reenvie o mesmo prompt: ele retoma da primeira tarefa sem `[x]`. Chats novos por etapa também economizam tokens.

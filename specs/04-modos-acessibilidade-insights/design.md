@@ -1,4 +1,4 @@
-# Spec 10: Design
+# Etapa 4: Design
 
 ## 1. Preferências
 `stores/preferences.ts`:

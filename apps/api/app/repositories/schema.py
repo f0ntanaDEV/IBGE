@@ -1,4 +1,4 @@
-"""Tabelas de dimensão, fatos e etl_runs."""
+"""Camada ouro: tabelas MySQL de dimensão, fatos e etl_runs."""
 
 from sqlalchemy import (
     JSON,
@@ -6,6 +6,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Float,
+    ForeignKey,
     Index,
     Integer,
     String,
@@ -59,7 +60,13 @@ def _col(name: str) -> Column:
 
 
 def _fact(name: str, columns: list[str], unique: list[str]) -> Table:
-    table = Table(name, Base.metadata, *[_col(col) for col in columns])
+    built = []
+    for col in columns:
+        if col == "cod":
+            built.append(Column("cod", Integer, ForeignKey("dim_territorio.cod", name=f"fk_{name}_cod")))
+        else:
+            built.append(_col(col))
+    table = Table(name, Base.metadata, *built)
     table.append_constraint(UniqueConstraint(*unique, name=f"uq_{name}"))
     table.append_constraint(Index(f"ix_{name}_cod_ano", "cod", "ano"))
     return table

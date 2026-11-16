@@ -1,6 +1,6 @@
 # Prompts para o Cursor
 
-Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. Se o projeto ainda tiver as pastas `specs/04-…` a `specs/09-…`, apague-as: o efeito delas já está consolidado em `.cursor/rules/01-project.mdc`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as dez pastas `specs/01-` a `specs/10-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
 
 | Arquivo original | Renomear para |
 |---|---|
@@ -37,10 +37,10 @@ Atue como desenvolvedor Fullstack sênior e Product Designer. Implemente a Etapa
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
 ```
 
-## Prompt 10: Modos de navegação, acessibilidade, fatos, Insights e correções de backend
+## Prompt 4: Modos de navegação, acessibilidade, fatos, Insights e correções de backend
 
 ```
-Atue como desenvolvedor Fullstack sênior, especialista em acessibilidade e Product Designer. Implemente a spec 10 seguindo @specs/10-modos-acessibilidade-insights/requirements.md, @specs/10-modos-acessibilidade-insights/design.md e @specs/10-modos-acessibilidade-insights/tasks.md. Use os conteúdos prontos de @specs/10-modos-acessibilidade-insights/conteudo sem reescrevê-los. Esta spec prevalece sobre as specs 01–03.
+Atue como desenvolvedor Fullstack sênior, especialista em acessibilidade e Product Designer. Implemente a Etapa 4 seguindo @specs/04-modos-acessibilidade-insights/requirements.md, @specs/04-modos-acessibilidade-insights/design.md e @specs/04-modos-acessibilidade-insights/tasks.md. Use os conteúdos prontos de @specs/04-modos-acessibilidade-insights/conteudo sem reescrevê-los. Esta etapa prevalece sobre as etapas 1–3.
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a spec ou encontrar um bloqueio.
 ```
 

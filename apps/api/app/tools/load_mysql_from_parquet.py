@@ -1,4 +1,4 @@
-"""Aplica o Alembic e carrega no MySQL o Parquet já tratado."""
+"""Carga da camada ouro: Alembic e Parquet silver de data/processed para o MySQL."""
 
 import json
 import time

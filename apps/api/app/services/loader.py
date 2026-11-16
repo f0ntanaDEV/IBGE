@@ -1,4 +1,4 @@
-"""Carga idempotente: staging, lotes de 10 mil linhas e troca atômica."""
+"""Camada ouro: carga idempotente do Parquet silver nas tabelas MySQL."""
 
 from datetime import datetime
 
@@ -58,12 +58,12 @@ def load_mysql(
             return
     try:
         with engine.begin() as connection:
+            _replace_dimensions(connection, frame, dataset_id, metrics)
             connection.execute(text(f"CREATE TABLE {staging} LIKE {table_name}"))
             if connection.dialect.name == "mysql":
                 connection.execute(text(f"ALTER TABLE `{staging}` MODIFY `outlier_motivo` TEXT"))
         _insert_batches(engine, staging, table, frame)
         with engine.begin() as connection:
-            _replace_dimensions(connection, frame, dataset_id, metrics)
             connection.execute(text(f"RENAME TABLE {table_name} TO {previous}, {staging} TO {table_name}"))
             connection.execute(text(f"DROP TABLE IF EXISTS {previous}"))
             connection.execute(
@@ -153,14 +153,20 @@ def _replace_dimensions(connection, frame: pd.DataFrame, dataset_id: str, metric
             current["nivel"] = row["nivel"]
             current["regiao_cod"] = regiao_cod_de(code)
             territories[code] = current
-    if connection.dialect.name == "mysql":
+    mysql = connection.dialect.name == "mysql"
+    if mysql:
         connection.execute(text("SET SESSION sql_mode = CONCAT(@@SESSION.sql_mode, ',NO_AUTO_VALUE_ON_ZERO')"))
+        connection.execute(text("SET FOREIGN_KEY_CHECKS=0"))
         try:
             connection.execute(text("ALTER TABLE dim_territorio MODIFY COLUMN cod INT NOT NULL"))
         except Exception:
             pass
-    connection.execute(delete(dim_territorio))
-    connection.execute(insert(dim_territorio), list(territories.values()))
+    try:
+        connection.execute(delete(dim_territorio))
+        connection.execute(insert(dim_territorio), list(territories.values()))
+    finally:
+        if mysql:
+            connection.execute(text("SET FOREIGN_KEY_CHECKS=1"))
     connection.execute(delete(dim_metrica).where(dim_metrica.c.dataset_id == dataset_id))
     if metrics:
         connection.execute(

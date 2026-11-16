@@ -330,27 +330,6 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           </div>
         }
       />
-      <FilterChipsBar />
-      {pyramid.isError || series.isError || life.isError ? (
-        <ErrorState
-          message="Não foi possível carregar os dados deste território."
-          onRetry={() => {
-            void pyramid.refetch()
-            void series.refetch()
-            void life.refetch()
-          }}
-        />
-      ) : null}
-      <FilterBar
-        territories={filters.territories}
-        filters={spec.filters}
-        cod={filters.cod}
-        ano={filters.ano}
-        sexo={filters.sexo}
-        onCod={filters.setCod}
-        onAno={filters.setAno}
-        onSexo={filters.setSexo}
-      />
       <Headline
         pageId={spec.id}
         input={{
@@ -372,6 +351,27 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           gMin: summary.data?.headline?.g_min ?? null,
           vMin: summary.data?.headline?.v_min ?? null,
         }}
+      />
+      <FilterChipsBar />
+      {pyramid.isError || series.isError || life.isError ? (
+        <ErrorState
+          message="Não foi possível carregar os dados deste território."
+          onRetry={() => {
+            void pyramid.refetch()
+            void series.refetch()
+            void life.refetch()
+          }}
+        />
+      ) : null}
+      <FilterBar
+        territories={filters.territories}
+        filters={spec.filters}
+        cod={filters.cod}
+        ano={filters.ano}
+        sexo={filters.sexo}
+        onCod={filters.setCod}
+        onAno={filters.setAno}
+        onSexo={filters.setSexo}
       />
       <section className="dashboard-grid" aria-label="Indicadores">
         {activeKpis.map((kpi) => {

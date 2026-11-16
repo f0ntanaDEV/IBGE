@@ -21,9 +21,9 @@ function itemClass(isActive: boolean) {
 function Brand({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="relative flex h-14 shrink-0 items-center overflow-hidden pl-6">
-      <span data-sidebar-mark className={cn("pointer-events-none absolute top-1/2 left-6 size-4 -translate-y-1/2", collapsed ? "opacity-100" : "opacity-0")}>
-        <img src="/brand/mark-light.png" alt="" className="size-4 object-contain dark:hidden" />
-        <img src="/brand/mark-dark.png" alt="" className="hidden size-4 object-contain dark:block" />
+      <span data-sidebar-mark className={cn("pointer-events-none absolute top-1/2 left-1/2 h-4 -translate-x-1/2 -translate-y-1/2", collapsed ? "opacity-100" : "opacity-0")}>
+        <img src="/brand/mark-light.png" alt="" className="h-4 w-auto max-w-none dark:hidden" />
+        <img src="/brand/mark-dark.png" alt="" className="hidden h-4 w-auto max-w-none dark:block" />
       </span>
       <span data-sidebar-fade className={cn("min-w-0 overflow-hidden", collapsed ? "max-w-0 opacity-0" : "max-w-24 opacity-100")}>
         <img src="/brand/wordmark-light.png" alt="" className="h-4 w-auto dark:hidden" />

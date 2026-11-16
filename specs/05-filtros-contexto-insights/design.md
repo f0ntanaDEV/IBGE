@@ -1,4 +1,4 @@
-# Spec 11: Design
+# Etapa 5: Design
 
 ## 1. Filtro de território
 ### Hook único
@@ -98,7 +98,7 @@ class ContextItem(BaseModel):
 | ds3 | [0–14 e 60+ 8 · Contexto 4] |
 | ds4 | [e0 H × M 8 · Contexto 4] |
 | ds5 | [Sobrevivência 8 · Contexto 4] |
-As demais linhas seguem os layouts vigentes; o card Fatos (spec 10) continua logo abaixo.
+As demais linhas seguem os layouts vigentes; o card Fatos (etapa 4) continua logo abaixo.
 
 ## 3. Base de demonstração
 ### Gerador
@@ -119,7 +119,7 @@ manifest = {
 ### Relatório e API
 - `QualityReport` ganha `manifest: Manifest | None` (preenchido quando `source == 'sujo'`).
 - `GET /datasets/{id}/quality-report?source=sujo` sempre devolve o relatório da última execução `sujo`; sem execução, 404 `no_run_for_source` (o frontend mostra o estado vazio com o botão "Processar base de demonstração").
-- Semeadura (spec 10) garante a geração dos arquivos sujos antes de processá-los.
+- Semeadura (etapa 4) garante a geração dos arquivos sujos antes de processá-los.
 
 ### Página
 ```

@@ -26,4 +26,4 @@ Legenda: ✅ atende · ⚠️ atende parcialmente · ❌ não atende
 | Storytelling com grandes números | ⚠️ | Os números são grandes e legíveis, mas não há uma narrativa de abertura ("O Brasil para de crescer em 2041"), nem comparação imediata com uma referência (Brasil, meta ou 2000) junto do número, e as Observações finais têm frases quebradas. |
 
 ## Conclusão
-O trabalho **cumpre parcialmente**. A estrutura técnica e a hierarquia visual estão boas. Ficam pendentes: (1) declarar o público, a pergunta central e as ações; (2) dar status aos indicadores; (3) exibir a atualização dos dados; (4) padronizar as métricas; (5) corrigir os problemas de confiabilidade visíveis, que hoje minam a confiança no painel. A spec 13 trata todos esses pontos.
+O trabalho **cumpre parcialmente**. A estrutura técnica e a hierarquia visual estão boas. Ficam pendentes: (1) declarar o público, a pergunta central e as ações; (2) dar status aos indicadores; (3) exibir a atualização dos dados; (4) padronizar as métricas; (5) corrigir os problemas de confiabilidade visíveis, que hoje minam a confiança no painel. A etapa 6 trata todos esses pontos.

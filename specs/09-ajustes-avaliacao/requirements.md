@@ -1,6 +1,6 @@
-# Spec 15: Requisitos (Ajustes da avaliação de 14/11)
+# Etapa 9: Requisitos (Ajustes da avaliação de 14/11)
 
-Origem: `specs/13-negocio-confiabilidade-storytelling/avaliacao-2026-11-14.md`. Prevalece sobre as specs anteriores. Não mexa no que já foi aprovado (público, perguntas, status, atualização, hierarquia, estabilidade).
+Origem: `specs/08-negocio-confiabilidade-storytelling-v2/avaliacao-2026-11-14.md`. Prevalece sobre as etapas anteriores. Não mexa no que já foi aprovado (público, perguntas, status, atualização, hierarquia, estabilidade).
 
 ## R1. Validações: tolerância para arredondamento da fonte (prioridade máxima)
 As 10 validações que falham (Brasil = Σ regiões = Σ UFs para `nasc_*` e `obt_*` da ds4) têm diferença de 2 a 5 pessoas que **já existe na planilha original do IBGE** (arredondamento das projeções de fluxo; no máximo 0,0006%). A população (`pop_*`) bate exatamente.
@@ -15,7 +15,7 @@ As 10 validações que falham (Brasil = Σ regiões = Σ UFs para `nasc_*` e `ob
 ## R2. Base de demonstração executada em produção
 - R2.1 Diagnosticar por que `quality-report?source=sujo` retorna 404 em produção (registrar a causa em `DECISIONS.md`). Verificar: geração dos arquivos sujos no deploy, semeadura da fonte `sujo`, limpeza de execuções antigas (Novidades de 14/11: "versões antigas das bases tratadas saíram do disco"), que pode estar apagando a execução `sujo`.
 - R2.2 A limpeza mantém **a execução mais recente de cada dataset e de cada fonte** (original e sujo).
-- R2.3 O deploy executa a fonte `sujo` se ela não existir. A página mostra a comparação Inserido × Detectado × Corrigido (spec 11) com todos os selos ok.
+- R2.3 O deploy executa a fonte `sujo` se ela não existir. A página mostra a comparação Inserido × Detectado × Corrigido (etapa 5) com todos os selos ok.
 - R2.4 Os Fatos da Qualidade mostram "Base de demonstração (suja): N duplicatas removidas · M nulos imputados" com os números reais (nunca "0 · nulos imputados: 0" se houve execução).
 
 ## R3. Fatos: rótulos corretos

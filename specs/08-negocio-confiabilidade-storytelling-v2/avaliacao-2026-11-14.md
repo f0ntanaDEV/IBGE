@@ -1,4 +1,4 @@
-# Reavaliação do app em produção (ibge-eight.vercel.app, 14/11/2026, 23:10–23:25)
+# Etapa 8: Reavaliação do app em produção (ibge-eight.vercel.app, 14/11/2026, 23:10–23:25)
 
 Backend no ar (`/health` 200 em 167 ms). Todas as páginas percorridas em 1280 × 800, mais um teste de estabilidade com troca de território nas páginas pesadas (Brasil, Bahia, Nordeste e São Paulo): **126 chamadas à API, nenhuma falha**.
 

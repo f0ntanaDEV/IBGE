@@ -1,4 +1,4 @@
-# Spec 11: Requisitos (Filtro de território, Contexto, base de demonstração e Insights)
+# Etapa 5: Requisitos (Filtro de território, Contexto, base de demonstração e Insights)
 
 Prevalece sobre as specs anteriores. Respeite o estado vigente em `.cursor/rules/01-project.mdc` (sem animações, sem busca, sem Expandir).
 
@@ -18,7 +18,7 @@ O usuário relata falhas no filtro de território, sem detalhar o sintoma. Por i
 - R1.5 **Ao trocar de território**:
   - limpar seleções cruzadas (`sel_uf`, `sel_regiao`) e drills territoriais (`d_*` de mapa, ranking, slope, barras divergentes e dispersão);
   - manter `ano` e `sexo`;
-  - atualizar **tudo** o que depende do território: KPIs, gráficos, Smart Narratives, card Contexto (R2), Fatos (com a regra da spec 10: UF mantém os fatos do último território válido), notícias relacionadas e tabela.
+  - atualizar **tudo** o que depende do território: KPIs, gráficos, Smart Narratives, card Contexto (R2), Fatos (com a regra da etapa 4: UF mantém os fatos do último território válido), notícias relacionadas e tabela.
 - R1.6 **Gráficos por UF** (ranking, mapa, slope, barras divergentes, dispersão):
   - Brasil: as 27 UFs;
   - região: só as UFs da região, com o mapa enquadrado na região;
@@ -64,13 +64,13 @@ Sintoma: com "Base de demonstração (suja)" selecionada na página de Qualidade
 ## R4. Insights com caixas expansíveis
 - R4.1 Cada pergunta vira uma **caixa expansível** (accordion, sem animação), com:
   - **cabeçalho** (sempre visível): número da pergunta, a pergunta (`h3`), a linha **"Por que esta pergunta importa"** (texto de `insights-explicacoes.md`, até 25 palavras) e o ícone de chevron;
-  - **conteúdo** (ao expandir): a resposta (texto da spec 10), os **3 números-chave** em chips e o link **"Ver na página: {gráfico}"**, que abre a página com o território Brasil e rola até o gráfico.
+  - **conteúdo** (ao expandir): a resposta (texto da etapa 4), os **3 números-chave** em chips e o link **"Ver na página: {gráfico}"**, que abre a página com o território Brasil e rola até o gráfico.
 - R4.2 Por seção: botões "Expandir todas" e "Recolher todas". Estado inicial: todas recolhidas, exceto a primeira pergunta da primeira seção.
 - R4.3 Abrir uma caixa atualiza a URL com a âncora (`#ds4-3`); abrir a página com âncora expande e rola até a caixa correspondente.
 - R4.4 Acessibilidade: botão com `aria-expanded` e `aria-controls`, navegação por teclado (`Tab`, `Enter`/`Espaço`), foco visível e conteúdo legível com alto contraste.
 - R4.5 Visual: caixas em card com borda de 1 px (2 px no alto contraste); cabeçalho com padding confortável; resposta com largura máxima de `72ch`; números-chave em chips neutros (sem cores vibrantes). Seções com título, link "Ir para a página" e a contagem "5 perguntas".
 - R4.6 O índice da página mostra as 7 seções e a seção "Padrões dos dados". Os padrões também viram caixas expansíveis (título no cabeçalho, texto no conteúdo).
-- R4.7 O teste de 7 a 12 linhas da spec 10 passa a valer para a resposta expandida.
+- R4.7 O teste de 7 a 12 linhas da etapa 4 passa a valer para a resposta expandida.
 
 ## R5. Verificação
 - R5.1 Suítes web, api e e2e verdes.

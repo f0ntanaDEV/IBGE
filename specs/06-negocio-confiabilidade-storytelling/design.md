@@ -1,4 +1,4 @@
-# Spec 13: Design
+# Etapa 6: Design
 
 ## 1. Dicionário de métricas
 `apps/api/app/domain/metricas.yaml`:

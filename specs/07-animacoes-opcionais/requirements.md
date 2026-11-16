@@ -1,4 +1,4 @@
-# Spec 14: Requisitos (Animações opcionais)
+# Etapa 7: Requisitos (Animações opcionais)
 
 Prevalece sobre as specs anteriores. Hoje a aplicação não tem animações (regra vigente); esta spec cria uma **camada de movimento opcional**, desligada por padrão, que pode ser removida sem afetar o restante.
 

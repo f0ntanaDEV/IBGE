@@ -1,6 +1,6 @@
-# Spec 10: Requisitos (Modos de navegação, acessibilidade, fatos, Insights e correções de backend)
+# Etapa 4: Requisitos (Modos de navegação, acessibilidade, fatos, Insights e correções de backend)
 
-Prevalece sobre as specs 01–03. O estado vigente da interface está em `.cursor/rules/01-project.mdc`; nada ali pode ser reintroduzido (animações, busca, Expandir, sidebar recolhível).
+Prevalece sobre as etapas 1–3. O estado vigente da interface está em `.cursor/rules/01-project.mdc`; nada ali pode ser reintroduzido (animações, busca, Expandir, sidebar recolhível).
 
 Conteúdo pronto (não reescrever, apenas transcrever):
 - `conteudo/fatos.md`: catálogo de fatos por página, com fórmulas e valores de referência;
