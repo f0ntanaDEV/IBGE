@@ -36,7 +36,7 @@ def should_seed() -> bool:
         return False
     if found is False:
         return True
-    folder = settings.processed_dir
+    folder = settings.silver_dir
     ready = all(any(folder.glob(f"{dataset_id}_*.parquet")) for dataset_id in ("ds1", "ds2", "ds3", "ds4", "ds5"))
     return not ready
 

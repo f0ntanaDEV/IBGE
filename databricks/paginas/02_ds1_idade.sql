@@ -1,3 +1,4 @@
+-- Parâmetros: ano INT = 2026 e territorio STRING = 'Brasil'. Seletor: SELECT DISTINCT local FROM ibge.gold.territorios.
 -- Página População por idade.
 -- Parâmetros: cod INT = 0, ano INT = 2026, sexo STRING = 'Ambos'.
 -- sexo aceita Ambos, Homens ou Mulheres.
@@ -7,15 +8,15 @@
 -- WIDGET counters
 SELECT populacao, delta_populacao_10a, p_0_14, delta_p_0_14_10a, p_60, delta_p_60_10a, idade_mediana, delta_idade_mediana_10a, tipo
 FROM ibge.gold.ds1_kpis
-WHERE cod = :cod AND ano = :ano AND sexo = :sexo;
+WHERE local = :territorio AND ano = :ano AND sexo = :sexo;
 
 -- WIDGET barras divergentes: pirâmide do ano
 SELECT
   idade,
   SUM(CASE WHEN sexo = 'Homens' THEN -populacao END) AS homens,
   SUM(CASE WHEN sexo = 'Mulheres' THEN populacao END) AS mulheres
-FROM ibge.silver.ds1_populacao_idade
-WHERE cod = :cod AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
+FROM ibge.gold.ds1_idade
+WHERE local = :territorio AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
 GROUP BY idade
 ORDER BY idade;
 
@@ -26,20 +27,20 @@ SELECT
   SUM(CASE WHEN ano = :ano AND sexo = 'Mulheres' THEN populacao END) AS mulheres,
   SUM(CASE WHEN ano = 2000 AND sexo = 'Homens' THEN -populacao END) AS homens_2000,
   SUM(CASE WHEN ano = 2000 AND sexo = 'Mulheres' THEN populacao END) AS mulheres_2000
-FROM ibge.silver.ds1_populacao_idade
-WHERE cod = :cod AND (ano = :ano OR ano = 2000) AND sexo IN ('Homens', 'Mulheres')
+FROM ibge.gold.ds1_idade
+WHERE local = :territorio AND (ano = :ano OR ano = 2000) AND sexo IN ('Homens', 'Mulheres')
 GROUP BY idade
 ORDER BY idade;
 
 -- WIDGET heatmap
 SELECT ano, idade, populacao,
   CASE WHEN ano > year(current_date()) THEN 'projeção' ELSE 'observado' END AS tipo
-FROM ibge.silver.ds1_populacao_idade
-WHERE cod = :cod AND sexo = :sexo
+FROM ibge.gold.ds1_idade
+WHERE local = :territorio AND sexo = :sexo
 ORDER BY ano, idade;
 
 -- WIDGET tabela
 SELECT ano, idade, sexo, local, sigla, populacao, is_outlier
-FROM ibge.silver.ds1_populacao_idade
-WHERE cod = :cod AND ano = :ano AND sexo = :sexo
+FROM ibge.gold.ds1_idade
+WHERE local = :territorio AND ano = :ano AND sexo = :sexo
 ORDER BY idade;

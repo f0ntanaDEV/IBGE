@@ -8,6 +8,7 @@ from app.services.cleaning.normalize import metric_dictionary
 
 
 def reshape(frame: pd.DataFrame, cfg: DatasetConfig, labels: dict[str, str]) -> tuple[pd.DataFrame, list[dict]]:
+    """Recebe o frame largo. Devolve o formato longo (uma linha por ano) e as métricas."""
     out = frame
     if cfg.reshape is not None:
         spec = cfg.reshape.wide_to_long

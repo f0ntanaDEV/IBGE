@@ -19,6 +19,7 @@ TEXT = {"sigla", "local", "sexo", "grupo_etario", "intervalo", "intervalo_de_ida
 
 
 def metric_columns(frame: pd.DataFrame, cfg: DatasetConfig) -> list[str]:
+    """Recebe o frame sujo e devolve as colunas numéricas que a injeção pode alterar."""
     if cfg.metrics != "auto":
         return [col for col in cfg.metrics if col in frame.columns]
     skip = set(SKIP_OUTLIER) | {"row_uid", "nivel", "idade_inicio", "intervalo_aberto", "is_outlier", "outlier_motivo"}
@@ -210,6 +211,7 @@ def build_dirty(raw: pd.DataFrame, cfg: DatasetConfig, seed: int = 42) -> tuple[
 
 
 def write_dirty(cfg: DatasetConfig, settings: Settings, seed: int = 42) -> None:
+    """Recebe a configuração. Grava data/raw/<ds>_sujo.xlsx e o manifesto. Não entra na ouro."""
     source = settings.raw_dir / cfg.file
     frame = read_dataset(source, cfg)
     dirty, manifest = build_dirty(frame, cfg, seed)
@@ -221,6 +223,7 @@ def write_dirty(cfg: DatasetConfig, settings: Settings, seed: int = 42) -> None:
 
 
 def ensure_dirty(cfg: DatasetConfig, settings: Settings, seed: int = 42) -> None:
+    """Recebe a configuração. Gera a planilha suja se ela ainda não existe."""
     dest = settings.raw_dir / f"{cfg.id}_sujo.xlsx"
     manifest = settings.raw_dir / f"{cfg.id}_sujo.manifest.json"
     if dest.exists() and manifest.exists():
@@ -235,6 +238,7 @@ def dirty_frame(frame: pd.DataFrame, cfg: DatasetConfig, seed: int = 42) -> pd.D
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Gera a planilha suja de um dataset a partir da original."""
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset")
     parser.add_argument("--seed", type=int, default=42)

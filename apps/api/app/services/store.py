@@ -30,6 +30,9 @@ class ParquetStore:
 
     def latest_file(self, dataset_id: str, suffix: str) -> Path | None:
         files = sorted(self.processed_dir.glob(f"{dataset_id}_*{suffix}"))
+        plain = self.processed_dir / f"{dataset_id}{suffix}"
+        if plain.exists():
+            files.append(plain)
         official = [path for path in files if _report_source(path) != "sujo"]
         chosen = official or files
         return chosen[-1] if chosen else None

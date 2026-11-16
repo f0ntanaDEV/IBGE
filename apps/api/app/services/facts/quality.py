@@ -64,7 +64,7 @@ def latest_raw(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
 
 
 def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
-    folder = get_settings().processed_dir
+    folder = get_settings().silver_dir
     paths = sorted(folder.glob(f"{dataset_id}_*.report.json"))
     chosen = None
     for path in paths:

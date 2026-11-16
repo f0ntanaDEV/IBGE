@@ -18,7 +18,7 @@ def censo(cod: int | None = Depends(territory_params)) -> dict:
     census = censo_population(code, settings, cache)
     projection = None
     try:
-        projection = projection_2022(ParquetStore(settings.processed_dir).get("ds4"), code)
+        projection = projection_2022(ParquetStore(settings.silver_dir).get("ds4"), code)
     except Exception:
         projection = None
     diff = None

@@ -14,29 +14,29 @@ SELECT
   a.e0_t - b.e0_t AS delta_e0_10a,
   a.tft - b.tft AS delta_tft_10a,
   a.ie60 - b.ie60 AS delta_ie60_10a,
+  a.local,
   CASE WHEN a.ano > year(current_date()) THEN 'projeção' ELSE 'observado' END AS tipo
 FROM ibge.silver.ds4_indicadores a
 LEFT JOIN ibge.silver.ds4_indicadores b
-  ON b.cod = a.cod AND b.ano = a.ano - 10
-WHERE a.cod = 0;
+  ON b.cod = a.cod AND b.ano = a.ano - 10;
 
 CREATE OR REPLACE VIEW ibge.gold.populacao_brasil AS
 WITH serie AS (
   SELECT
     ano,
     pop_t AS populacao,
+    local,
     CASE WHEN ano > year(current_date()) THEN 'projeção' ELSE 'observado' END AS tipo
   FROM ibge.silver.ds4_indicadores
-  WHERE cod = 0
 ),
 pico AS (
-  SELECT ano AS ano_pico, populacao AS populacao_pico
+  SELECT local, ano AS ano_pico, populacao AS populacao_pico
   FROM serie
-  QUALIFY row_number() OVER (ORDER BY populacao DESC, ano) = 1
+  QUALIFY row_number() OVER (PARTITION BY local ORDER BY populacao DESC, ano) = 1
 )
-SELECT s.ano, s.populacao, s.tipo, p.ano_pico, p.populacao_pico
+SELECT s.ano, s.local, s.populacao, s.tipo, p.ano_pico, p.populacao_pico
 FROM serie s
-CROSS JOIN pico p;
+JOIN pico p ON p.local = s.local;
 
 CREATE OR REPLACE VIEW ibge.gold.ds1_kpis AS
 WITH base AS (
@@ -194,3 +194,22 @@ SELECT 'ds5', outlier_motivo, count(*)
 FROM ibge.silver.ds5_tabuas_mortalidade
 WHERE is_outlier
 GROUP BY outlier_motivo;
+
+CREATE OR REPLACE VIEW ibge.gold.territorios AS
+SELECT cod, sigla, local, nivel, regiao_cod
+FROM ibge.silver.dim_territorio;
+
+CREATE OR REPLACE VIEW ibge.gold.indicadores_uf AS
+SELECT * FROM ibge.silver.ds4_indicadores;
+
+CREATE OR REPLACE VIEW ibge.gold.ds1_idade AS
+SELECT * FROM ibge.silver.ds1_populacao_idade;
+
+CREATE OR REPLACE VIEW ibge.gold.ds2_faixas AS
+SELECT * FROM ibge.silver.ds2_populacao_quinquenal;
+
+CREATE OR REPLACE VIEW ibge.gold.ds3_faixas AS
+SELECT * FROM ibge.silver.ds3_grupos_etarios;
+
+CREATE OR REPLACE VIEW ibge.gold.ds5_tabua AS
+SELECT * FROM ibge.silver.ds5_tabuas_mortalidade;

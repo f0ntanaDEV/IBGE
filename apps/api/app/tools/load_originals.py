@@ -7,8 +7,9 @@ from app.services.store import ParquetStore
 
 
 def main() -> None:
+    """Processa as cinco bases originais e grava a silver."""
     settings = get_settings()
-    store = ParquetStore(settings.processed_dir)
+    store = ParquetStore(settings.silver_dir)
     for cfg in load_catalog().datasets:
         report = process_dataset(
             cfg.id,

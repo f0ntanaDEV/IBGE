@@ -1,3 +1,4 @@
+-- Parâmetros: ano INT = 2026 e territorio STRING = 'Brasil'. Seletor: SELECT DISTINCT local FROM ibge.gold.territorios.
 -- Página Qualidade. Sem parâmetros.
 -- Conta a base tratada. O relatório de nulos, duplicatas e validações fica no
 -- .report.json do ETL (MySQL etl_runs); esta página não o reprocessa.

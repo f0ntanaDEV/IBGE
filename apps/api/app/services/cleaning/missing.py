@@ -45,7 +45,7 @@ def recover_ids(frame: pd.DataFrame, cfg: DatasetConfig) -> tuple[pd.DataFrame, 
 
 
 def structural_mask(frame: pd.DataFrame, cfg: DatasetConfig) -> dict[str, pd.Series]:
-    """Posições que permanecem nulas: ex. TCG no primeiro ano da série."""
+    """Posições que permanecem nulas: TCG no primeiro ano. 33 territórios × 3 colunas = 99."""
     masks: dict[str, pd.Series] = {}
     if "ano" not in frame.columns or frame.empty:
         return masks
@@ -63,6 +63,7 @@ def structural_mask(frame: pd.DataFrame, cfg: DatasetConfig) -> dict[str, pd.Ser
 def drop_sparse(
     frame: pd.DataFrame, cfg: DatasetConfig, metrics: list[dict], threshold: float
 ) -> tuple[pd.DataFrame, list[dict], list[str]]:
+    """Recebe o frame, o limiar de nulos e as métricas. Devolve o frame sem colunas esparsas e a lista do que saiu."""
     protected = set(cfg.key) | {"sigla", "local", "nivel", "sexo", "idade", "grupo_etario", "ano", "cod"}
     dropped: list[str] = []
     if frame.empty:

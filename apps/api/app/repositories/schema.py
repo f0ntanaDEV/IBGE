@@ -2,17 +2,19 @@
 
 from sqlalchemy import (
     JSON,
+    BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
-    Float,
     ForeignKey,
     Index,
     Integer,
+    Numeric,
+    PrimaryKeyConstraint,
     String,
     Table,
     Text,
-    UniqueConstraint,
     func,
 )
 
@@ -45,32 +47,98 @@ DS4_HEADERS = [
 TEXT = {"sigla": 8, "local": 80, "sexo": 24, "nivel": 16, "grupo_etario": 16}
 INTEGER = {"cod", "ano", "idade", "idade_inicio"}
 FLAGS = {"is_outlier", "intervalo_aberto"}
+# DATA_PROFILE: ds1 tem 91 idades (0 a 90) e ds5 tem 20 idades, a última em 90.
+IDADE_MAX = 90
+DATASETS = (
+    ("ds1", "População por sexo e idade simples"),
+    ("ds2", "População por grupo quinquenal"),
+    ("ds3", "Grupos etários específicos"),
+    ("ds4", "Indicadores"),
+    ("ds5", "Tábuas de mortalidade"),
+)
 
 
-def _col(name: str) -> Column:
+def _is_bigint_count(name: str) -> bool:
+    """Contagem de pessoas inteira na base original: população e faixas etárias."""
+    if name == "populacao" or name.startswith("pop_"):
+        return True
+    return name.startswith(("n_0_", "n_15_", "n_18_", "n_60_", "n_65_", "n_80_"))
+
+
+def _is_decimal_count(name: str) -> bool:
+    """Nascimentos e óbitos podem vir arredondados, então ficam em DECIMAL(14,2)."""
+    return name.startswith(("nasc_", "obt_"))
+
+
+def _is_count(name: str) -> bool:
+    return _is_bigint_count(name) or _is_decimal_count(name)
+
+
+def _col(name: str, *, nullable: bool) -> Column:
+    """Tipo da coluna: chave inteira, texto, flag, contagem ou taxa. Nenhuma coluna usa FLOAT."""
     if name in INTEGER:
-        return Column(name, Integer)
+        return Column(name, Integer, nullable=nullable)
     if name in TEXT:
-        return Column(name, String(TEXT[name]))
+        return Column(name, String(TEXT[name]), nullable=nullable)
     if name in FLAGS:
-        return Column(name, Boolean)
+        return Column(name, Boolean, nullable=nullable)
     if name == "outlier_motivo":
-        return Column(name, Text)
-    return Column(name, Float)
+        return Column(name, Text, nullable=nullable)
+    if _is_bigint_count(name):
+        return Column(name, BigInteger, nullable=nullable)
+    if _is_decimal_count(name):
+        return Column(name, Numeric(14, 2), nullable=nullable)
+    return Column(name, Numeric(18, 6), nullable=nullable)
 
 
-def _fact(name: str, columns: list[str], unique: list[str]) -> Table:
+def _fact(name: str, columns: list[str], pk: list[str]) -> Table:
+    """Fato com PK composta, FK de cod, CHECKs nomeados e sigla/local/nivel desnormalizados."""
+    # sigla, local e nivel repetem dim_territorio para a API e o Databricks lerem o fato sem join.
+    pk_set = set(pk)
     built = []
     for col in columns:
         if col == "cod":
-            built.append(Column("cod", Integer, ForeignKey("dim_territorio.cod", name=f"fk_{name}_cod")))
+            built.append(
+                Column(
+                    "cod",
+                    Integer,
+                    ForeignKey("dim_territorio.cod", name=f"fk_{name}_cod"),
+                    nullable=False,
+                )
+            )
         else:
-            built.append(_col(col))
+            built.append(_col(col, nullable=col not in pk_set))
     table = Table(name, Base.metadata, *built)
-    table.append_constraint(UniqueConstraint(*unique, name=f"uq_{name}"))
+    table.append_constraint(PrimaryKeyConstraint(*pk, name=f"pk_{name}"))
     table.append_constraint(Index(f"ix_{name}_cod_ano", "cod", "ano"))
+    if "sexo" in columns:
+        table.append_constraint(
+            CheckConstraint(
+                "sexo IN ('Ambos', 'Homens', 'Mulheres')",
+                name=f"ck_{name}_sexo",
+            )
+        )
+    if "ano" in columns:
+        table.append_constraint(CheckConstraint("ano BETWEEN 2000 AND 2070", name=f"ck_{name}_ano"))
+    if "idade" in columns and name in {"ds1_populacao_idade", "ds5_tabuas_mortalidade"}:
+        table.append_constraint(
+            CheckConstraint(f"idade BETWEEN 0 AND {IDADE_MAX}", name=f"ck_{name}_idade")
+        )
+    if "nqx" in columns:
+        table.append_constraint(CheckConstraint("nqx BETWEEN 0 AND 1", name=f"ck_{name}_nqx"))
+    counts = [col for col in columns if _is_count(col)]
+    if counts:
+        rule = " AND ".join(f"{col} >= 0" for col in counts)
+        table.append_constraint(CheckConstraint(rule, name=f"ck_{name}_contagens"))
     return table
 
+
+dim_dataset = Table(
+    "dim_dataset",
+    Base.metadata,
+    Column("id", String(8), primary_key=True),
+    Column("nome", String(120), nullable=False),
+)
 
 dim_territorio = Table(
     "dim_territorio",
@@ -79,7 +147,7 @@ dim_territorio = Table(
     Column("sigla", String(8), nullable=False),
     Column("local", String(80), nullable=False),
     Column("nivel", String(16), nullable=False),
-    Column("regiao_cod", Integer),
+    Column("regiao_cod", Integer, ForeignKey("dim_territorio.cod", name="fk_dim_territorio_regiao")),
 )
 
 dim_metrica = Table(
@@ -96,7 +164,7 @@ etl_runs = Table(
     "etl_runs",
     Base.metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("dataset_id", String(8), nullable=False),
+    Column("dataset_id", String(8), ForeignKey("dim_dataset.id", name="fk_etl_runs_dataset"), nullable=False),
     Column("source", String(16), nullable=False),
     Column("status", String(16), nullable=False),
     Column("started_at", DateTime, nullable=False, server_default=func.now()),

@@ -1,4 +1,4 @@
-"""Camadas raw e silver: lê o xlsx de data/raw, trata e grava o Parquet em data/processed."""
+"""Camadas raw e silver: lê o xlsx de data/raw, trata e grava o Parquet em data/silver."""
 
 import json
 from pathlib import Path
@@ -19,6 +19,7 @@ MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 
 def catalog_or_404(dataset_id: str, catalog: Catalog | None = None) -> DatasetConfig:
+    """Recebe o id. Devolve a configuração do catálogo ou erro 404."""
     try:
         return (catalog or load_catalog()).get(dataset_id)
     except KeyError:
@@ -26,6 +27,7 @@ def catalog_or_404(dataset_id: str, catalog: Catalog | None = None) -> DatasetCo
 
 
 def required_columns(cfg: DatasetConfig) -> list[str]:
+    """Recebe a configuração e devolve as colunas obrigatórias do upload."""
     if cfg.reshape is not None:
         return [safe_name(name) for name in cfg.reshape.wide_to_long.id_vars]
     columns = list(cfg.key)
@@ -38,6 +40,7 @@ def required_columns(cfg: DatasetConfig) -> list[str]:
 
 
 def validate_upload(path: Path, cfg: DatasetConfig) -> None:
+    """Recebe o arquivo e a configuração. Recusa extensão, tamanho ou coluna obrigatória ausente."""
     if path.suffix.lower() not in UPLOAD_SUFFIXES:
         raise AppError("invalid_file", "Envie um arquivo .csv ou .xlsx", 422)
     if path.stat().st_size > MAX_UPLOAD_BYTES:
@@ -52,6 +55,7 @@ def validate_upload(path: Path, cfg: DatasetConfig) -> None:
 
 
 def source_path(cfg: DatasetConfig, source: str, settings: Settings) -> Path:
+    """Recebe a fonte original, sujo ou upload e devolve o caminho do arquivo em data/raw."""
     if source == "original":
         path = settings.raw_dir / cfg.file
     elif source == "sujo":
@@ -77,6 +81,7 @@ def process_dataset(
     store: ParquetStore,
     settings: Settings | None = None,
 ) -> QualityReport:
+    """Recebe o dataset e a fonte. Grava a silver e só manda a fonte original para as fatos ouro."""
     settings = settings or get_settings()
     cfg = catalog_or_404(dataset_id)
     options = cleaning or {}
@@ -105,14 +110,14 @@ def process_dataset(
         outlier_strategy=options.get("outlier_strategy"),
         others=others,
     )
-    paths = export_table(frame, cfg.id, settings.processed_dir)
+    paths = export_table(frame, cfg.id, settings.silver_dir)
     report_path = paths["parquet"].with_suffix(".report.json")
     report_path.write_text(report.model_dump_json(), encoding="utf-8")
-    metrics_path = settings.processed_dir / f"{cfg.id}_metrics.json"
+    metrics_path = settings.silver_dir / f"{cfg.id}_metrics.json"
     metrics_path.write_text(json.dumps(metrics, ensure_ascii=False), encoding="utf-8")
     from app.services.retention import keep_latest
 
-    keep_latest(settings.processed_dir)
+    keep_latest(settings.silver_dir)
     if source == "original":
         store.put(cfg.id, frame)
     if settings.mysql_required:

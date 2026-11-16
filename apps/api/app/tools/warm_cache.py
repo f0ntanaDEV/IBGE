@@ -10,6 +10,7 @@ YEARS = [2000, 2010, 2020, 2026, 2030, 2040, 2050, 2060, 2070]
 
 
 def main() -> None:
+    """Lê a silver uma vez para aquecer o cache do processo."""
     folder = get_settings().data_dir / "cache" / "context"
     folder.mkdir(parents=True, exist_ok=True)
     codes = [0, *REGIOES.keys(), *UFS.keys()]

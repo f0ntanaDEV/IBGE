@@ -6,15 +6,15 @@
 -- WIDGET counters
 SELECT e0, e60, nqx_0, lx_80, tipo
 FROM ibge.gold.ds5_kpis
-WHERE cod = :cod AND ano = :ano AND sexo = :sexo;
+WHERE local = :territorio AND ano = :ano AND sexo = :sexo;
 
 -- WIDGET linhas: sobrevivência lx, homens e mulheres
 SELECT
   idade,
   MAX(CASE WHEN sexo = 'Homens' THEN lx END) AS lx_homens,
   MAX(CASE WHEN sexo = 'Mulheres' THEN lx END) AS lx_mulheres
-FROM ibge.silver.ds5_tabuas_mortalidade
-WHERE cod = :cod AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
+FROM ibge.gold.ds5_tabua
+WHERE local = :territorio AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
 GROUP BY idade
 ORDER BY idade;
 
@@ -25,8 +25,8 @@ SELECT
   MAX(CASE WHEN ano = :ano_b THEN nqx END) AS nqx_outro_ano,
   MAX(CASE WHEN ano = :ano AND nqx > 0 THEN ln(nqx) END) AS nqx_log,
   MAX(CASE WHEN ano = :ano_b AND nqx > 0 THEN ln(nqx) END) AS nqx_outro_ano_log
-FROM ibge.silver.ds5_tabuas_mortalidade
-WHERE cod = :cod AND sexo = :sexo AND (ano = :ano OR ano = :ano_b)
+FROM ibge.gold.ds5_tabua
+WHERE local = :territorio AND sexo = :sexo AND (ano = :ano OR ano = :ano_b)
 GROUP BY idade
 ORDER BY idade;
 
@@ -35,8 +35,8 @@ SELECT
   idade,
   MAX(CASE WHEN sexo = 'Homens' THEN ex END) AS ex_homens,
   MAX(CASE WHEN sexo = 'Mulheres' THEN ex END) AS ex_mulheres
-FROM ibge.silver.ds5_tabuas_mortalidade
-WHERE cod = :cod AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
+FROM ibge.gold.ds5_tabua
+WHERE local = :territorio AND ano = :ano AND sexo IN ('Homens', 'Mulheres')
 GROUP BY idade
 ORDER BY idade;
 
@@ -54,6 +54,6 @@ ORDER BY diff_e0 DESC;
 
 -- WIDGET tabela
 SELECT ano, idade, sexo, local, nqx, lx, ex, is_outlier
-FROM ibge.silver.ds5_tabuas_mortalidade
-WHERE cod = :cod AND ano = :ano AND sexo = :sexo
+FROM ibge.gold.ds5_tabua
+WHERE local = :territorio AND ano = :ano AND sexo = :sexo
 ORDER BY idade;

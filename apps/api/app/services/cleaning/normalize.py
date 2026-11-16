@@ -45,6 +45,7 @@ def _clean_text(value: object) -> object:
 
 
 def metric_names(frame: pd.DataFrame, cfg: DatasetConfig) -> list[str]:
+    """Recebe o frame normalizado e devolve as colunas que são métrica, fora da chave."""
     if cfg.metrics != "auto":
         return [name for name in cfg.metrics if name in frame.columns]
     skip = TEXT_COLUMNS | {
@@ -67,6 +68,7 @@ def metric_names(frame: pd.DataFrame, cfg: DatasetConfig) -> list[str]:
 
 
 def metric_dictionary(frame: pd.DataFrame, cfg: DatasetConfig, labels: dict[str, str]) -> list[dict]:
+    """Recebe o frame e os rótulos. Devolve coluna, descrição e unidade de cada métrica."""
     items = []
     for name in metric_names(frame, cfg):
         rotulo = labels.get(name, _default_label(name))

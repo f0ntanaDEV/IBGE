@@ -10,6 +10,7 @@ from app.services.cleaning.reader import read_dataset
 
 
 def profile_frame(frame: pd.DataFrame) -> str:
+    """Recebe o frame e devolve o texto do perfil (linhas, tipos e nulos)."""
     lines = [f"rows={len(frame)} cols={len(frame.columns)}", "column\tdtype\tnulls"]
     for col in frame.columns:
         lines.append(f"{col}\t{frame[col].dtype}\t{int(frame[col].isna().sum())}")
@@ -19,6 +20,7 @@ def profile_frame(frame: pd.DataFrame) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Imprime o perfil de uma planilha ou Parquet."""
     args = list(sys.argv[1:] if argv is None else argv)
     if not args:
         raise SystemExit("uso: python -m app.tools.profile <arquivo.xlsx>")

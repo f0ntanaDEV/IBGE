@@ -147,3 +147,13 @@ A chave é a pasta da etapa em `specs/`.
 - 2026-11-16 | 10-rubrica-entrega | O log usa a chave da pasta em `specs/`, da etapa 1 à etapa 10 | Os rótulos antigos (etapa 11–16, geral, interface, railway) não batiam com as dez pastas.
 - 2026-11-16 | 10-rubrica-entrega | A marca retraída passa a ser o símbolo geométrico (preto no claro, branco no escuro); o resumo fica acima dos filtros; a área de visualização ganha fade no topo e na base quando há rolagem | Pedido de 16/11. O fade some no extremo da rolagem para não apagar título nem o fim da página.
 - 2026-11-16 | 10-rubrica-entrega | A marca retraída fica com a mesma altura da wordmark (`h-4`) e conserva a proporção do símbolo | Pedido de 16/11. A largura acompanha a imagem, sem caixa quadrada.
+- 2026-11-16 | 10-rubrica-entrega | O fade da área de conteúdo fica em 1,5 rem e começa em 35% de opacidade; no celular o menu desliza da esquerda em 420 ms | Pedido de 16/11. Com animações desligadas ou `prefers-reduced-motion`, o drawer abre e fecha sem transição.
+
+## 11-finalizacao-rubrica
+
+- 2026-11-16 | 11-finalizacao-rubrica | A silver fica em `data/silver`; a base suja não entra nas fatos; a carga troca as linhas com DELETE e INSERT e confere o golden antes do commit | A etapa 11 prevalece sobre a 10. O atalho de mesma contagem deixava a base suja na ouro.
+- 2026-11-16 | 11-finalizacao-rubrica | O painel `/databricks` usa `@databricks/aibi-client`; o token fica em `secrets/databricks.token`, ignorado pelo git, e a API o entrega ao cliente | O snippet pede o token emitido pelo servidor. O valor não entra no bundle nem no repositório.
+- 2026-11-16 | 11-finalizacao-rubrica | O embed externo emite um token reduzido a cada request; `external_viewer_id` é opaco e `external_value` fica `publico` | O dashboard já publica com a identidade do publicador. Não há login na app, então o valor de filtro não carrega dado pessoal e o token amplo do service principal não vai ao browser.
+- 2026-11-16 | 11-finalizacao-rubrica | O passo 2 só segue se o passo 1 devolver 200 e um `access_token` JWT; segredo e JSON bruto não entram no Bearer | O 401 do tokeninfo aparece quando o Bearer está ausente ou não é o access_token.
+- 2026-11-16 | 11-finalizacao-rubrica | O embed para no passo 3 com `invalid_authorization_details`; a correção fica no workspace, não no código | O SP Access só tem `CAN_READ`. O tokeninfo exige workspace access, SQL access e `dashboard.runner`.
+- 2026-11-16 | 11-finalizacao-rubrica | O passo 3 repete o mesmo `external_viewer_id` e `external_value` do passo 2; a página usa só o `access_token` desse passo no `@databricks/aibi-client` | O token amplo do passo 1 não vai ao browser. O reduzido expira em 1 h e nasce de novo a cada carregamento. Não há iframe `dashboardsv3`.

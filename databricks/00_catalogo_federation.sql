@@ -1,0 +1,15 @@
+-- Variante B, Lakehouse Federation. Exige rede liberada até o MySQL e um usuário só de leitura.
+-- Não rode este arquivo no lugar de 00_catalogo.sql sem trocar as views silver.
+--
+-- CREATE CONNECTION mysql_ouro TYPE mysql
+-- OPTIONS (
+--   host secret('ibge', 'mysql_host'),
+--   port '3306',
+--   user secret('ibge', 'mysql_user'),
+--   password secret('ibge', 'mysql_password')
+-- );
+-- CREATE FOREIGN CATALOG ibge_mysql
+-- USING CONNECTION mysql_ouro
+-- OPTIONS (database 'ibge');
+--
+-- variante B: trocar bronze.* por ibge_mysql.ibge.* nas views de 01_silver.sql.

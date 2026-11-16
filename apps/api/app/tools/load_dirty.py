@@ -8,7 +8,8 @@ from app.tools.make_dirty import ensure_dirty
 
 
 def missing_dirty() -> list[str]:
-    folder = get_settings().processed_dir
+    """Devolve os datasets cuja execução suja ainda não foi registrada."""
+    folder = get_settings().silver_dir
     missing = []
     for cfg in load_catalog().datasets:
         found = False
@@ -23,8 +24,9 @@ def missing_dirty() -> list[str]:
 
 
 def main() -> None:
+    """Processa as bases sujas que ainda não têm execução. Não altera as fatos ouro."""
     settings = get_settings()
-    store = ParquetStore(settings.processed_dir)
+    store = ParquetStore(settings.silver_dir)
     for dataset_id in missing_dirty():
         cfg = load_catalog().get(dataset_id)
         ensure_dirty(cfg, settings)

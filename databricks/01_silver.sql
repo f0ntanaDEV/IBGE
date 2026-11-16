@@ -41,5 +41,10 @@ SELECT
 FROM ibge.bronze.ds5_tabuas_mortalidade;
 
 CREATE OR REPLACE VIEW ibge.silver.dim_territorio AS
-SELECT DISTINCT cod, sigla, local, nivel
-FROM ibge.silver.ds4_indicadores;
+SELECT
+  CAST(cod AS INT) AS cod,
+  sigla,
+  local,
+  nivel,
+  CAST(regiao_cod AS INT) AS regiao_cod
+FROM ibge.bronze.dim_territorio;

@@ -33,6 +33,7 @@ def _has_fk(table: str) -> bool:
 
 
 def upgrade() -> None:
+    """Liga cod de cada fato a dim_territorio, se a FK ainda não existe."""
     for table in FACTS:
         if _has_fk(table):
             continue
@@ -40,6 +41,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Remove a FK de cod das fatos."""
     for table in FACTS:
         if not _has_fk(table):
             continue

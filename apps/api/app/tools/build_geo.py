@@ -20,6 +20,7 @@ DEST = Path(__file__).resolve().parents[4] / "apps" / "web" / "public" / "geo" /
 
 
 def build(payload: bytes) -> dict:
+    """Recebe o GeoJSON e devolve a geometria simplificada das UFs."""
     collection = json.loads(payload)
     features = []
     for feature in collection["features"]:
@@ -41,6 +42,7 @@ def build(payload: bytes) -> dict:
 
 
 def main() -> None:
+    """Baixa o contorno das UFs e grava o GeoJSON usado no mapa."""
     request = urllib.request.Request(IBGE_MALHA, headers={"User-Agent": "ibge-dashboard/build-geo"})
     with urllib.request.urlopen(request, timeout=60) as response:
         payload = response.read()

@@ -22,10 +22,12 @@ def prepare(frame: pd.DataFrame, cfg: DatasetConfig) -> tuple[pd.DataFrame, list
 
 
 def null_counts(frame: pd.DataFrame) -> dict[str, int]:
+    """Recebe o frame e devolve a contagem de nulos por coluna."""
     return {str(col): int(frame[col].isna().sum()) for col in frame.columns}
 
 
 def whitespace_cells(frame: pd.DataFrame) -> int:
+    """Recebe o frame e devolve quantas células de texto tinham espaço sobrando."""
     total = 0
     for column in frame.columns:
         series = frame[column]
@@ -48,6 +50,7 @@ def run_frame(
     outlier_strategy: str | None = None,
     others: dict[str, pd.DataFrame] | None = None,
 ) -> tuple[pd.DataFrame, list[dict], QualityReport]:
+    """Recebe o frame bruto e as opções. Aplica a ordem normalizar, remodelar, deduplicar, nulos, atípicos e validar."""
     started = perf_counter()
     spaces = whitespace_cells(raw)
     steps: list[dict[str, Any]] = []

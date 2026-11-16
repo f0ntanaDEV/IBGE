@@ -1,41 +1,90 @@
 # Dashboard IBGE
 
-Painel das Projeções da População (revisão 2024): API FastAPI, frontend React e pacote compartilhado.  
+## 1. Objetivo
+
+Painel das Projeções da População do IBGE, revisão 2024. A API é FastAPI, o site é React e o painel da rubrica é o Databricks Lakeview. Não há arquivo Power BI nem medida DAX.
+
 URL: dash.clevo.com.br
 
-```bash
-docker compose up --build
+## 2. Arquitetura
+
+```mermaid
+flowchart LR
+    xlsx["data/raw xlsx"] --> etl["ETL Python"]
+    etl --> silver["data/silver Parquet"]
+    silver --> mysql["MySQL ouro"]
+    mysql --> api["API e React"]
+    mysql --> volume["Volume Databricks"]
+    volume --> lake["Lakeview"]
 ```
 
-O site fica em `http://localhost:8082` (nginx), a API em `http://localhost:8001` e o MySQL em `3306`. Sem Docker: a API em `apps/api/README.md` e o frontend com `npm run dev -w @ibge/web` em `http://127.0.0.1:5173`.
+## 3. Camadas
 
-## Camadas
+- **raw:** `data/raw/*.xlsx`, as cinco planilhas versionadas.
+- **silver:** `data/silver/`. O Parquet completo fica de fora do Git. `data/silver/README.md` e `data/silver/amostra/` entram no repositório. Se `data/processed/` ainda existir, a API move o conteúdo uma vez.
+- **ouro:** tabelas MySQL de `apps/api/app/repositories/schema.py`. O DDL está em `apps/api/sql/ddl_ouro.sql`.
 
-Não há pasta duplicada. O mesmo fluxo usa três camadas:
+## 4. Passo a passo do ETL e da carga
 
-- **raw:** planilhas em `data/raw/*.xlsx`.
-- **silver:** Parquet gerado em `data/processed/` (gitignored; regenerado pelo ETL).
-- **ouro:** tabelas MySQL de `apps/api/app/repositories/schema.py` e views `ibge.gold.`* em `databricks/02_gold.sql`.
+Na pasta `apps/api`, com as planilhas em `data/raw/`:
 
-A carga ouro é `python -m app.tools.load_mysql_from_parquet` (Alembic + Parquet silver → MySQL). O painel da rubrica é o Databricks (Lakeview); não há arquivo Power BI nem medida DAX.
+```bash
+python -m app.tools.run_all
+python -m app.tools.make_sample
+python -m app.tools.load_mysql_from_parquet
+python -m app.tools.eda
+```
 
-## Telas
+`run_all` grava a silver. `load_mysql_from_parquet` sobe o Alembic e troca as fatos originais em lotes de 10 mil, dentro de uma transação. A fonte `sujo` grava só `etl_runs`. Se um valor de referência divergir, a carga desfaz a transação, marca `etl_runs` como `failed` e o processo sai com código diferente de zero.
 
-![Visão geral](docs/screenshots/visao-geral.png)
+A revisão `003_restricoes_ouro` apaga e recria as fatos. É preciso rodar a carga depois do upgrade.
 
-## Débitos
+## 5. Modelo de dados
 
-- A linha do gráfico só aparece ao fim da animação; no Modo leve ela entra direto.
-- O eixo da pirâmide ainda mostra um rótulo solto perto do zero.
+O diagrama, as colunas, os tipos, as chaves e os CHECK estão em `docs/DER.md`. O script equivalente é `apps/api/sql/ddl_ouro.sql` (`python -m app.tools.dump_ddl`).
+
+## 6. EDA
+
+O relatório é `docs/RELATORIO_EDA.md`. Os números e os gráficos saem de `docs/eda/`, gerados por `python -m app.tools.eda`.
+
+## 7. Painel Databricks
+
+O passo a passo, as duas formas de ler o MySQL e a lista de capturas estão em `docs/PAINEL_DATABRICKS.md`.
+
+## 8. Como rodar os testes
+
+```bash
+cd apps/api && python -m pytest
+cd apps/web && npm test
+npx playwright test
+```
+
+A carga MySQL usa `TEST_MYSQL_URL` (MySQL 8). Sem essa variável, os testes marcados `mysql` são pulados. Testes da base inteira, sem o Parquet completo, pulam com o motivo "base completa". O CI sobe MySQL 8.4 e roda `pytest -m "mysql or not mysql"`.
+
+## 9. Deploy com Docker
+
+```bash
+docker compose up -d --build
+docker compose exec api python -m app.tools.load_mysql_from_parquet
+```
+
+O site fica em `http://localhost:8082`, a API em `http://localhost:8001` e o MySQL em `3306`. Sem Docker: a API em `apps/api/README.md` e o frontend com `npm run dev -w @ibge/web` em `http://127.0.0.1:5173`.
+
+Depois do upgrade, confira no MySQL a soma do Brasil em 2026 (214.211.951) e zero atípicos na ds1. O comando da carga já falha se esses valores divergirem.
+
+## 10. Débitos atuais
+
 - Notícias da Agência IBGE podem vir fora do tema quando a busca é ampla.
-- Nesta máquina o MySQL local estava parado; o compose sobe o banco e exige a carga.
 - A tabela paginada pede a página de novo a cada ano, enquanto a pirâmide já fica em memória.
+- As capturas do Lakeview e o PDF `docs/painel-databricks.pdf` dependem de uma conta no workspace.
+- A variante Federation depende de a rede do Databricks alcançar o MySQL.
+- A revisão 003 recria as fatos vazias até a carga original rodar de novo.
 
-## Prompts de IA
+## 11. Prompts de IA
 
 # Prompts para o Cursor
 
-Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as dez pastas `specs/01-` a `specs/10-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as onze pastas `specs/01-` a `specs/11-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
 
 | Arquivo original | Renomear para |
 |---|---|
@@ -77,6 +126,55 @@ Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e 
 ```
 Atue como desenvolvedor Fullstack sênior, especialista em acessibilidade e Product Designer. Implemente a Etapa 4 seguindo @specs/04-modos-acessibilidade-insights/requirements.md, @specs/04-modos-acessibilidade-insights/design.md e @specs/04-modos-acessibilidade-insights/tasks.md. Use os conteúdos prontos de @specs/04-modos-acessibilidade-insights/conteudo sem reescrevê-los. Esta etapa prevalece sobre as etapas 1–3.
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a spec ou encontrar um bloqueio.
+```
+
+## Prompt 5: Filtros, contexto, base de demonstração e Insights
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 5 seguindo @specs/05-filtros-contexto-insights/requirements.md, @specs/05-filtros-contexto-insights/design.md e @specs/05-filtros-contexto-insights/tasks.md.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 6: Negócio, confiabilidade e storytelling
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 6 seguindo @specs/06-negocio-confiabilidade-storytelling/requirements.md, @specs/06-negocio-confiabilidade-storytelling/design.md e @specs/06-negocio-confiabilidade-storytelling/tasks.md.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 7: Animações opcionais
+
+```
+Atue como desenvolvedor Frontend sênior. Implemente a Etapa 7 seguindo @specs/07-animacoes-opcionais/requirements.md, @specs/07-animacoes-opcionais/design.md e @specs/07-animacoes-opcionais/tasks.md.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 8: Reavaliação em produção
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 8 seguindo @specs/08-negocio-confiabilidade-storytelling-v2/requirements.md, @specs/08-negocio-confiabilidade-storytelling-v2/design.md e @specs/08-negocio-confiabilidade-storytelling-v2/tasks.md. Esta etapa prevalece sobre a 6 nos pontos em que divergir.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 9: Ajustes da avaliação
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 9 seguindo @specs/09-ajustes-avaliacao/requirements.md, @specs/09-ajustes-avaliacao/design.md e @specs/09-ajustes-avaliacao/tasks.md, com @specs/DATA_PROFILE.md como referência dos dados.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 10: Rubrica de entrega
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 10 seguindo @specs/10-rubrica-entrega/requirements.md, @specs/10-rubrica-entrega/design.md e @specs/10-rubrica-entrega/tasks.md. O painel da rubrica é o Databricks, no lugar do Power BI.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 11: Finalização pela rubrica
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 11 seguindo @specs/11-finalizacao-rubrica/requirements.md, @specs/11-finalizacao-rubrica/design.md e @specs/11-finalizacao-rubrica/tasks.md. Esta etapa prevalece sobre a 10 na pasta silver, nas docstrings, na EDA e na leitura do MySQL pelo Databricks.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
 ```
 
 ---

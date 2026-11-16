@@ -1,73 +1,36 @@
--- Dashboard Lakeview das Projeções IBGE (revisão 2024).
--- Troque o catálogo `ibge` se o workspace não deixar criar catálogo.
--- Rode este arquivo, depois 01_silver.sql e 02_gold.sql.
--- Em cada página do dashboard, cole um SELECT de databricks/paginas/.
---
--- Antes de rodar: envie só o Parquet mais recente de data/processed/ para
---   /Volumes/ibge/bronze/raw/ds1/   (ds1_*.parquet)
---   /Volumes/ibge/bronze/raw/ds2/
---   /Volumes/ibge/bronze/raw/ds3/
---   /Volumes/ibge/bronze/raw/ds4/
---   /Volumes/ibge/bronze/raw/ds5/
--- O nome leva o carimbo AAAAMMDDTHHMMSS; o arquivo de caminho maior é o mais novo.
+-- Catálogo a partir do MySQL ouro exportado para o Volume.
+-- Rode depois de `python -m app.tools.export_gold`.
+-- Ordem: este arquivo, 01_silver.sql, 02_gold.sql, paginas/*.sql e 99_validacao.sql.
 
 CREATE CATALOG IF NOT EXISTS ibge;
 CREATE SCHEMA IF NOT EXISTS ibge.bronze;
 CREATE SCHEMA IF NOT EXISTS ibge.silver;
 CREATE SCHEMA IF NOT EXISTS ibge.gold;
-CREATE VOLUME IF NOT EXISTS ibge.bronze.raw;
+CREATE VOLUME IF NOT EXISTS ibge.bronze.ouro_mysql;
+
+CREATE OR REPLACE TABLE ibge.bronze.dim_territorio AS
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/dim_territorio/', format => 'parquet');
+
+CREATE OR REPLACE TABLE ibge.bronze.dim_metrica AS
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/dim_metrica/', format => 'parquet');
+
+CREATE OR REPLACE TABLE ibge.bronze.dim_dataset AS
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/dim_dataset/', format => 'parquet');
+
+CREATE OR REPLACE TABLE ibge.bronze.etl_runs AS
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/etl_runs/', format => 'parquet');
 
 CREATE OR REPLACE TABLE ibge.bronze.ds1_populacao_idade AS
-WITH src AS (
-  SELECT *, _metadata.file_path AS _arquivo
-  FROM read_files('/Volumes/ibge/bronze/raw/ds1/*.parquet', format => 'parquet')
-)
-SELECT * EXCEPT (_arquivo, _rk)
-FROM (
-  SELECT *, dense_rank() OVER (ORDER BY _arquivo DESC) AS _rk FROM src
-)
-WHERE _rk = 1;
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/ds1_populacao_idade/', format => 'parquet');
 
 CREATE OR REPLACE TABLE ibge.bronze.ds2_populacao_quinquenal AS
-WITH src AS (
-  SELECT *, _metadata.file_path AS _arquivo
-  FROM read_files('/Volumes/ibge/bronze/raw/ds2/*.parquet', format => 'parquet')
-)
-SELECT * EXCEPT (_arquivo, _rk)
-FROM (
-  SELECT *, dense_rank() OVER (ORDER BY _arquivo DESC) AS _rk FROM src
-)
-WHERE _rk = 1;
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/ds2_populacao_quinquenal/', format => 'parquet');
 
 CREATE OR REPLACE TABLE ibge.bronze.ds3_grupos_etarios AS
-WITH src AS (
-  SELECT *, _metadata.file_path AS _arquivo
-  FROM read_files('/Volumes/ibge/bronze/raw/ds3/*.parquet', format => 'parquet')
-)
-SELECT * EXCEPT (_arquivo, _rk)
-FROM (
-  SELECT *, dense_rank() OVER (ORDER BY _arquivo DESC) AS _rk FROM src
-)
-WHERE _rk = 1;
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/ds3_grupos_etarios/', format => 'parquet');
 
 CREATE OR REPLACE TABLE ibge.bronze.ds4_indicadores AS
-WITH src AS (
-  SELECT *, _metadata.file_path AS _arquivo
-  FROM read_files('/Volumes/ibge/bronze/raw/ds4/*.parquet', format => 'parquet')
-)
-SELECT * EXCEPT (_arquivo, _rk)
-FROM (
-  SELECT *, dense_rank() OVER (ORDER BY _arquivo DESC) AS _rk FROM src
-)
-WHERE _rk = 1;
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/ds4_indicadores/', format => 'parquet');
 
 CREATE OR REPLACE TABLE ibge.bronze.ds5_tabuas_mortalidade AS
-WITH src AS (
-  SELECT *, _metadata.file_path AS _arquivo
-  FROM read_files('/Volumes/ibge/bronze/raw/ds5/*.parquet', format => 'parquet')
-)
-SELECT * EXCEPT (_arquivo, _rk)
-FROM (
-  SELECT *, dense_rank() OVER (ORDER BY _arquivo DESC) AS _rk FROM src
-)
-WHERE _rk = 1;
+SELECT * FROM read_files('/Volumes/ibge/bronze/ouro_mysql/ds5_tabuas_mortalidade/', format => 'parquet');

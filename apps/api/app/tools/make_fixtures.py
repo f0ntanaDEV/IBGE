@@ -16,6 +16,7 @@ FIXTURES = API_ROOT / "tests" / "fixtures"
 
 
 def cut_frame(frame: pd.DataFrame, cfg: DatasetConfig) -> pd.DataFrame:
+    """Recebe o frame e devolve o recorte pequeno usado nas fixtures."""
     cod_col = next(column for column in frame.columns if safe_name(column) == "cod")
     selected = frame.loc[pd.to_numeric(frame[cod_col], errors="coerce").isin(KEEP_COD)].copy()
     if cfg.reshape is not None:
@@ -34,6 +35,7 @@ def cut_frame(frame: pd.DataFrame, cfg: DatasetConfig) -> pd.DataFrame:
 
 
 def main() -> None:
+    """Recorta as planilhas de teste em tests/fixtures."""
     settings = get_settings()
     FIXTURES.mkdir(parents=True, exist_ok=True)
     for cfg in load_catalog().datasets:

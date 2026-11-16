@@ -6,6 +6,7 @@ from app.domain.dataset import DatasetConfig
 
 
 def dedupe(frame: pd.DataFrame, cfg: DatasetConfig, nulls_before: pd.Series) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Recebe o frame e a chave do dataset. Devolve o frame sem duplicata e a contagem removida."""
     exact_mask = frame.duplicated(keep="first")
     kept = frame.loc[~exact_mask].copy()
     scores = nulls_before.reindex(kept.index).fillna(0)

@@ -36,6 +36,7 @@ _RATE_PREFIXES = (
 
 
 def is_count(name: str) -> bool:
+    """Recebe o nome da coluna e diz se a regra de validação trata o valor como estoque de pessoas."""
     if name == "populacao" or name.startswith(("pop", "nasc", "obt")):
         return True
     if name.startswith("n_") and not name.startswith(("n_5q", "n_45q", "n_20q")):
@@ -44,6 +45,7 @@ def is_count(name: str) -> bool:
 
 
 def validate(frame: pd.DataFrame, cfg: DatasetConfig, others: dict[str, pd.DataFrame] | None = None) -> list[dict]:
+    """Recebe o frame limpo. Devolve as regras territoriais, de sexo e de ds1 contra pop_t, com a tolerância de fluxo."""
     results: list[dict] = []
     results.extend(_territorial(frame))
     results.extend(_sex_sums(frame))

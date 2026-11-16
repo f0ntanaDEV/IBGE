@@ -27,12 +27,15 @@ def _data_dir(monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(ROOT / "data"))
     monkeypatch.setenv("AUTO_SEED", "false")
     get_settings.cache_clear()
-    if not (ROOT / "data" / "processed").exists():
-        pytest.skip("parquet ausente")
+    from tests.conftest import silver_completa
+
+    if not silver_completa(ROOT):
+        pytest.skip("base completa")
     yield
     get_settings.cache_clear()
 
 
+@pytest.mark.full_data
 def test_original_fecha_113(_data_dir):
     summary = validation_overview("original")
     assert summary["total"] == 113

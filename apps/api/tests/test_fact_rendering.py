@@ -11,13 +11,18 @@ from app.services.facts.render import render_fact
 ROOT = Path(__file__).resolve().parents[3]
 
 
+pytestmark = pytest.mark.full_data
+
+
 @pytest.fixture(autouse=True)
 def _data_dir(monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(ROOT / "data"))
     monkeypatch.setenv("AUTO_SEED", "false")
     get_settings.cache_clear()
-    if not (ROOT / "data" / "processed").exists():
-        pytest.skip("parquet ausente")
+    from tests.conftest import silver_completa
+
+    if not silver_completa(ROOT):
+        pytest.skip("base completa")
     yield
     get_settings.cache_clear()
 

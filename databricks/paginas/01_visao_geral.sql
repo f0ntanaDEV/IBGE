@@ -1,3 +1,4 @@
+-- Parâmetros: ano INT = 2026 e territorio STRING = 'Brasil'. Seletor: SELECT DISTINCT local FROM ibge.gold.territorios.
 -- Página Visão geral. Parâmetro: ano (INT, padrão = ano corrente, ex. 2026).
 -- Counters: um campo por widget. Linha: ano × populacao, quebre a série por tipo.
 -- O pico é o ano de populacao máxima (na revisão 2024, 2041).
@@ -14,11 +15,12 @@ SELECT
   delta_ie60_10a,
   tipo
 FROM ibge.gold.visao_geral
-WHERE ano = :ano;
+WHERE ano = :ano AND local = :territorio;
 
 -- WIDGET linha: população 2000–2070
 SELECT ano, populacao, tipo, ano_pico, populacao_pico
 FROM ibge.gold.populacao_brasil
+WHERE local = :territorio
 ORDER BY ano;
 
 -- WIDGET tabela: volume de cada base

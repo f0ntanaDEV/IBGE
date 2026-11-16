@@ -1,50 +1,57 @@
 # Relatório de EDA — Projeções da População (revisão 2024)
 
-Estatística descritiva transcrita de `specs/DATA_PROFILE.md` e das manchetes fechadas na etapa 9 (`specs/09-ajustes-avaliacao/requirements.md`). Nenhum número foi recalculado nas planilhas.
+Os números saem de `docs/eda/estatisticas.md`, gerado por `python -m app.tools.eda` sobre a silver. Casas decimais: no máximo duas.
 
-## Estatística descritiva
+## Qualidade dos dados
 
-| Base | Linhas | O que a série cobre | Fonte |
-|---|---:|---|---|
-| ds1, população por idade | 9.009 | Anos 2000–2070; sexos Ambos, Homens e Mulheres | `specs/DATA_PROFILE.md` |
-| ds2, grupos quinquenais | 1.881 | 19 grupos; exemplo 00-04 | `specs/DATA_PROFILE.md` |
-| ds3, grupos etários | 2.343 | Totais e faixas por território e ano | `specs/DATA_PROFILE.md` |
-| ds4, indicadores | 2.343 | 33 nulos de TCG no primeiro ano | `specs/DATA_PROFILE.md` |
-| ds5, tábuas | 140.580 | 20 idades; 7.029 intervalos abertos | `specs/DATA_PROFILE.md` |
+A ds1 larga tem 9.009 linhas (33 territórios × 3 sexos × 91 idades, de 0 a 90). No formato longo cada linha se repete nos 71 anos: 9.009 × 71 = 639.639. É a mesma projeção, não um acréscimo de pessoas.
 
-| Indicador (Brasil) | 2000 | 2022 | 2024 | 2026 | Fonte |
-|---|---:|---:|---:|---:|---|
-| População | 174.695.935 | 210.862.983 | 212.583.750 | 214.211.951 | `specs/DATA_PROFILE.md` |
-| TFT (filhos por mulher) | 2,3155517895268 | 1,57625383660638 | 1,54680260681053 | 1,51291796111521 | `specs/DATA_PROFILE.md` |
-| e0 total (anos) | 71,1021851042547 | 75,448044104081 | 76,6057109845871 | 77,0272472172583 | `specs/DATA_PROFILE.md` |
-| TMI total | 28,1269745904994 | 12,4213105471151 | 12,2488303378121 | 11,8289603033109 | `specs/DATA_PROFILE.md` |
+| Base | Linhas depois da limpeza | Duplicatas na chave | Atípicos | Nulos que permanecem |
+|---|---:|---:|---:|---|
+| ds1 | 639.639 | 0 | 0 | nenhum |
+| ds2 | 133.551 | 0 | 0 | nenhum |
+| ds3 | 2.343 | 0 | 0 | nenhum |
+| ds4 | 2.343 | 0 | 7 | 99 estruturais |
+| ds5 | 140.580 | 0 | 0 | 7.029 no intervalo aberto |
 
-Pico da população (Brasil, ambos os sexos): **2041**, com **220.425.299** pessoas. Em 2070 a projeção é **199.228.708**. Fonte: `specs/DATA_PROFILE.md`.
+Os 99 nulos são `tcg_t`, `tcg_h` e `tcg_m` em 2000, nos 33 territórios. Não há crescimento geométrico no primeiro ano, e o pipeline não imputa essa célula. Na ds1 original, `is_outlier` é 0.
 
-`nqx` na tábua: mínimo **0,000403425066147821**, máximo **1**. Fonte: `specs/DATA_PROFILE.md`.
+População por idade no Brasil em 2026 (sexo Ambos, 91 idades): média 2.353.977, mediana 2.746.996, desvio-padrão 964.572, mínimo 223.580, máximo 3.344.410. Entre as UFs em 2026, a e0 tem média 76,82 e mediana 76,79; a TFT tem média 1,61 e mediana 1,55; a idade mediana tem média 34,36.
 
 ## Respostas
 
 ### A população ainda cresce? Até quando?
 
-Sim, até **2041**. Nesse ano o Brasil chega a **220.425.299** habitantes e depois recua para **199.228.708** em **2070**. A série publicada vai de **2000** a **2070**. Fonte: `specs/DATA_PROFILE.md`.
+Sim, até **2041**. Nesse ano o Brasil chega a **220.425.299** pessoas e em **2070** a projeção é **199.228.708**. A série vai de 2000 a 2070. Gráfico: `docs/eda/populacao_2000_2070.png`.
 
 ### Como a idade muda e onde estará a demanda?
 
-A manchete da População por idade, no ano-base 2026, registra que **17,1%** da população tem 60 anos ou mais e que em **2040** serão **24,3%**. A demanda se desloca para adultos e idosos. A idade mediana oficial do Brasil nesse recorte é **36,1** anos. Fonte: manchetes da etapa 9 em `specs/09-ajustes-avaliacao/requirements.md`.
+Em 2026, **17,07%** da população do Brasil tem 60 anos ou mais e **19,17%** tem 0–14. A idade mediana entre as UFs tem mediana **35,04** anos (mínimo 28,08, máximo 39,12). A demanda se desloca para adultos e idosos. Gráfico: `docs/eda/piramide_2026_2070.png`.
 
 ### Quais faixas crescem e quais encolhem até 2070?
 
-Até **2070**, o grupo de **90+** cresce **576,0%** e o de **5–9** encolhe **43,8%** (Brasil). Fonte: manchete da etapa 9 em `specs/09-ajustes-avaliacao/requirements.md`.
+Do Brasil em 2026 até 2070, o grupo **90+** cresce **575,95%** (de 814.288 para 5.504.219) e o grupo **05–09** encolhe **43,81%** (de 14.048.266 para 7.893.433).
 
 ### Quando os idosos superam as crianças?
 
-Em **2029** os idosos (60+) superam o grupo de 0–14 anos. Em 2022 o Brasil ainda tinha **42.984.314** pessoas de 0–14 anos e **31.864.499** de 60 anos ou mais. Fonte: `specs/DATA_PROFILE.md`.
+Em **2029** a população de 60 anos ou mais supera a de 0–14 no Brasil. Gráfico de apoio: `docs/eda/populacao_2000_2070.png`.
 
 ### Em que ritmo se vive mais e se tem menos filhos?
 
-De 2000 a 2026 a esperança de vida ao nascer passa de **71,1021851042547** para **77,0272472172583** anos, e a TFT de **2,3155517895268** para **1,51291796111521** filhos por mulher. A manchete de Indicadores arredonda 2026 para **77,03** anos e **1,51** filho, abaixo da reposição de 2,1. A TMI no mesmo intervalo cai de **28,1269745904994** para **11,8289603033109**. Fontes: `specs/DATA_PROFILE.md` e a manchete da etapa 9.
+A e0 do Brasil passa de **71,10** anos em 2000 para **77,03** em 2026. A TFT passa de **2,32** para **1,51** filho por mulher, abaixo da reposição de 2,10. A TMI cai de **28,13** para **11,83** por mil. Nas UFs em 2026 a e0 vai de 74,84 a 80,03 (histograma `docs/eda/histograma_e0_2026.png`) e a TFT por região está em `docs/eda/boxplot_tft_regiao.png`. A correlação de Pearson entre e0 e TFT nas 27 UFs é **-0,63** (`docs/eda/dispersao_e0_tft.png`).
+
+| Região em 2026 | População | e0 | TFT | IE60 |
+|---|---:|---:|---:|---:|
+| Norte | 18.929.341 | 76,35 | 1,75 | 48,70 |
+| Nordeste | 57.366.981 | 76,60 | 1,50 | 79,72 |
+| Sudeste | 89.015.421 | 77,27 | 1,43 | 105,38 |
+| Sul | 31.498.532 | 77,70 | 1,50 | 104,26 |
+| Centro-Oeste | 17.401.676 | 77,18 | 1,64 | 71,86 |
 
 ### Quantos chegam a cada idade?
 
-A tábua publica 20 idades. O `nqx` vai de **0,000403425066147821** a **1** (o intervalo aberto). Em 2022, aos 0 anos de idade, a esperança de vida (`ex`) no Brasil é **75,448044** anos para ambos os sexos, **72,108304** para homens e **78,793178** para mulheres. Fonte: `specs/DATA_PROFILE.md`.
+A tábua tem 20 idades. O `nqx`, com 2 casas, vai de **0,00** a **1,00** (o intervalo aberto). Em 2022, aos 0 anos, a esperança de vida no Brasil é **75,45** para ambos os sexos, **72,11** para homens e **78,79** para mulheres. Entre as UFs em 2026, o `nqx` tem mediana **0,02**.
+
+## Limitações
+
+A série é projeção, não censo. Os anos acima do calendário não são população observada. A revisão é a de **2024** do IBGE; uma revisão nova substitui estes níveis. Sexo aqui é o recorte publicado (Ambos, Homens, Mulheres), e território chega a UF, não a município.

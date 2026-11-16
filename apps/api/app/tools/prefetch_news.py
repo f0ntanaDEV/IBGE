@@ -14,6 +14,7 @@ NEWS_URL = "https://servicodados.ibge.gov.br/api/v3/noticias/?busca={term}&qtd=1
 
 
 def terms() -> list[str]:
+    """Devolve os termos de busca de notícia de cada página."""
     text = (API_ROOT / "datasets.yaml").read_text(encoding="utf-8")
     found: list[str] = []
     for line in text.splitlines():
@@ -28,6 +29,7 @@ def terms() -> list[str]:
 
 
 def main() -> None:
+    """Busca e guarda as notícias usadas pelo painel."""
     folder = API_ROOT / "news_snapshot"
     folder.mkdir(parents=True, exist_ok=True)
     fetched_at = time.time()

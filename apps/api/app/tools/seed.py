@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 def seed_all() -> None:
+    """Processa a fonte suja e depois a original. A suja não substitui as fatos."""
     settings = get_settings()
-    store = ParquetStore(settings.processed_dir)
+    store = ParquetStore(settings.silver_dir)
     for cfg in load_catalog().datasets:
         ensure_dirty(cfg, settings)
         for source in ("sujo", "original"):
@@ -26,6 +27,7 @@ def seed_all() -> None:
 
 
 def main() -> None:
+    """Atalho de linha de comando para a semeadura."""
     logging.basicConfig(level=logging.INFO)
     seed_all()
 

@@ -5,7 +5,7 @@ import pytest
 from app.core.config import get_settings
 from app.services.context.registry import context_for
 
-ROOT_READY = True
+pytestmark = pytest.mark.full_data
 
 
 @pytest.fixture(autouse=True)
@@ -16,8 +16,10 @@ def _data_dir(monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(root / "data"))
     monkeypatch.setenv("AUTO_SEED", "false")
     get_settings.cache_clear()
-    if not (root / "data" / "processed").exists():
-        pytest.skip("parquet ausente")
+    from tests.conftest import silver_completa
+
+    if not silver_completa(root):
+        pytest.skip("base completa")
     yield
     get_settings.cache_clear()
 

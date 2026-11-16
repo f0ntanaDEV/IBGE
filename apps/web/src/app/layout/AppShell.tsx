@@ -78,8 +78,8 @@ export function AppShell() {
             </main>
             {embedded ? null : (
               <>
-                <div aria-hidden className={cn("pointer-events-none absolute inset-x-1 top-1 h-16 rounded-t-[10px] bg-gradient-to-b from-background to-transparent", edges.top ? "opacity-100" : "opacity-0")} />
-                <div aria-hidden className={cn("pointer-events-none absolute inset-x-1 bottom-1 h-16 rounded-b-[10px] bg-gradient-to-t from-background to-transparent", edges.bottom ? "opacity-100" : "opacity-0")} />
+                <div aria-hidden className={cn("pointer-events-none absolute inset-x-1 top-1 h-6 rounded-t-[10px] bg-gradient-to-b from-background/35 to-transparent", edges.top ? "opacity-100" : "opacity-0")} />
+                <div aria-hidden className={cn("pointer-events-none absolute inset-x-1 bottom-1 h-6 rounded-b-[10px] bg-gradient-to-t from-background/35 to-transparent", edges.bottom ? "opacity-100" : "opacity-0")} />
               </>
             )}
           </div>

@@ -11,7 +11,7 @@ REF_YEAR = 2026
 
 
 def store() -> ParquetStore:
-    return ParquetStore(get_settings().processed_dir)
+    return ParquetStore(get_settings().silver_dir)
 
 
 def frame(dataset_id: str) -> pd.DataFrame:

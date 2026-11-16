@@ -6,6 +6,7 @@ from app.integrations.ibge_agregados import discover_censo, save_reference
 
 
 def main() -> None:
+    """Consulta a API do IBGE e imprime os agregados candidatos."""
     with httpx.Client(timeout=30) as client:
         reference = discover_censo(client)
     save_reference(reference)

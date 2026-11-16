@@ -4,7 +4,17 @@ node_modules/
 **/.pytest_cache/
 **/*.pyc
 .env
+secrets/databricks.token
 data/processed/
+data/silver/*.parquet
+data/silver/*.csv
+data/silver/*.xlsx
+data/silver/*.json
+*.log
+.DS_Store
+.idea/
+.vscode/
+coverage/
 data/cache/
 data/raw/uploads/
 data/raw/*_sujo.xlsx

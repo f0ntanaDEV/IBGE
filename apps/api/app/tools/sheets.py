@@ -10,6 +10,7 @@ from app.services.export import _cell
 
 
 def write_like_source(frame: pd.DataFrame, path: Path, cfg: DatasetConfig) -> None:
+    """Recebe o frame e grava uma planilha no layout de entrada do dataset."""
     path.parent.mkdir(parents=True, exist_ok=True)
     book = Workbook(write_only=True)
     sheet = book.create_sheet(cfg.sheet[:31])

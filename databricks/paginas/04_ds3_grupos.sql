@@ -1,3 +1,4 @@
+-- Parâmetros: ano INT = 2026 e territorio STRING = 'Brasil'. Seletor: SELECT DISTINCT local FROM ibge.gold.territorios.
 -- Página Grupos etários. Sem filtro de sexo: as colunas já são o total (_t).
 -- Parâmetros: cod INT = 0, ano INT = 2026.
 -- p_* entre 0 e 1. ano_cruzamento é o primeiro ano em que 60+ supera 0–14 (Brasil: 2029).
@@ -14,11 +15,11 @@ SELECT
   s.p_80_mais_t - a.p_80_mais_t AS delta_p_80_10a,
   c.ano_cruzamento,
   CASE WHEN s.ano > year(current_date()) THEN 'projeção' ELSE 'observado' END AS tipo
-FROM ibge.silver.ds3_grupos_etarios s
-LEFT JOIN ibge.silver.ds3_grupos_etarios a
+FROM ibge.gold.ds3_faixas s
+LEFT JOIN ibge.gold.ds3_faixas a
   ON a.cod = s.cod AND a.ano = s.ano - 10
 LEFT JOIN ibge.gold.ds3_cruzamento c ON c.cod = s.cod
-WHERE s.cod = :cod AND s.ano = :ano;
+WHERE s.local = :territorio AND s.ano = :ano;
 
 -- WIDGET linhas: 0–14 e 60+
 SELECT
@@ -29,15 +30,15 @@ SELECT
   b.p_60_mais_t AS p_60_mais_brasil,
   c.ano_cruzamento,
   CASE WHEN s.ano > year(current_date()) THEN 'projeção' ELSE 'observado' END AS tipo
-FROM ibge.silver.ds3_grupos_etarios s
-LEFT JOIN ibge.silver.ds3_grupos_etarios b ON b.cod = 0 AND b.ano = s.ano
+FROM ibge.gold.ds3_faixas s
+LEFT JOIN ibge.gold.ds3_faixas b ON b.cod = 0 AND b.ano = s.ano
 LEFT JOIN ibge.gold.ds3_cruzamento c ON c.cod = s.cod
-WHERE s.cod = :cod
+WHERE s.local = :territorio
 ORDER BY s.ano;
 
 -- WIDGET barras: UFs por % de 60+
 SELECT sigla, local, p_60_mais_t
-FROM ibge.silver.ds3_grupos_etarios
+FROM ibge.gold.ds3_faixas
 WHERE ano = :ano AND nivel = 'uf'
 ORDER BY p_60_mais_t DESC;
 
@@ -48,8 +49,8 @@ SELECT
   a.p_60_mais_t AS valor_2000,
   b.p_60_mais_t AS valor_ano,
   b.p_60_mais_t - a.p_60_mais_t AS delta
-FROM ibge.silver.dim_territorio u
-JOIN ibge.silver.ds3_grupos_etarios a ON a.cod = u.cod AND a.ano = 2000
-JOIN ibge.silver.ds3_grupos_etarios b ON b.cod = u.cod AND b.ano = :ano
+FROM ibge.gold.territorios u
+JOIN ibge.gold.ds3_faixas a ON a.cod = u.cod AND a.ano = 2000
+JOIN ibge.gold.ds3_faixas b ON b.cod = u.cod AND b.ano = :ano
 WHERE u.nivel = 'uf'
 ORDER BY delta DESC;

@@ -10,8 +10,9 @@ from app.tools.make_dirty import write_dirty
 
 
 def main() -> None:
+    """Roda a suja e a original das cinco bases e grava a silver."""
     settings = get_settings()
-    store = ParquetStore(settings.processed_dir)
+    store = ParquetStore(settings.silver_dir)
     catalog = load_catalog()
     for cfg in catalog.datasets:
         write_dirty(cfg, settings, seed=42)

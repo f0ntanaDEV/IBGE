@@ -7,6 +7,7 @@ from app.domain.dataset import DatasetConfig
 from app.domain.territory import SKIP_OUTLIER
 from app.services.cleaning.missing import _fill_series
 
+# 0,6745 leva o MAD à escala do desvio-padrão. A base oficial só marca o atípico; não apaga a linha.
 _MAD_SCALE = 0.6745
 
 
@@ -18,6 +19,7 @@ def apply_outliers(
     factor: float,
     strategy: str,
 ) -> tuple[pd.DataFrame, dict[str, dict[str, int]]]:
+    """Recebe o frame e o método. Marca is_outlier; na base oficial a estratégia flag não apaga a linha."""
     out = frame.copy()
     reasons: list[pd.Series] = []
     counts: dict[str, dict[str, int]] = {}

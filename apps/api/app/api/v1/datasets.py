@@ -51,13 +51,13 @@ class ProcessIn(BaseModel):
 
 
 def _store() -> ParquetStore:
-    return ParquetStore(get_settings().processed_dir)
+    return ParquetStore(get_settings().silver_dir)
 
 
 def _reports(dataset_id: str) -> list[dict]:
     from app.services.run_stamp import finished_from_name
 
-    folder = get_settings().processed_dir
+    folder = get_settings().silver_dir
     paths = sorted(folder.glob(f"{dataset_id}_*.report.json"))
     items = []
     for path in paths:
@@ -105,7 +105,7 @@ def list_datasets() -> list[dict]:
 @router.get("/{dataset_id}/metrics")
 def metrics(dataset_id: str) -> list[dict]:
     cfg = catalog_or_404(dataset_id)
-    path = get_settings().processed_dir / f"{dataset_id}_metrics.json"
+    path = get_settings().silver_dir / f"{dataset_id}_metrics.json"
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
     if cfg.metrics != "auto":

@@ -18,6 +18,7 @@ dependencies = [
     "openpyxl",
     "httpx",
     "pyyaml",
+    "matplotlib",
     "python-multipart",
 ]
 
@@ -35,3 +36,7 @@ include = ["app*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+markers = [
+    "mysql: exige TEST_MYSQL_URL e um MySQL 8",
+    "full_data: exige a silver completa; sem ela o skip é 'base completa'",
+]

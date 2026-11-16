@@ -22,7 +22,7 @@ $env:MYSQL_REQUIRED = "false"
 python -m uvicorn app.main:app --reload
 ```
 
-`MYSQL_REQUIRED=true` faz o processamento falhar se a carga no MySQL não concluir. Com `false`, a base tratada ainda é gravada em `data/processed/`.
+`MYSQL_REQUIRED=true` faz o processamento falhar se a carga no MySQL não concluir. Com `false`, a base tratada ainda é gravada em `data/silver/`.
 
 ## Pipeline
 

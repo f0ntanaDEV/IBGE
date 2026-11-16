@@ -1,5 +1,8 @@
 """Configuração da API e dos caminhos de dados."""
 
+import logging
+import os
+import shutil
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote_plus
@@ -26,6 +29,7 @@ class Settings(BaseSettings):
     auto_seed: bool = True
     databricks_embed_mode: str = "preview"
     databricks_host: str = ""
+    databricks_token: str = ""
     databricks_dashboard_id: str = ""
     databricks_warehouse_id: str = ""
     databricks_client_id: str = ""
@@ -54,8 +58,18 @@ class Settings(BaseSettings):
         return self.data_dir / "raw"
 
     @property
+    def silver_dir(self) -> Path:
+        """Parquet do ETL. SILVER_DIR só vale para a pasta data do repositório (amostra nos testes)."""
+        override = os.environ.get("SILVER_DIR", "").strip()
+        repo_data = (REPO_ROOT / "data").resolve()
+        if override and self.data_dir.resolve() == repo_data:
+            return Path(override)
+        return self.data_dir / "silver"
+
+    @property
     def processed_dir(self) -> Path:
-        return self.data_dir / "processed"
+        """Nome antigo da silver. O caminho real é data/silver."""
+        return self.silver_dir
 
 
 @lru_cache
@@ -67,7 +81,33 @@ def get_settings() -> Settings:
     repo_data = (REPO_ROOT / "data").resolve()
     # `.env` usa `/data` para o compose. No Windows isso vira `C:\data` e o filtro do Brasil fica sem base.
     # `.env` usa `/data` para o compose. No Windows isso vira `C:\data`, que não existe.
-    if not configured.exists() and (repo_data / "processed").exists():
+    if not configured.exists() and ((repo_data / "silver").exists() or (repo_data / "processed").exists()):
         configured = repo_data
     object.__setattr__(settings, "data_dir", configured)
+    if not os.environ.get("SILVER_DIR", "").strip():
+        _migrate_processed(configured)
     return settings
+
+
+def _migrate_processed(data_dir: Path) -> None:
+    """Move data/processed para data/silver uma vez, se a silver ainda não tiver Parquet."""
+    old = data_dir / "processed"
+    new = data_dir / "silver"
+    if not old.exists():
+        return
+    logger = logging.getLogger("app.core.config")
+    if not new.exists():
+        logger.warning("data/processed movida para data/silver")
+        shutil.move(str(old), str(new))
+        return
+    if any(new.glob("ds1_*.parquet")):
+        return
+    if not any(old.glob("*.parquet")):
+        return
+    logger.warning("conteúdo de data/processed movido para data/silver")
+    new.mkdir(parents=True, exist_ok=True)
+    for item in old.iterdir():
+        dest = new / item.name
+        if dest.exists():
+            continue
+        shutil.move(str(item), str(dest))

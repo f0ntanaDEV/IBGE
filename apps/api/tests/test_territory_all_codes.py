@@ -20,8 +20,10 @@ def client():
     os.environ["AUTO_SEED"] = "false"
     os.environ["MYSQL_REQUIRED"] = "false"
     get_settings.cache_clear()
-    if not (root / "data" / "processed").exists():
-        pytest.skip("parquet ausente")
+    from tests.conftest import silver_completa
+
+    if not silver_completa(root):
+        pytest.skip("base completa")
     from app.main import create_app
 
     with TestClient(create_app()) as api:
@@ -32,6 +34,9 @@ def client():
         else:
             os.environ[key] = value
     get_settings.cache_clear()
+
+
+pytestmark = pytest.mark.full_data
 
 
 @pytest.mark.parametrize("cod", CODES)

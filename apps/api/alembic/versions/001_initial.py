@@ -14,6 +14,7 @@ depends_on = None
 
 
 def upgrade() -> None:
+    """Cria dimensões, fatos e etl_runs e semeia os 33 territórios."""
     bind = op.get_bind()
     Base.metadata.create_all(bind)
     existing = bind.execute(text("SELECT COUNT(*) FROM dim_territorio")).scalar() or 0
@@ -22,4 +23,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Remove todas as tabelas desta revisão."""
     Base.metadata.drop_all(op.get_bind())
