@@ -1,7 +1,7 @@
 # Dashboard IBGE
 
-Painel das Projeções da População (revisão 2024): API FastAPI, frontend React e pacote compartilhado.
-AL: https://ibge-eight.vercel.app/
+Painel das Projeções da População (revisão 2024): API FastAPI, frontend React e pacote compartilhado.  
+AL: [https://dash.clevo.com.br](https://ibge-eight.vercel.app/)
 
 ```bash
 docker compose up --build
@@ -13,15 +13,7 @@ O site fica em `http://localhost:8082` (nginx), a API em `http://localhost:8001`
 
 ![Visão geral](docs/screenshots/visao-geral.png)
 
-![Idade simples](docs/screenshots/idade-simples.png)
 
-![Indicadores](docs/screenshots/indicadores.png)
-
-![Qualidade](docs/screenshots/qualidade.png)
-
-![Notícias](docs/screenshots/noticias.png)
-
-![Visão geral no celular](docs/screenshots/visao-geral-375.png)
 
 ## Débitos
 
