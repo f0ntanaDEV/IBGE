@@ -48,7 +48,6 @@ describe("página databricks", () => {
   it("monta o cliente do painel no espaço da página", async () => {
     instances.length = 0
     initialized.length = 0
-    sessionStorage.clear()
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => ({
         ok: true,
         json: async () => ({
@@ -60,7 +59,7 @@ describe("página databricks", () => {
     }))
     vi.stubGlobal("fetch", fetchMock)
     render(<DatabricksPage />)
-    const box = document.getElementById("dashboard-container")
+    const box = document.getElementById("dashboard-content")
     expect(box).toBeTruthy()
     expect(box).toHaveClass("h-full", "w-full", "flex-1")
     await waitFor(() => expect(instances).toHaveLength(1))
@@ -71,9 +70,7 @@ describe("página databricks", () => {
     expect(instances[0]?.opts.container).toBe(box)
     expect(initialized).toEqual([1])
     expect(document.querySelector('iframe[src*="dashboardsv3"]')).toBeNull()
-    const called = String(fetchMock.mock.calls[0]?.[0])
-    expect(called).toContain("external_viewer_id=")
-    expect(called).not.toContain("@")
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("/api/v1/databricks/embed")
     await instances[0]?.opts.getNewToken?.()
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(screen.queryByRole("region", { name: "Tabela" })).not.toBeInTheDocument()

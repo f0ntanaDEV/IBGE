@@ -3,7 +3,6 @@
 import json
 import logging
 import re
-import uuid
 
 import httpx
 
@@ -15,16 +14,15 @@ logger = logging.getLogger(__name__)
 INSTANCE_URL = "https://dbc-e7ffba4b-1a76.cloud.databricks.com"
 WORKSPACE_ID = "7474648187013488"
 DASHBOARD_ID = "01f1e08bd1d71ca9b49a4604ee008ce0"
-CLIENT_ID = "dcabf4c5-5541-46a8-853d-f22b2baed7a3"
-EXTERNAL_VALUE = "publico"
-_VIEWER = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+CLIENT_ID = "17919962-b7bd-4d69-bc31-194a3dd08373"
+EXTERNAL_VIEWER_ID = "clevo-public-viewer"
+EXTERNAL_VALUE = "clevo-public"
 
 
-def embed_config(external_viewer_id: str = "") -> dict:
+def embed_config() -> dict:
     """Token reduzido para o browser. Cada chamada emite um token novo."""
-    viewer = _viewer(external_viewer_id)
     settings = get_settings()
-    secret = (settings.databricks_client_secret or "").strip()
+    secret = (settings.service_principal_secret or settings.databricks_client_secret or "").strip()
     if not secret:
         raise AppError(
             "databricks_unconfigured",
@@ -32,9 +30,9 @@ def embed_config(external_viewer_id: str = "") -> dict:
             503,
         )
     host = (settings.databricks_host or INSTANCE_URL).rstrip("/")
-    client_id = (settings.databricks_client_id or CLIENT_ID).strip()
+    client_id = CLIENT_ID
     dashboard_id = (settings.databricks_dashboard_id or DASHBOARD_ID).strip()
-    token, expires_in = _scoped_token(host, client_id, secret, dashboard_id, viewer)
+    token, expires_in = _scoped_token(host, client_id, secret, dashboard_id, EXTERNAL_VIEWER_ID)
     return {
         "mode": "external",
         "token": token,
@@ -43,18 +41,6 @@ def embed_config(external_viewer_id: str = "") -> dict:
         "dashboard_id": dashboard_id,
         "expires_in": expires_in,
     }
-
-
-def _viewer(raw: str) -> str:
-    """Identificador opaco. E-mail e outros dados pessoais não entram no token."""
-    value = (raw or "").strip() or uuid.uuid4().hex
-    if not _VIEWER.fullmatch(value):
-        raise AppError(
-            "databricks_viewer",
-            "O identificador do visitante precisa ser opaco, sem dados pessoais.",
-            400,
-        )
-    return value
 
 
 def _form_value(value: object) -> str:

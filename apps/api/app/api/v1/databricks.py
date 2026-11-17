@@ -6,5 +6,5 @@ router = APIRouter(tags=["databricks"])
 
 
 @router.get("/databricks/embed")
-def databricks_embed(external_viewer_id: str = "") -> dict:
-    return embed_config(external_viewer_id)
+def databricks_embed() -> dict:
+    return embed_config()

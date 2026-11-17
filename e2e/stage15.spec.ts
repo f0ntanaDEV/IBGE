@@ -122,7 +122,7 @@ test("painel databricks monta o cliente sem iframe de embed", async ({ page }) =
   await prepare(page)
   await page.goto("/databricks")
   await expect(page.getByText("Carregando…")).toHaveCount(0)
-  await expect(page.locator("#dashboard-container")).toBeVisible()
+  await expect(page.locator("#dashboard-content")).toBeVisible()
   await expect(page.locator('iframe[src*="dashboardsv3"]')).toHaveCount(0)
   await expect(page.getByRole("region", { name: "Tabela" })).toHaveCount(0)
   await expect(page).toHaveTitle(/Projeções IBGE/)

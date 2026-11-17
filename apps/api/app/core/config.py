@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     databricks_warehouse_id: str = ""
     databricks_client_id: str = ""
     databricks_client_secret: str = ""
+    service_principal_secret: str = ""
     data_dir: Path = Path("data")
     datasets_path: Path = API_ROOT / "datasets.yaml"
     max_upload_mb: int = 50

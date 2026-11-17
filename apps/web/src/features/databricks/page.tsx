@@ -9,18 +9,8 @@ type EmbedConfig = {
   dashboard_id?: string
 }
 
-const viewerKey = "databricks-viewer"
-
-function viewerId(): string {
-  const stored = sessionStorage.getItem(viewerKey)
-  if (stored && /^[A-Za-z0-9_-]{8,64}$/.test(stored)) return stored
-  const id = crypto.randomUUID().replaceAll("-", "")
-  sessionStorage.setItem(viewerKey, id)
-  return id
-}
-
-async function fetchEmbed(viewer: string): Promise<EmbedConfig> {
-  const response = await fetch(`/api/v1/databricks/embed?external_viewer_id=${viewer}`)
+async function fetchEmbed(): Promise<EmbedConfig> {
+  const response = await fetch("/api/v1/databricks/embed")
   if (!response.ok) throw new Error("embed")
   return response.json() as Promise<EmbedConfig>
 }
@@ -36,8 +26,7 @@ export function DatabricksPage() {
     let dashboard: DatabricksDashboard | undefined
     let cancelled = false
 
-    const viewer = viewerId()
-    void fetchEmbed(viewer)
+    void fetchEmbed()
       .then((cfg) => {
         if (cancelled || !cfg.token || !cfg.instance_url || !cfg.workspace_id || !cfg.dashboard_id) {
           if (!cancelled) setFailed(true)
@@ -50,7 +39,7 @@ export function DatabricksPage() {
           token: cfg.token,
           container: node,
           getNewToken: async () => {
-            const next = await fetchEmbed(viewer)
+            const next = await fetchEmbed()
             if (!next.token) throw new Error("embed")
             return next.token
           },
@@ -68,7 +57,7 @@ export function DatabricksPage() {
   }, [])
 
   return (
-    <div id="dashboard-container" ref={container} className="h-full min-h-0 w-full flex-1">
+    <div id="dashboard-content" ref={container} className="h-full min-h-0 w-full flex-1">
       {failed ? <p className="p-4 text-sm text-zinc-600">Não foi possível abrir o painel Databricks.</p> : null}
     </div>
   )
