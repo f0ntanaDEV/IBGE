@@ -165,3 +165,4 @@ A chave é a pasta da etapa em `specs/`.
 ## 12-ressalvas-finais
 
 - 2026-11-17 | 12-ressalvas-finais | A semeadura olha se alguma fato está vazia e recarrega a ouro pela silver; a revisão 004 só cria o CHECK de taxa se a ouro couber no limite | A 003 esvazia as fatos e o `success` antigo em `etl_runs` impedia o `AUTO_SEED`. O limite medido na silver não é afrouxado.
+- 2026-11-17 | 12-ressalvas-finais | Sem `WEB_BIND`, o web de produção escuta `192.168.0.37:80` | O `:?` interrompia o `up` no servidor, que ainda não tinha a variável no `.env`.

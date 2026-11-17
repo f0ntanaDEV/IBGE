@@ -5,4 +5,4 @@ services:
     ports: !reset null
   web:
     ports: !override
-      - "${WEB_BIND:?defina WEB_BIND}:80"
+      - "${WEB_BIND:-192.168.0.37:80}:80"
