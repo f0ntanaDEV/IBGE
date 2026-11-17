@@ -29,13 +29,17 @@ def _report(dataset_id: str = "ds1", source: str = "original") -> QualityReport:
 
 
 def _frame(populacao: int = 4) -> pd.DataFrame:
-    return pd.DataFrame(
+    frame = pd.DataFrame(
         [
             _row(2026, 0, populacao),
             _row(2026, 1, 6),
             _row(2024, 0, 5),
         ]
     )
+    # Mesma ordem da silver: nivel é derivado depois do melt.
+    return frame[
+        ["idade", "sexo", "cod", "sigla", "local", "ano", "populacao", "nivel", "is_outlier", "outlier_motivo"]
+    ]
 
 
 def _row(ano: int, idade: int, populacao: int, outlier: bool = False) -> dict:

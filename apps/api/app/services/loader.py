@@ -220,11 +220,13 @@ def _replace_metrics(connection, dataset_id: str, metrics: list[dict]) -> None:
 
 
 def _insert_frame(connection, table, frame: pd.DataFrame) -> int:
-    columns = [col.name for col in table.columns if col.name in frame.columns]
+    # itertuples segue a ordem do frame; a tabela põe nivel antes de ano.
+    columns = [name for name in frame.columns if name in table.c]
     if frame.empty or not columns:
         return 0
+    ordered = frame.loc[:, columns]
     statement = text(_insert_sql(table.name, columns))
-    records = [_record(row, columns) for row in frame.itertuples(index=False, name=None)]
+    records = [_record(row, columns) for row in ordered.itertuples(index=False, name=None)]
     connection.execute(statement, records)
     return len(records)
 
