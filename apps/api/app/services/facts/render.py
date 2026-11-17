@@ -4,6 +4,7 @@ from app.services.facts.models import Fact, FactPart
 
 
 def render_fact(fact: Fact) -> str:
+    """Entra: fact. Sai com o resultado de render fact."""
     if fact.parts:
         return _join([_part(part) for part in fact.parts])
     main = _plain(fact.value, fact.kind)
@@ -25,6 +26,7 @@ def render_fact(fact: Fact) -> str:
 
 
 def _part(part: FactPart) -> str:
+    """Entra: part. Sai com o resultado de part."""
     text = part.value if isinstance(part.value, str) else _plain(part.value, part.kind)
     if part.label and "{v}" in part.label:
         return part.label.replace("{v}", str(text))
@@ -36,6 +38,7 @@ def _part(part: FactPart) -> str:
 
 
 def _join(chunks: list[str]) -> str:
+    """Entra: chunks. Sai com o resultado de join."""
     out = ""
     for chunk in chunks:
         if not chunk:
@@ -50,6 +53,7 @@ def _join(chunks: list[str]) -> str:
 
 
 def _plain(value: float | int | str, kind: str) -> str:
+    """Entra: value, kind. Sai com o resultado de plain."""
     if isinstance(value, str):
         return value
     if kind == "count":

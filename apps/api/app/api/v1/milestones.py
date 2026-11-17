@@ -13,6 +13,7 @@ router = APIRouter(tags=["milestones"])
 
 @router.get("/milestones")
 def dataset_milestones(cod: int | None = Depends(territory_params)) -> dict:
+    """GET /milestones. Parâmetros: cod."""
     store = ParquetStore(get_settings().silver_dir)
     frames = {}
     for dataset_id in ("ds1", "ds3", "ds4"):

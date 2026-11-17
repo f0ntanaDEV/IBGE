@@ -12,6 +12,7 @@ YOUNG = ("00-04", "05-09", "10-14")
 
 
 def _label(group: str) -> str:
+    """Entra: group. Sai com o resultado de label."""
     if group == "90+":
         return "90+"
     start, end = group.split("-")
@@ -19,6 +20,7 @@ def _label(group: str) -> str:
 
 
 def _at(data: pd.DataFrame, year: int, group: str) -> float | None:
+    """Entra: data, year, group. Sai com o resultado de at."""
     rows = data[(data["ano"] == year) & (data["grupo_etario"] == group)]
     if rows.empty:
         return None
@@ -26,6 +28,7 @@ def _at(data: pd.DataFrame, year: int, group: str) -> float | None:
 
 
 def _share(rows: pd.DataFrame, groups: tuple[str, ...]) -> float:
+    """Entra: rows, groups. Sai com o resultado de share."""
     total = float(rows["populacao"].sum())
     if not total:
         return 0
@@ -33,6 +36,7 @@ def _share(rows: pd.DataFrame, groups: tuple[str, ...]) -> float:
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     data = people("ds2", cod, sexo)
     rows = year_rows(data, ano)
     items: list[ContextItem] = []

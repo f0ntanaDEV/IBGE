@@ -9,6 +9,7 @@ OLDER = ("80-84", "85-89", "90+")
 
 
 def _label(group: str) -> str:
+    """Entra: group. Sai com o resultado de label."""
     if group == "90+":
         return "90+"
     start, end = group.split("-")
@@ -16,6 +17,7 @@ def _label(group: str) -> str:
 
 
 def _at(data: pd.DataFrame, year: int, group: str) -> float | None:
+    """Entra: data, year, group. Sai com o resultado de at."""
     rows = data[(data["ano"] == year) & (data["grupo_etario"] == group)]
     if rows.empty:
         return None
@@ -23,11 +25,13 @@ def _at(data: pd.DataFrame, year: int, group: str) -> float | None:
 
 
 def _sum_groups(data: pd.DataFrame, year: int, groups: tuple[str, ...]) -> float:
+    """Entra: data, year, groups. Sai com o resultado de sum groups."""
     rows = data[(data["ano"] == year) & (data["grupo_etario"].isin(groups))]
     return float(rows["populacao"].sum())
 
 
 def _top(data: pd.DataFrame, year: int) -> str | None:
+    """Entra: data, year. Sai com o resultado de top."""
     rows = data[data["ano"] == year]
     if rows.empty:
         return None
@@ -35,6 +39,7 @@ def _top(data: pd.DataFrame, year: int) -> str | None:
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     data = total_sex(territory("ds2", cod))
     zero = []
     older = []

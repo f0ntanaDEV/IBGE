@@ -4,6 +4,7 @@ import logging
 
 
 def setup_logging(level: int = logging.INFO) -> None:
+    """Entra: level. Sai com o resultado de setup logging."""
     root = logging.getLogger()
     if root.handlers:
         return

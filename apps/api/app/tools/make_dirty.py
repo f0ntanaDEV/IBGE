@@ -33,6 +33,7 @@ def metric_columns(frame: pd.DataFrame, cfg: DatasetConfig) -> list[str]:
 
 
 def _interior(frame: pd.DataFrame, cfg: DatasetConfig) -> pd.Series:
+    """Entra: frame, cfg. Sai com o resultado de interior."""
     series = [col for col in cfg.series_by if col in frame.columns]
     if not series or "ano" not in frame.columns:
         return pd.Series(True, index=frame.index)
@@ -43,6 +44,7 @@ def _interior(frame: pd.DataFrame, cfg: DatasetConfig) -> pd.Series:
 
 
 def _inject(long: pd.DataFrame, cfg: DatasetConfig, seed: int) -> tuple[pd.DataFrame, dict]:
+    """Entra: long, cfg, seed. Sai com o resultado de inject."""
     rng = np.random.default_rng(seed)
     out = long.copy()
     columns = metric_columns(out, cfg)
@@ -82,6 +84,7 @@ def _inject(long: pd.DataFrame, cfg: DatasetConfig, seed: int) -> tuple[pd.DataF
 
 
 def _to_layout(named: pd.DataFrame, long: pd.DataFrame, cfg: DatasetConfig) -> pd.DataFrame:
+    """Entra: named, long, cfg. Sai com o resultado de to layout."""
     if cfg.reshape is None:
         keys = [col for col in cfg.key if col in named.columns and col in long.columns]
         metrics = [col for col in metric_columns(long, cfg) if col in named.columns]
@@ -99,6 +102,7 @@ def _to_layout(named: pd.DataFrame, long: pd.DataFrame, cfg: DatasetConfig) -> p
 
 
 def _duplicates(frame: pd.DataFrame, cfg: DatasetConfig, seed: int) -> tuple[pd.DataFrame, int, int]:
+    """Entra: frame, cfg, seed. Sai com o resultado de duplicates."""
     rows = len(frame)
     if rows == 0:
         return frame, 0, 0
@@ -115,6 +119,7 @@ def _duplicates(frame: pd.DataFrame, cfg: DatasetConfig, seed: int) -> tuple[pd.
 
 
 def _touch_text(frame: pd.DataFrame, seed: int) -> tuple[pd.DataFrame, int, int]:
+    """Entra: frame, seed. Sai com o resultado de touch text."""
     rng = np.random.default_rng(seed)
     out = frame.copy()
     spaces = 0
@@ -143,6 +148,7 @@ def _touch_text(frame: pd.DataFrame, seed: int) -> tuple[pd.DataFrame, int, int]
 
 
 def _space_count(frame: pd.DataFrame) -> int:
+    """Entra: frame. Sai com o resultado de space count."""
     total = 0
     for column in frame.columns:
         if column not in TEXT:
@@ -152,6 +158,7 @@ def _space_count(frame: pd.DataFrame) -> int:
 
 
 def _long_view(frame: pd.DataFrame, cfg: DatasetConfig) -> pd.DataFrame:
+    """Entra: frame, cfg. Sai com o resultado de long view."""
     named, labels = normalize(frame)
     shaped, _metrics = reshape(named, cfg, labels)
     return shaped
@@ -167,6 +174,7 @@ def _as_pipeline(shaped: pd.DataFrame, cfg: DatasetConfig) -> tuple[int, int, pd
 
 
 def _manifest_nulls(shaped: pd.DataFrame, cfg: DatasetConfig) -> dict[str, int]:
+    """Entra: shaped, cfg. Sai com o resultado de manifest nulls."""
     structural = {name for rule in cfg.structural_nulls for name in rule.columns}
     counts: dict[str, int] = {}
     for column in metric_columns(shaped, cfg):

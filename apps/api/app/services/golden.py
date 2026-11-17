@@ -30,6 +30,7 @@ class GoldenMismatch(RuntimeError):
     """Diferença entre o MySQL e um valor de referência. A transação da carga deve desfazer."""
 
     def __init__(self, dataset_id: str, failures: list[str]) -> None:
+        """Entra: dataset_id, failures. Sai com o resultado de init  ."""
         self.dataset_id = dataset_id
         self.failures = failures
         super().__init__(f"{dataset_id}: " + "; ".join(failures))
@@ -37,6 +38,7 @@ class GoldenMismatch(RuntimeError):
 
 @dataclass(frozen=True)
 class Check:
+    """Check."""
     name: str
     sql: str
     expected: Decimal
@@ -73,6 +75,7 @@ def validate_golden(connection, dataset_id: str, references: dict | None = None)
 
 
 def _checks(dataset_id: str, refs: dict) -> list[Check]:
+    """Entra: dataset_id, refs. Sai com o resultado de checks."""
     table = TABLES[dataset_id]
     ambos = f"cod = 0 AND ano = {{ano}} AND sexo = 'Ambos'"
     items: list[Check] = []
@@ -138,6 +141,7 @@ def _checks(dataset_id: str, refs: dict) -> list[Check]:
 
 
 def _matches(kind: str, found: object, expected: Decimal) -> bool:
+    """Entra: kind, found, expected. Sai com o resultado de matches."""
     if found is None:
         return False
     value = Decimal(str(found))

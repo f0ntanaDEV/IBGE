@@ -10,6 +10,7 @@ BONUS = "Bônus demográfico"
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     del sexo
     data = territory("ds3", cod)
     ds4 = territory("ds4", cod)

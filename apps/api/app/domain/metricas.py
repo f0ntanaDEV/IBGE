@@ -11,6 +11,7 @@ PATH = Path(__file__).with_name("metricas.yaml")
 
 
 class Metrica(BaseModel):
+    """Metrica."""
     id: str
     nome: str
     sigla: str = ""
@@ -25,6 +26,7 @@ class Metrica(BaseModel):
 
 @lru_cache
 def load_metricas() -> tuple[Metrica, ...]:
+    """Entra: nenhum argumento. Sai com o resultado de load metricas."""
     raw = yaml.safe_load(PATH.read_text(encoding="utf-8"))
     items = [Metrica.model_validate(item) for item in raw]
     ids = [item.id for item in items]

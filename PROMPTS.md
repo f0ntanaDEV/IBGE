@@ -1,6 +1,6 @@
 # Prompts para o Cursor
 
-Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as onze pastas `specs/01-` a `specs/11-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as doze pastas `specs/01-` a `specs/12-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
 
 | Arquivo original | Renomear para |
 |---|---|
@@ -90,6 +90,13 @@ Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e 
 
 ```
 Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 11 seguindo @specs/11-finalizacao-rubrica/requirements.md, @specs/11-finalizacao-rubrica/design.md e @specs/11-finalizacao-rubrica/tasks.md. Esta etapa prevalece sobre a 10 na pasta silver, nas docstrings, na EDA e na leitura do MySQL pelo Databricks.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 12: Ressalvas finais
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 12 seguindo @specs/12-ressalvas-finais/requirements.md, @specs/12-ressalvas-finais/design.md e @specs/12-ressalvas-finais/tasks.md. Esta etapa prevalece sobre a 11 apenas nos arquivos citados. Não edite o Databricks.
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
 ```
 

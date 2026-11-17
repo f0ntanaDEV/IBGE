@@ -77,6 +77,7 @@ def _log_http(step: str, response: httpx.Response, secret: str) -> None:
 
 
 def _scoped_token(host: str, client_id: str, secret: str, dashboard_id: str, viewer: str) -> tuple[str, int]:
+    """Entra: host, client_id, secret, dashboard_id, viewer. Sai com o resultado de scoped token."""
     oidc = f"{host}/oidc/v1/token?o={WORKSPACE_ID}"
     auth = (client_id, secret)
     try:

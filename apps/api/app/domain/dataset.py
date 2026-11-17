@@ -10,21 +10,25 @@ from app.core.config import get_settings
 
 
 class WideToLong(BaseModel):
+    """WideToLong."""
     id_vars: list[str]
     var_name: str
     value_name: str
 
 
 class ReshapeSpec(BaseModel):
+    """ReshapeSpec."""
     wide_to_long: WideToLong
 
 
 class StructuralNull(BaseModel):
+    """StructuralNull."""
     columns: list[str]
     when: str
 
 
 class ClaimSpec(BaseModel):
+    """ClaimSpec."""
     id: str
     label: str
     compute: str
@@ -32,12 +36,14 @@ class ClaimSpec(BaseModel):
 
 
 class OutlierDefaults(BaseModel):
+    """OutlierDefaults."""
     method: Literal["iqr_delta", "mad"] = "iqr_delta"
     factor: float = 3.0
     strategy: Literal["flag", "cap", "remove"] = "flag"
 
 
 class DatasetConfig(BaseModel):
+    """DatasetConfig."""
     id: str
     name: str
     file: str
@@ -60,6 +66,7 @@ class DatasetConfig(BaseModel):
     @field_validator("structural_nulls")
     @classmethod
     def _when_conhecido(cls, value: list[StructuralNull]) -> list[StructuralNull]:
+        """Entra: value. Sai com o resultado de when conhecido."""
         for item in value:
             if item.when.strip() != "ano == min(ano)":
                 raise ValueError(f"condição estrutural não suportada: {item.when}")
@@ -67,15 +74,18 @@ class DatasetConfig(BaseModel):
 
 
 class Catalog(BaseModel):
+    """Catalog."""
     datasets: list[DatasetConfig]
 
     def get(self, dataset_id: str) -> DatasetConfig:
+        """Entra: dataset_id. Sai com o resultado de get."""
         for item in self.datasets:
             if item.id == dataset_id:
                 return item
         raise KeyError(dataset_id)
 
     def by_filename(self, filename: str) -> DatasetConfig | None:
+        """Entra: filename. Sai com o resultado de by filename."""
         for item in self.datasets:
             if item.file == filename:
                 return item

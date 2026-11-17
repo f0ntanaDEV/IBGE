@@ -12,6 +12,7 @@ _codes: set[int] | None = None
 def known_territory_codes() -> set[int]:
     """Cadastro padrão mais o que estiver em dim_territorio. O Brasil (0) nunca sai."""
     global _codes
+    # A lista de territórios não muda no processo, então a primeira leitura fica em memória.
     if _codes is not None:
         return _codes
     codes = {int(row["cod"]) for row in territorios_padrao()}

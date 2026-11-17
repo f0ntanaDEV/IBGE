@@ -7,7 +7,12 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+from matplotlib.patches import Patch
+from matplotlib.ticker import FuncFormatter
+
+plt.rcParams["font.family"] = "DejaVu Sans"
 
 from app.core.config import REPO_ROOT, get_settings
 from app.domain.dataset import load_catalog
@@ -21,6 +26,28 @@ TEAL = "#426e68"
 SAND = "#7a6846"
 ROSE = "#8d5e68"
 PALETTE = [BLUE, TEAL, SAND, ROSE, "#5c6570"]
+
+
+def _fmt_pessoas(value: float, _pos: object) -> str:
+    """Eixo de pessoas em mil ou mi, com vírgula decimal e sem notação científica."""
+    number = float(value)
+    sign = "-" if number < 0 else ""
+    magnitude = abs(number)
+    if magnitude >= 1_000_000:
+        scaled = magnitude / 1_000_000
+        casas = 0 if abs(scaled - round(scaled)) < 1e-9 else 1
+        return f"{sign}{fmt(scaled, casas)} mi"
+    if magnitude >= 1_000:
+        scaled = magnitude / 1_000
+        casas = 0 if abs(scaled - round(scaled)) < 1e-9 else 1
+        return f"{sign}{fmt(scaled, casas)} mil"
+    return f"{sign}{fmt(magnitude, 0)}"
+
+
+def _save(fig, path: Path) -> None:
+    """Grava o PNG sem a chave Software, para o arquivo não mudar a cada execução."""
+    fig.savefig(path, dpi=120, metadata={"Software": None})
+    plt.close(fig)
 
 
 def fmt(value: object, casas: int = 2) -> str:
@@ -66,6 +93,7 @@ def referencias(ds1: pd.DataFrame, ds3: pd.DataFrame, ds4: pd.DataFrame) -> dict
 
 
 def _load(store: ParquetStore, dataset_id: str) -> pd.DataFrame:
+    """Entra: store, dataset_id. Sai com o resultado de load."""
     path = store.latest_file(dataset_id, ".parquet")
     if path is None or "amostra" in path.parts:
         from app.services.etl import process_dataset
@@ -78,6 +106,7 @@ def _load(store: ParquetStore, dataset_id: str) -> pd.DataFrame:
 
 
 def _charts(frames: dict[str, pd.DataFrame], refs: dict, out: Path) -> None:
+    """Entra: frames, refs, out. Sai com o resultado de charts."""
     _pyramid(frames["ds1"], out / "piramide_2026_2070.png")
     _serie(frames["ds4"], refs, out / "populacao_2000_2070.png")
     _hist_e0(frames["ds4"], out / "histograma_e0_2026.png")
@@ -86,6 +115,7 @@ def _charts(frames: dict[str, pd.DataFrame], refs: dict, out: Path) -> None:
 
 
 def _style(ax) -> None:
+    """Entra: ax. Sai com o resultado de style."""
     ax.set_facecolor("white")
     ax.tick_params(colors=MUTED, labelsize=8)
     ax.grid(axis="y", color=GRID, linewidth=0.6)
@@ -95,50 +125,69 @@ def _style(ax) -> None:
 
 
 def _pyramid(ds1: pd.DataFrame, path: Path) -> None:
+    """Pirâmide do Brasil em 2026 e 2070, com a mesma escala e o 90+ como grupo aberto."""
     fig, axes = plt.subplots(1, 2, figsize=(8.2, 4.6), sharey=True)
     fig.patch.set_facecolor("white")
+    brasil = ds1[(ds1["cod"] == 0) & (ds1["ano"].isin([2026, 2070])) & (ds1["sexo"].isin(["Homens", "Mulheres"]))]
+    limit = float(brasil["populacao"].max()) * 1.05
     for ax, ano in zip(axes, (2026, 2070), strict=True):
-        part = ds1[(ds1["cod"] == 0) & (ds1["ano"] == ano) & (ds1["sexo"].isin(["Homens", "Mulheres"]))]
-        homens = part[part["sexo"] == "Homens"].sort_values("idade")
-        mulheres = part[part["sexo"] == "Mulheres"].sort_values("idade")
-        ax.barh(homens["idade"], -homens["populacao"], color=BLUE, height=1, label="Homens")
-        ax.barh(mulheres["idade"], mulheres["populacao"], color=TEAL, height=1, label="Mulheres")
+        part = brasil[brasil["ano"] == ano]
+        for sexo, color, sign in (("Homens", BLUE, -1), ("Mulheres", TEAL, 1)):
+            group = part[part["sexo"] == sexo].sort_values("idade")
+            closed = group[group["idade"] < 90]
+            opened = group[group["idade"] >= 90]
+            ax.barh(closed["idade"], sign * closed["populacao"], color=color, height=1)
+            ax.barh(opened["idade"], sign * opened["populacao"], color=color, height=1, hatch="..")
+        ax.set_xlim(-limit, limit)
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda value, pos: _fmt_pessoas(abs(value), pos)))
         ax.set_title(str(ano), color=INK, fontsize=10)
+        ax.set_xlabel("Pessoas", color=MUTED, fontsize=8)
         _style(ax)
         ax.grid(False)
-    axes[0].set_xlabel("homens ← população → mulheres", color=MUTED, fontsize=8)
+    axes[0].set_yticks([0, 15, 30, 45, 60, 75, 90])
+    axes[0].set_yticklabels(["0", "15", "30", "45", "60", "75", "90+"])
+    axes[1].legend(handles=[Patch(facecolor=BLUE, label="Homens"), Patch(facecolor=TEAL, label="Mulheres")], frameon=False, fontsize=8)
+    axes[1].text(0.98, 0.02, "90+: grupo aberto (soma de 90 anos ou mais)", transform=axes[1].transAxes, ha="right", va="bottom", fontsize=7, color=MUTED)
     fig.tight_layout()
-    fig.savefig(path, dpi=120)
-    plt.close(fig)
+    _save(fig, path)
 
 
 def _serie(ds4: pd.DataFrame, refs: dict, path: Path) -> None:
+    """Entra: ds4, refs, path. Sai com o resultado de serie."""
     serie = ds4[ds4["cod"] == 0].sort_values("ano")
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     fig.patch.set_facecolor("white")
     ax.plot(serie["ano"], serie["pop_t"], color=BLUE, linewidth=1.6)
     ax.scatter([refs["pico_ano"]], [refs["pico_pop"]], color=SAND, zorder=3)
     ax.annotate(f"pico {refs['pico_ano']}", (refs["pico_ano"], refs["pico_pop"]), textcoords="offset points", xytext=(6, 6), color=INK, fontsize=8)
+    ax.axvline(2026, color=MUTED, linewidth=0.8)
+    ax.annotate("hoje", (2026, float(serie["pop_t"].max())), textcoords="offset points", xytext=(4, -10), color=INK, fontsize=8)
+    ax.yaxis.set_major_formatter(FuncFormatter(_fmt_pessoas))
     _style(ax)
-    ax.set_title("População do Brasil", color=INK, fontsize=10)
+    ax.set_title("População do Brasil, 2000–2070", color=INK, fontsize=10)
+    ax.set_xlabel("Ano", color=MUTED, fontsize=8)
+    ax.set_ylabel("Pessoas", color=MUTED, fontsize=8)
     fig.tight_layout()
-    fig.savefig(path, dpi=120)
-    plt.close(fig)
+    _save(fig, path)
 
 
 def _hist_e0(ds4: pd.DataFrame, path: Path) -> None:
+    """Entra: ds4, path. Sai com o resultado de hist e0."""
     ufs = ds4[(ds4["ano"] == 2026) & (ds4["nivel"] == "uf")]
     fig, ax = plt.subplots(figsize=(6.4, 3.6))
     fig.patch.set_facecolor("white")
     ax.hist(ufs["e0_t"], bins=8, color=BLUE, edgecolor="white")
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: fmt(value, 1)))
     _style(ax)
     ax.set_title("Esperança de vida ao nascer, UFs, 2026", color=INK, fontsize=10)
+    ax.set_xlabel("Anos", color=MUTED, fontsize=8)
+    ax.set_ylabel("Número de UFs", color=MUTED, fontsize=8)
     fig.tight_layout()
-    fig.savefig(path, dpi=120)
-    plt.close(fig)
+    _save(fig, path)
 
 
 def _box_tft(ds4: pd.DataFrame, path: Path) -> None:
+    """Entra: ds4, path. Sai com o resultado de box tft."""
     ufs = ds4[(ds4["ano"] == 2026) & (ds4["nivel"] == "uf")].copy()
     ufs["regiao"] = (ufs["cod"] // 10).map({1: "Norte", 2: "Nordeste", 3: "Sudeste", 4: "Sul", 5: "Centro-Oeste"})
     groups = [ufs.loc[ufs["regiao"] == nome, "tft"].dropna() for nome in ["Norte", "Nordeste", "Sudeste", "Sul", "Centro-Oeste"]]
@@ -148,28 +197,38 @@ def _box_tft(ds4: pd.DataFrame, path: Path) -> None:
     for patch, color in zip(box["boxes"], PALETTE, strict=True):
         patch.set_facecolor(color)
         patch.set_alpha(0.85)
+    ax.axhline(2.1, color=INK, linewidth=0.7, linestyle="--")
+    ax.annotate("reposição 2,1", xy=(5, 2.1), xytext=(0, 4), textcoords="offset points", ha="right", fontsize=7, color=INK)
     _style(ax)
     ax.set_title("TFT por região, UFs, 2026", color=INK, fontsize=10)
+    ax.set_xlabel("Região", color=MUTED, fontsize=8)
+    ax.set_ylabel("Filhos por mulher", color=MUTED, fontsize=8)
     fig.tight_layout()
-    fig.savefig(path, dpi=120)
-    plt.close(fig)
+    _save(fig, path)
 
 
 def _scatter(ds4: pd.DataFrame, path: Path) -> None:
-    ufs = ds4[(ds4["ano"] == 2026) & (ds4["nivel"] == "uf")]
+    """Entra: ds4, path. Sai com o resultado de scatter."""
+    ufs = ds4[(ds4["ano"] == 2026) & (ds4["nivel"] == "uf")].dropna(subset=["tft", "e0_t"])
     fig, ax = plt.subplots(figsize=(6.4, 3.8))
     fig.patch.set_facecolor("white")
     ax.scatter(ufs["tft"], ufs["e0_t"], color=BLUE, s=28)
+    slope, intercept = np.polyfit(ufs["tft"].to_numpy(dtype=float), ufs["e0_t"].to_numpy(dtype=float), 1)
+    grid = np.linspace(float(ufs["tft"].min()), float(ufs["tft"].max()), 40)
+    ax.plot(grid, slope * grid + intercept, color=MUTED, linewidth=0.8)
+    for _, row in ufs.iterrows():
+        ax.annotate(str(row["sigla"]), (row["tft"], row["e0_t"]), xytext=(3, 3), textcoords="offset points", fontsize=7, color=INK)
+    pearson = float(ufs["e0_t"].corr(ufs["tft"]))
     _style(ax)
-    ax.set_xlabel("TFT", color=MUTED, fontsize=8)
-    ax.set_ylabel("e0", color=MUTED, fontsize=8)
-    ax.set_title("e0 e TFT nas UFs, 2026", color=INK, fontsize=10)
+    ax.set_xlabel("TFT (filhos por mulher)", color=MUTED, fontsize=8)
+    ax.set_ylabel("e0 (anos)", color=MUTED, fontsize=8)
+    ax.set_title(f"e0 e TFT nas UFs, 2026 (r = {fmt(pearson)})", color=INK, fontsize=10)
     fig.tight_layout()
-    fig.savefig(path, dpi=120)
-    plt.close(fig)
+    _save(fig, path)
 
 
 def _markdown(store: ParquetStore, frames: dict[str, pd.DataFrame], refs: dict) -> str:
+    """Entra: store, frames, refs. Sai com o resultado de markdown."""
     lines = [
         "# Estatísticas da silver",
         "",
@@ -224,11 +283,12 @@ def _markdown(store: ParquetStore, frames: dict[str, pd.DataFrame], refs: dict) 
         lines.append("")
         lines.append(_describe(ufs[column]))
         lines.append("")
-    nqx = frames["ds5"][(frames["ds5"]["ano"] == 2026) & (frames["ds5"]["nivel"] == "uf") & (frames["ds5"]["sexo"] == "Ambos")]["nqx"]
-    lines.append("#### nqx")
-    lines.append("")
-    lines.append(_describe(nqx))
-    lines.append("")
+    nqx = frames["ds5"][(frames["ds5"]["ano"] == 2026) & (frames["ds5"]["nivel"] == "uf") & (frames["ds5"]["sexo"] == "Ambos")]
+    for idade, title in ((0, "nqx aos 0 anos"), (60, "nqx aos 60 anos")):
+        lines.append(f"#### {title}")
+        lines.append("")
+        lines.append(_describe(nqx.loc[nqx["idade"] == idade, "nqx"]))
+        lines.append("")
     lines.extend([
         "## Regiões em 2026",
         "",
@@ -261,6 +321,7 @@ def _markdown(store: ParquetStore, frames: dict[str, pd.DataFrame], refs: dict) 
 
 
 def _describe(series: pd.Series) -> str:
+    """Entra: series. Sai com o resultado de describe."""
     stats = series.dropna().astype(float)
     casas = 0 if float(stats.max()) >= 1000 else 2
     values = [
@@ -278,6 +339,7 @@ def _describe(series: pd.Series) -> str:
 
 
 def _before(store: ParquetStore, dataset_id: str) -> dict:
+    """Entra: store, dataset_id. Sai com o resultado de before."""
     path = store.latest_file(dataset_id, ".parquet")
     empty = {"rows": None, "cols": None, "nulls": None, "dup": None, "out": None}
     if path is None:

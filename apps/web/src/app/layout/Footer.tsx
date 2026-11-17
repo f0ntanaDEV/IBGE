@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import { ArrowUpRight } from "lucide-react"
 import { fetchHealth, type HealthStatus } from "@/lib/api"
 
-function mysqlLabel(health: HealthStatus) {
+export function mysqlLabel(health: HealthStatus) {
   if (health.mysql === "ok") return "MySQL ok"
-  if (!health.mysql_required) return "MySQL não exigido"
+  if (health.mysql === "vazio") return "MySQL sem dados"
+  if (health.mysql === "carregando") return "MySQL carregando"
   return "MySQL indisponível"
 }
 
@@ -18,10 +19,9 @@ export function ApiStatus() {
   let label = "Verificando a API…"
   if (health.isError || (health.isFetched && !health.data)) label = "API indisponível"
   else if (health.data) {
-    const seeding = Boolean((health.data as HealthStatus & { seeding?: boolean }).seeding)
-    label = seeding
-      ? "Processando bases…"
-      : `API ${health.data.api === "ok" ? "ok" : "indisponível"} · ${mysqlLabel(health.data)}`
+    const seeding = Boolean(health.data.seeding)
+    const status = `API ${health.data.api === "ok" ? "ok" : "indisponível"} · ${mysqlLabel(health.data)}`
+    label = seeding ? `Processando bases… · ${status}` : status
   }
 
   return (

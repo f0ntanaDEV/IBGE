@@ -8,6 +8,7 @@ from openpyxl import Workbook
 
 
 def export_table(frame: pd.DataFrame, dataset_id: str, directory: Path) -> dict[str, Path]:
+    """Entra: frame, dataset_id, directory. Sai com o resultado de export table."""
     directory.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%dT%H%M%S%f")
     stem = directory / f"{dataset_id}_{stamp}"
@@ -21,6 +22,7 @@ def export_table(frame: pd.DataFrame, dataset_id: str, directory: Path) -> dict[
 
 
 def _write_xlsx(frame: pd.DataFrame, path: Path) -> None:
+    """Entra: frame, path. Sai com o resultado de write xlsx."""
     book = Workbook(write_only=True)
     sheet = book.create_sheet("dados")
     sheet.append([str(col) for col in frame.columns])
@@ -30,6 +32,7 @@ def _write_xlsx(frame: pd.DataFrame, path: Path) -> None:
 
 
 def _cell(value: object) -> object:
+    """Entra: value. Sai com o resultado de cell."""
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
     try:

@@ -63,6 +63,7 @@ def safe_name(value: object) -> str:
 
 
 def nivel_de(cod: object) -> str | None:
+    """Entra: cod. Sai com o resultado de nivel de."""
     try:
         code = int(cod)
     except (TypeError, ValueError):
@@ -75,6 +76,7 @@ def nivel_de(cod: object) -> str | None:
 
 
 def regiao_cod_de(cod: object) -> int | None:
+    """Entra: cod. Sai com o resultado de regiao cod de."""
     try:
         code = int(cod)
     except (TypeError, ValueError):
@@ -85,6 +87,7 @@ def regiao_cod_de(cod: object) -> int | None:
 
 
 def territorios_padrao() -> list[dict]:
+    """Entra: nenhum argumento. Sai com o resultado de territorios padrao."""
     rows = [{"cod": 0, "sigla": "BR", "local": "Brasil", "nivel": "brasil", "regiao_cod": None}]
     for cod, (sigla, local) in REGIOES.items():
         rows.append({"cod": cod, "sigla": sigla, "local": local, "nivel": "regiao", "regiao_cod": None})

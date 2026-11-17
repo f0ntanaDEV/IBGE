@@ -12,11 +12,13 @@ MARCOS = "Marcos da projeção"
 
 
 def _pop(cod: int, year: int, kind: str) -> float | None:
+    """Entra: cod, year, kind. Sai com o resultado de pop."""
     column = {"t": "pop_t", "h": "pop_h", "m": "pop_m"}[kind]
     return read_cell(territory("ds4", cod), year, column)
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     kind = sexo
     current = _pop(cod, ano, kind)
     previous = _pop(cod, ano - 1, kind)

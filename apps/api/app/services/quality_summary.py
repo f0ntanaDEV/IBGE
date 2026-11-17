@@ -4,6 +4,7 @@ ENGINEERED_COLUMNS = {"is_outlier", "outlier_motivo", "row_uid"}
 
 
 def summarize_validations(validations: list) -> dict:
+    """Entra: validations. Sai com o resultado de summarize validations."""
     statuses = [_status(item) for item in validations]
     approved = sum(1 for status in statuses if status in {"ok", "ok_arredondamento"})
     rounded = sum(1 for status in statuses if status == "ok_arredondamento")
@@ -19,6 +20,7 @@ def summarize_validations(validations: list) -> dict:
 
 
 def _status(item) -> str:
+    """Entra: item. Sai com o resultado de status."""
     found = item.get("status") if isinstance(item, dict) else getattr(item, "status", None)
     if found in {"ok", "ok_arredondamento", "falha"}:
         return found

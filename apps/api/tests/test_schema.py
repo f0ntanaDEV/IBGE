@@ -2,7 +2,7 @@ from pathlib import Path
 
 from sqlalchemy import BigInteger, Float, Integer, Numeric
 
-from app.repositories.schema import FACTS, dim_dataset, dim_metrica, dim_territorio, etl_runs
+from app.repositories.schema import FACTS, RANGE_CHECKS, dim_dataset, dim_metrica, dim_territorio, etl_runs
 from app.services.loader import BATCH
 from app.tools.dump_ddl import render_ddl
 
@@ -41,6 +41,11 @@ def test_schema_e_lotes():
         if name in {"ds1_populacao_idade", "ds5_tabuas_mortalidade"}:
             assert isinstance(table.c.idade.type, Integer)
             assert f"ck_{name}_idade" in names
+    assert "ck_ds3_grupos_etarios_proporcoes" in dict(RANGE_CHECKS["ds3_grupos_etarios"])
+    ds4 = dict(RANGE_CHECKS["ds4_indicadores"])
+    assert "ck_ds4_indicadores_tft" in ds4
+    assert "tcg_" not in " ".join(ds4.values())
+    assert "ck_ds5_tabuas_mortalidade_ex" in dict(RANGE_CHECKS["ds5_tabuas_mortalidade"])
 
 
 def test_ddl_bate_com_o_metadata():

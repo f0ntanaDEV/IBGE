@@ -36,6 +36,7 @@ def normalize(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
 
 
 def _clean_text(value: object) -> object:
+    """Entra: value. Sai com o resultado de clean text."""
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return pd.NA
     if not isinstance(value, str):
@@ -84,12 +85,14 @@ def metric_dictionary(frame: pd.DataFrame, cfg: DatasetConfig, labels: dict[str,
 
 
 def _default_label(name: str) -> str:
+    """Entra: name. Sai com o resultado de default label."""
     if name == "populacao":
         return "População"
     return name
 
 
 def _describe(name: str, rotulo: str) -> str:
+    """Entra: name, rotulo. Sai com o resultado de describe."""
     known = {
         "populacao": "População projetada",
         "pop_t": "População total",
@@ -106,6 +109,7 @@ def _describe(name: str, rotulo: str) -> str:
 
 
 def _unit(name: str) -> str:
+    """Entra: name. Sai com o resultado de unit."""
     if name in {"populacao"} or name.startswith(("pop_", "nasc_", "obt_", "n_0", "n_15", "n_18", "n_60", "n_65", "n_80")):
         return "pessoas"
     if name.startswith("p_") or name.startswith("tcg") or name in {"tbn", "tbm", "tcv"}:

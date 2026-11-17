@@ -9,22 +9,26 @@ from app.domain.validation_rules import evaluate, rule_for
 
 
 class StepCount(BaseModel):
+    """StepCount."""
     before: int
     after: int
 
 
 class NullsReport(BaseModel):
+    """NullsReport."""
     by_column: dict[str, StepCount]
     structural: dict[str, int]
     total_imputed: int
 
 
 class DuplicatesReport(BaseModel):
+    """DuplicatesReport."""
     exact: int
     by_key: int
 
 
 class OutliersReport(BaseModel):
+    """OutliersReport."""
     by_column: dict[str, int]
     by_reason: dict[str, int]
     strategy: str
@@ -32,6 +36,7 @@ class OutliersReport(BaseModel):
 
 
 class Validation(BaseModel):
+    """Validation."""
     rule: str
     ok: bool
     max_diff: float
@@ -41,18 +46,21 @@ class Validation(BaseModel):
 
 
 class ValidationSummary(BaseModel):
+    """ValidationSummary."""
     approved: int
     total: int
     text: str
 
 
 class ManifestOutliers(BaseModel):
+    """ManifestOutliers."""
     rows: list[int] = []
     columns: dict[str, int] = {}
     factor: list[float] = []
 
 
 class Manifest(BaseModel):
+    """Manifest."""
     dataset: str
     seed: int
     generated_at: str
@@ -66,6 +74,7 @@ class Manifest(BaseModel):
 
 
 class QualityReport(BaseModel):
+    """QualityReport."""
     dataset_id: str
     source: Literal["original", "sujo", "upload"]
     manifest: Manifest | None = None
@@ -86,6 +95,7 @@ class QualityReport(BaseModel):
 
 
 def _motivo(status: str, diff: float, reference: float, note: str | None, fallback: object) -> str | None:
+    """Entra: status, diff, reference, note, fallback. Sai com o resultado de motivo."""
     if status == "ok":
         return None
     if status == "ok_arredondamento":

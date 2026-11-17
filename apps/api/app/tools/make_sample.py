@@ -37,6 +37,7 @@ def main() -> None:
 
 
 def _cut(dataset_id: str, frame: pd.DataFrame) -> pd.DataFrame:
+    """Entra: dataset_id, frame. Sai com o resultado de cut."""
     out = frame
     if "cod" in out.columns:
         out = out[out["cod"].isin(CODIGOS)]
@@ -51,6 +52,7 @@ def _cut(dataset_id: str, frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def _refs(dataset_id: str, frame: pd.DataFrame) -> dict:
+    """Entra: dataset_id, frame. Sai com o resultado de refs."""
     refs: dict = {"rows": int(len(frame))}
     if dataset_id == "ds1" and {"ano", "sexo", "cod", "populacao"} <= set(frame.columns):
         ambos = frame[(frame["cod"] == 0) & (frame["sexo"] == "Ambos")]

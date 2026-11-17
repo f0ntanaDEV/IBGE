@@ -7,6 +7,7 @@ from app.domain.territory import nivel_de
 
 
 def _id_gaps(frame: pd.DataFrame) -> int:
+    """Entra: frame. Sai com o resultado de id gaps."""
     total = 0
     for col in ("cod", "sigla", "local"):
         if col in frame.columns:
@@ -114,6 +115,7 @@ def fill_missing(
 
 
 def _fill_series(series: pd.Series) -> pd.Series:
+    """Entra: series. Sai com o resultado de fill series."""
     if series.notna().sum() == 0:
         return series
     filled = series.interpolate(method="linear", limit_direction="both")

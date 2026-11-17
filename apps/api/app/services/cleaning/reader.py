@@ -37,6 +37,7 @@ def read_upload(path: Path, cfg: DatasetConfig) -> pd.DataFrame:
 
 
 def _header_token(value: object) -> str:
+    """Entra: value. Sai com o resultado de header token."""
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
     text = str(value).strip()

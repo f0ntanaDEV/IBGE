@@ -13,6 +13,7 @@ RANK = "Ranking de UFs"
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     del sexo
     data = territory("ds4", cod)
     total = cell(data, ano, "e0_t")

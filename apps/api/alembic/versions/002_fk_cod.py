@@ -18,6 +18,7 @@ FACTS = (
 
 
 def _has_fk(table: str) -> bool:
+    """Entra: table. Sai com o resultado de has fk."""
     bind = op.get_bind()
     if bind.dialect.name != "mysql":
         return False

@@ -5,6 +5,7 @@ from app.services.facts.models import DetailPoint, Fact, FactPart
 
 
 def _pair(cod: int) -> tuple[str, str] | None:
+    """Entra: cod. Sai com o resultado de pair."""
     data = frame("ds4")
     codes = ufs_do_territorio(cod)
     rows = data[(data["ano"] == REF_YEAR) & (data["cod"].isin(codes)) & (data["nivel"] == "uf")].dropna(subset=["e0_t"])
@@ -13,12 +14,14 @@ def _pair(cod: int) -> tuple[str, str] | None:
     high = rows.loc[rows["e0_t"].idxmax()]
     low = rows.loc[rows["e0_t"].idxmin()]
     def _pt(value: float) -> str:
+        """Entra: value. Sai com o resultado de pt."""
         return f"{round_num(value, 2):.2f}".replace(".", ",")
 
     return f"{high['sigla']} {_pt(float(high['e0_t']))}", f"{low['sigla']} {_pt(float(low['e0_t']))}"
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     data = territory("ds4", cod)
     e0 = cell(data, REF_YEAR, "e0_t")
     e0h = cell(data, REF_YEAR, "e0_h")

@@ -63,6 +63,7 @@ def downgrade() -> None:
 
 
 def _seed_datasets(bind) -> None:
+    """Entra: bind. Sai com o resultado de seed datasets."""
     if bind.dialect.name == "mysql":
         bind.execute(
             text("INSERT INTO dim_dataset (id, nome) VALUES (:id, :nome) AS novo ON DUPLICATE KEY UPDATE nome = novo.nome"),
@@ -77,18 +78,21 @@ def _seed_datasets(bind) -> None:
 
 
 def _has_fk(bind, table: str, name: str) -> bool:
+    """Entra: bind, table, name. Sai com o resultado de has fk."""
     if table not in set(inspect(bind).get_table_names()):
         return False
     return any(fk.get("name") == name for fk in inspect(bind).get_foreign_keys(table))
 
 
 def _legacy_metadata() -> MetaData:
+    """Entra: nenhum argumento. Sai com o resultado de legacy metadata."""
     metadata = MetaData()
     text_cols = {"sigla": 8, "local": 80, "sexo": 24, "nivel": 16, "grupo_etario": 16}
     integers = {"cod", "ano", "idade", "idade_inicio"}
     flags = {"is_outlier", "intervalo_aberto"}
 
     def _column(name: str) -> Column:
+        """Entra: name. Sai com o resultado de column."""
         if name in integers:
             return Column(name, Integer)
         if name in text_cols:
@@ -100,6 +104,7 @@ def _legacy_metadata() -> MetaData:
         return Column(name, Float)
 
     def _fact(name: str, columns: list[str], unique: list[str]) -> None:
+        """Entra: name, columns, unique. Sai com o resultado de fact."""
         built = []
         for col in columns:
             if col == "cod":

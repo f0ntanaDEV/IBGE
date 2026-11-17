@@ -17,6 +17,7 @@ def read_context(
     ano: int = Query(2026, ge=2000, le=2070),
     sexo: str = Query("T"),
 ) -> list[ContextItem]:
+    """GET . Parâmetros: page, cod, ano, sexo."""
     if page not in PAGES:
         raise AppError("unknown_page", "Página sem card de contexto", 422, {"page": page})
     if sexo not in {"T", "H", "M"}:

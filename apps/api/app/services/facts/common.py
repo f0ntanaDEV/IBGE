@@ -11,19 +11,23 @@ REF_YEAR = 2026
 
 
 def store() -> ParquetStore:
+    """Entra: nenhum argumento. Sai com o resultado de store."""
     return ParquetStore(get_settings().silver_dir)
 
 
 def frame(dataset_id: str) -> pd.DataFrame:
+    """Entra: dataset_id. Sai com o resultado de frame."""
     return store().get(dataset_id)
 
 
 def territory(dataset_id: str, cod: int) -> pd.DataFrame:
+    """Entra: dataset_id, cod. Sai com o resultado de territory."""
     data = frame(dataset_id)
     return data[data["cod"] == int(cod)].copy()
 
 
 def total_sex(data: pd.DataFrame) -> pd.DataFrame:
+    """Entra: data. Sai com o resultado de total sex."""
     if "sexo" not in data.columns or data.empty:
         return data
     kinds = data["sexo"].map(sexo_kind)
@@ -33,12 +37,14 @@ def total_sex(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def sex(data: pd.DataFrame, kind: str) -> pd.DataFrame:
+    """Entra: data, kind. Sai com o resultado de sex."""
     if "sexo" not in data.columns:
         return data
     return data[data["sexo"].map(sexo_kind).eq(kind)]
 
 
 def cell(data: pd.DataFrame, year: int, column: str) -> float | None:
+    """Entra: data, year, column. Sai com o resultado de cell."""
     if data.empty or column not in data.columns or "ano" not in data.columns:
         return None
     rows = data[data["ano"] == year]
@@ -48,6 +54,7 @@ def cell(data: pd.DataFrame, year: int, column: str) -> float | None:
 
 
 def first_year(data: pd.DataFrame, predicate) -> int | None:
+    """Entra: data, predicate. Sai com o resultado de first year."""
     if data.empty or "ano" not in data.columns:
         return None
     for row in data.sort_values("ano").itertuples(index=False):
@@ -57,6 +64,8 @@ def first_year(data: pd.DataFrame, predicate) -> int | None:
 
 
 def ufs_do_territorio(cod: int) -> list[int]:
+    # Brasil usa as 27 UFs; região, só as UFs daquele dígito; UF não abre lista.
+    """Entra: cod. Sai com o resultado de ufs do territorio."""
     if cod == 0:
         return list(UFS)
     if cod in REGIOES:
@@ -65,8 +74,10 @@ def ufs_do_territorio(cod: int) -> list[int]:
 
 
 def round_num(value: float, digits: int) -> float:
+    """Entra: value, digits. Sai com o resultado de round num."""
     return round(float(value), digits)
 
 
 def as_int(value: float) -> int:
+    """Entra: value. Sai com o resultado de as int."""
     return int(round(value))

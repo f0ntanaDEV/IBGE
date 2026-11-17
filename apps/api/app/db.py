@@ -8,11 +8,13 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
 class Base(DeclarativeBase):
+    """Base."""
     pass
 
 
 @lru_cache
 def get_engine() -> Engine:
+    """Entra: nenhum argumento. Sai com o resultado de get engine."""
     from app.core.config import get_settings
 
     settings = get_settings()
@@ -26,4 +28,5 @@ def get_engine() -> Engine:
 
 @lru_cache
 def get_sessionmaker():
+    """Entra: nenhum argumento. Sai com o resultado de get sessionmaker."""
     return sessionmaker(bind=get_engine(), expire_on_commit=False)

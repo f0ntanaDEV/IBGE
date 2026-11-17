@@ -12,6 +12,7 @@ router = APIRouter(tags=["reference"])
 
 @router.get("/reference/censo-2022")
 def censo(cod: int | None = Depends(territory_params)) -> dict:
+    """GET /reference/censo-2022. Parâmetros: cod."""
     settings = get_settings()
     cache = ResponseCache(settings.data_dir / "cache", settings.cache_ttl_s)
     code = 0 if cod is None else cod

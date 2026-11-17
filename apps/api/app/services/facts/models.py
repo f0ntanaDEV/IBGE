@@ -9,6 +9,7 @@ Status = Literal["good", "warn", "bad"]
 
 
 class DetailPoint(BaseModel):
+    """DetailPoint."""
     ano: int
     valor: float | int
     kind: Kind
@@ -16,6 +17,7 @@ class DetailPoint(BaseModel):
 
 
 class FactPart(BaseModel):
+    """FactPart."""
     label: str | None = None
     value: float | int | str
     kind: Kind
@@ -23,6 +25,7 @@ class FactPart(BaseModel):
 
 
 class Fact(BaseModel):
+    """Fact."""
     id: str
     label: str
     value: float | int | str

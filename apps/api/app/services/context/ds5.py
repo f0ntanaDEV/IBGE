@@ -11,6 +11,7 @@ NQX = "Probabilidade de morte"
 
 
 def _row(data: pd.DataFrame, year: int, age: int) -> pd.Series | None:
+    """Entra: data, year, age. Sai com o resultado de row."""
     rows = data[(data["ano"] == year) & (data["idade"] == age)]
     if rows.empty:
         return None
@@ -18,6 +19,7 @@ def _row(data: pd.DataFrame, year: int, age: int) -> pd.Series | None:
 
 
 def _num(data: pd.DataFrame, year: int, age: int, column: str) -> float | None:
+    """Entra: data, year, age, column. Sai com o resultado de num."""
     row = _row(data, year, age)
     if row is None or pd.isna(row[column]):
         return None
@@ -25,6 +27,7 @@ def _num(data: pd.DataFrame, year: int, age: int, column: str) -> float | None:
 
 
 def _half(data: pd.DataFrame, year: int) -> float | None:
+    """Entra: data, year. Sai com o resultado de half."""
     rows = data[data["ano"] == year].dropna(subset=["lx"]).sort_values("idade")
     previous = None
     for row in rows.itertuples(index=False):
@@ -38,6 +41,7 @@ def _half(data: pd.DataFrame, year: int) -> float | None:
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     chosen = people("ds5", cod, sexo)
     men = people("ds5", cod, "h")
     women = people("ds5", cod, "m")

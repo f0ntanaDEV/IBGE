@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 def keep_latest(directory: Path) -> list[Path]:
+    """Entra: directory. Sai com o resultado de keep latest."""
     groups: dict[tuple[str, str], list[Path]] = {}
     for path in sorted(directory.glob("*.report.json")):
         try:

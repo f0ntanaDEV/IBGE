@@ -8,6 +8,7 @@ BRASILIA = ZoneInfo("America/Sao_Paulo")
 
 
 def as_brasilia(value: datetime | str | None) -> datetime | None:
+    """Entra: value. Sai com o resultado de as brasilia."""
     if value is None or value == "":
         return None
     if isinstance(value, str):
@@ -19,6 +20,7 @@ def as_brasilia(value: datetime | str | None) -> datetime | None:
 
 
 def stamp_iso(value: datetime | str | None) -> str | None:
+    """Entra: value. Sai com o resultado de stamp iso."""
     zoned = as_brasilia(value)
     if zoned is None:
         return None

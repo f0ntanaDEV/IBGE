@@ -132,17 +132,29 @@ Os 99 nulos estruturais são `tcg_t`, `tcg_h` e `tcg_m` no ano 2000, nos 33 terr
 | Q3 | 36,43 |
 | máx. | 39,12 |
 
-#### nqx
+#### nqx aos 0 anos
 
 | | |
 |---|---:|
-| média | 0,12 |
-| mediana | 0,02 |
-| desvio-padrão | 0,23 |
-| mín. | 0,00 |
+| média | 0,01 |
+| mediana | 0,01 |
+| desvio-padrão | 0,00 |
+| mín. | 0,01 |
 | Q1 | 0,01 |
-| Q3 | 0,09 |
-| máx. | 1,00 |
+| Q3 | 0,01 |
+| máx. | 0,02 |
+
+#### nqx aos 60 anos
+
+| | |
+|---|---:|
+| média | 0,05 |
+| mediana | 0,05 |
+| desvio-padrão | 0,00 |
+| mín. | 0,04 |
+| Q1 | 0,05 |
+| Q3 | 0,05 |
+| máx. | 0,06 |
 
 ## Regiões em 2026
 

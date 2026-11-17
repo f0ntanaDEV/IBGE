@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 def finished_from_name(path: Path) -> datetime | None:
+    """Entra: path. Sai com o resultado de finished from name."""
     match = re.search(r"_(\d{8})T(\d{6})", path.name)
     if not match:
         return None

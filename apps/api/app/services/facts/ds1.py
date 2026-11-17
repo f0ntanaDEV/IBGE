@@ -7,10 +7,12 @@ from app.services.facts.models import DetailPoint, Fact
 
 
 def _year(data: pd.DataFrame, year: int) -> pd.DataFrame:
+    """Entra: data, year. Sai com o resultado de year."""
     return data[data["ano"] == year]
 
 
 def _at_age(data: pd.DataFrame, year: int, age: int) -> float | None:
+    """Entra: data, year, age. Sai com o resultado de at age."""
     rows = _year(data, year)
     rows = rows[rows["idade"] == age]
     if rows.empty:
@@ -19,6 +21,7 @@ def _at_age(data: pd.DataFrame, year: int, age: int) -> float | None:
 
 
 def _modal(data: pd.DataFrame, year: int) -> int | None:
+    """Entra: data, year. Sai com o resultado de modal."""
     rows = _year(data, year)
     rows = rows[rows["idade"].between(0, 89)]
     if rows.empty:
@@ -27,6 +30,7 @@ def _modal(data: pd.DataFrame, year: int) -> int | None:
 
 
 def _median(data: pd.DataFrame, year: int) -> int | None:
+    """Entra: data, year. Sai com o resultado de median."""
     rows = _year(data, year).sort_values("idade")
     if rows.empty:
         return None
@@ -40,6 +44,7 @@ def _median(data: pd.DataFrame, year: int) -> int | None:
 
 
 def _points(data: pd.DataFrame, age: int) -> list[DetailPoint]:
+    """Entra: data, age. Sai com o resultado de points."""
     points = []
     for year in (2000, 2070):
         value = _at_age(data, year, age)
@@ -49,6 +54,7 @@ def _points(data: pd.DataFrame, age: int) -> list[DetailPoint]:
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     base = total_sex(territory("ds1", cod))
     men = sex(territory("ds1", cod), "h")
     women = sex(territory("ds1", cod), "m")

@@ -150,7 +150,8 @@ CREATE TABLE ds3_grupos_etarios (
 	CONSTRAINT pk_ds3_grupos_etarios PRIMARY KEY (cod, ano), 
 	CONSTRAINT fk_ds3_grupos_etarios_cod FOREIGN KEY(cod) REFERENCES dim_territorio (cod), 
 	CONSTRAINT ck_ds3_grupos_etarios_ano CHECK (ano BETWEEN 2000 AND 2070), 
-	CONSTRAINT ck_ds3_grupos_etarios_contagens CHECK (pop_t >= 0 AND pop_h >= 0 AND pop_m >= 0 AND n_0_1_t >= 0 AND n_0_1_h >= 0 AND n_0_1_m >= 0 AND n_0_4_t >= 0 AND n_0_4_h >= 0 AND n_0_4_m >= 0 AND n_0_14_t >= 0 AND n_0_14_h >= 0 AND n_0_14_m >= 0 AND n_15_17_t >= 0 AND n_15_17_h >= 0 AND n_15_17_m >= 0 AND n_18_21_t >= 0 AND n_18_21_h >= 0 AND n_18_21_m >= 0 AND n_15_59_t >= 0 AND n_15_59_h >= 0 AND n_15_59_m >= 0 AND n_15_64_t >= 0 AND n_15_64_h >= 0 AND n_15_64_m >= 0 AND n_60_mais_t >= 0 AND n_60_mais_h >= 0 AND n_60_mais_m >= 0 AND n_65_mais_t >= 0 AND n_65_mais_h >= 0 AND n_65_mais_m >= 0 AND n_80_mais_t >= 0 AND n_80_mais_h >= 0 AND n_80_mais_m >= 0)
+	CONSTRAINT ck_ds3_grupos_etarios_contagens CHECK (pop_t >= 0 AND pop_h >= 0 AND pop_m >= 0 AND n_0_1_t >= 0 AND n_0_1_h >= 0 AND n_0_1_m >= 0 AND n_0_4_t >= 0 AND n_0_4_h >= 0 AND n_0_4_m >= 0 AND n_0_14_t >= 0 AND n_0_14_h >= 0 AND n_0_14_m >= 0 AND n_15_17_t >= 0 AND n_15_17_h >= 0 AND n_15_17_m >= 0 AND n_18_21_t >= 0 AND n_18_21_h >= 0 AND n_18_21_m >= 0 AND n_15_59_t >= 0 AND n_15_59_h >= 0 AND n_15_59_m >= 0 AND n_15_64_t >= 0 AND n_15_64_h >= 0 AND n_15_64_m >= 0 AND n_60_mais_t >= 0 AND n_60_mais_h >= 0 AND n_60_mais_m >= 0 AND n_65_mais_t >= 0 AND n_65_mais_h >= 0 AND n_65_mais_m >= 0 AND n_80_mais_t >= 0 AND n_80_mais_h >= 0 AND n_80_mais_m >= 0), 
+	CONSTRAINT ck_ds3_grupos_etarios_proporcoes CHECK (p_h BETWEEN 0 AND 1 AND p_m BETWEEN 0 AND 1 AND p_0_1_t BETWEEN 0 AND 1 AND p_0_1_h BETWEEN 0 AND 1 AND p_0_1_m BETWEEN 0 AND 1 AND p_0_4_t BETWEEN 0 AND 1 AND p_0_4_h BETWEEN 0 AND 1 AND p_0_4_m BETWEEN 0 AND 1 AND p_0_14_t BETWEEN 0 AND 1 AND p_0_14_h BETWEEN 0 AND 1 AND p_0_14_m BETWEEN 0 AND 1 AND p_15_17_t BETWEEN 0 AND 1 AND p_15_17_h BETWEEN 0 AND 1 AND p_15_17_m BETWEEN 0 AND 1 AND p_18_21_t BETWEEN 0 AND 1 AND p_18_21_h BETWEEN 0 AND 1 AND p_18_21_m BETWEEN 0 AND 1 AND p_15_59_t BETWEEN 0 AND 1 AND p_15_59_h BETWEEN 0 AND 1 AND p_15_59_m BETWEEN 0 AND 1 AND p_15_64_t BETWEEN 0 AND 1 AND p_15_64_h BETWEEN 0 AND 1 AND p_15_64_m BETWEEN 0 AND 1 AND p_60_mais_t BETWEEN 0 AND 1 AND p_60_mais_h BETWEEN 0 AND 1 AND p_60_mais_m BETWEEN 0 AND 1 AND p_65_mais_t BETWEEN 0 AND 1 AND p_65_mais_h BETWEEN 0 AND 1 AND p_65_mais_m BETWEEN 0 AND 1 AND p_80_mais_t BETWEEN 0 AND 1 AND p_80_mais_h BETWEEN 0 AND 1 AND p_80_mais_m BETWEEN 0 AND 1)
 );
 
 CREATE INDEX ix_ds3_grupos_etarios_cod_ano ON ds3_grupos_etarios (cod, ano);
@@ -222,7 +223,14 @@ CREATE TABLE ds4_indicadores (
 	CONSTRAINT pk_ds4_indicadores PRIMARY KEY (cod, ano), 
 	CONSTRAINT fk_ds4_indicadores_cod FOREIGN KEY(cod) REFERENCES dim_territorio (cod), 
 	CONSTRAINT ck_ds4_indicadores_ano CHECK (ano BETWEEN 2000 AND 2070), 
-	CONSTRAINT ck_ds4_indicadores_contagens CHECK (pop_t >= 0 AND pop_h >= 0 AND pop_m >= 0 AND nasc_t >= 0 AND nasc_h >= 0 AND nasc_m >= 0 AND obt_t >= 0 AND obt_h >= 0 AND obt_m >= 0)
+	CONSTRAINT ck_ds4_indicadores_contagens CHECK (pop_t >= 0 AND pop_h >= 0 AND pop_m >= 0 AND nasc_t >= 0 AND nasc_h >= 0 AND nasc_m >= 0 AND obt_t >= 0 AND obt_h >= 0 AND obt_m >= 0), 
+	CONSTRAINT ck_ds4_indicadores_esperanca CHECK (e0_t BETWEEN 0 AND 120 AND e0_h BETWEEN 0 AND 120 AND e0_m BETWEEN 0 AND 120 AND e60_t BETWEEN 0 AND 120 AND e60_h BETWEEN 0 AND 120 AND e60_m BETWEEN 0 AND 120), 
+	CONSTRAINT ck_ds4_indicadores_tft CHECK (tft BETWEEN 0 AND 10), 
+	CONSTRAINT ck_ds4_indicadores_tef CHECK (tef_10_14 BETWEEN 0 AND 1 AND tef_15_19 BETWEEN 0 AND 1 AND tef_20_24 BETWEEN 0 AND 1 AND tef_25_29 BETWEEN 0 AND 1 AND tef_30_34 BETWEEN 0 AND 1 AND tef_35_39 BETWEEN 0 AND 1 AND tef_40_44 BETWEEN 0 AND 1 AND tef_45_49 BETWEEN 0 AND 1 AND tef_50_mais BETWEEN 0 AND 1), 
+	CONSTRAINT ck_ds4_indicadores_por_mil CHECK (tmi_t BETWEEN 0 AND 1000 AND tmi_h BETWEEN 0 AND 1000 AND tmi_m BETWEEN 0 AND 1000 AND n_5q0_t BETWEEN 0 AND 1000 AND n_5q0_h BETWEEN 0 AND 1000 AND n_5q0_m BETWEEN 0 AND 1000 AND n_45q15_t BETWEEN 0 AND 1000 AND n_45q15_h BETWEEN 0 AND 1000 AND n_45q15_m BETWEEN 0 AND 1000 AND n_20q60_t BETWEEN 0 AND 1000 AND n_20q60_h BETWEEN 0 AND 1000 AND n_20q60_m BETWEEN 0 AND 1000), 
+	CONSTRAINT ck_ds4_indicadores_rs CHECK (rs BETWEEN 50 AND 150), 
+	CONSTRAINT ck_ds4_indicadores_razoes CHECK (rdj60 >= 0 AND rdi60 >= 0 AND rdt60 >= 0 AND rdj65 >= 0 AND rdi65 >= 0 AND rdt65 >= 0 AND ie60 >= 0 AND ie65 >= 0 AND ie80 >= 0), 
+	CONSTRAINT ck_ds4_indicadores_idade CHECK (id_m BETWEEN 0 AND 120 AND id_med BETWEEN 0 AND 120)
 );
 
 CREATE INDEX ix_ds4_indicadores_cod_ano ON ds4_indicadores (cod, ano);
@@ -254,7 +262,13 @@ CREATE TABLE ds5_tabuas_mortalidade (
 	CONSTRAINT ck_ds5_tabuas_mortalidade_sexo CHECK (sexo IN ('Ambos', 'Homens', 'Mulheres')), 
 	CONSTRAINT ck_ds5_tabuas_mortalidade_ano CHECK (ano BETWEEN 2000 AND 2070), 
 	CONSTRAINT ck_ds5_tabuas_mortalidade_idade CHECK (idade BETWEEN 0 AND 90), 
-	CONSTRAINT ck_ds5_tabuas_mortalidade_nqx CHECK (nqx BETWEEN 0 AND 1)
+	CONSTRAINT ck_ds5_tabuas_mortalidade_nqx CHECK (nqx BETWEEN 0 AND 1), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_nmx CHECK (nmx >= 0), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_nax CHECK (nax >= 0), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_sx CHECK (sx BETWEEN 0 AND 1), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_lx CHECK (lx BETWEEN 0 AND 100000), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_fluxos CHECK (ndx >= 0 AND nlx >= 0 AND tx >= 0), 
+	CONSTRAINT ck_ds5_tabuas_mortalidade_ex CHECK (ex BETWEEN 0 AND 120)
 );
 
 CREATE INDEX ix_ds5_tabuas_mortalidade_cod_ano ON ds5_tabuas_mortalidade (cod, ano);

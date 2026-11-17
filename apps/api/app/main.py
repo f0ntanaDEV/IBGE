@@ -15,6 +15,7 @@ from app.core.logging import setup_logging
 
 
 def _load_mysql() -> None:
+    """Entra: nenhum argumento. Sai com o resultado de load mysql."""
     try:
         from app.tools.load_mysql_from_parquet import main
 
@@ -25,6 +26,7 @@ def _load_mysql() -> None:
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
+    """Entra: _app. Sai com o resultado de lifespan."""
     from app.core.config import get_settings
 
     if get_settings().load_mysql_on_start:
@@ -36,6 +38,7 @@ async def _lifespan(_app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    """Entra: nenhum argumento. Sai com o resultado de create app."""
     setup_logging()
     app = FastAPI(title="Projeções da População IBGE", version="1.0.0", lifespan=_lifespan)
     app.include_router(health.router, prefix="/api/v1")
@@ -57,10 +60,12 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(AppError)
     def _app_error(_request, exc: AppError) -> JSONResponse:
+        """Entra: _request, exc. Sai com o resultado de app error."""
         return JSONResponse(error_body(exc.code, exc.message, exc.details), status_code=exc.status_code)
 
     @app.exception_handler(RequestValidationError)
     def _validation(_request, exc: RequestValidationError) -> JSONResponse:
+        """Entra: _request, exc. Sai com o resultado de validation."""
         return JSONResponse(
             error_body("validation_error", "Parâmetros inválidos", {"errors": exc.errors()}),
             status_code=422,
@@ -68,6 +73,7 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(StarletteHTTPException)
     def _http(_request, exc: StarletteHTTPException) -> JSONResponse:
+        """Entra: _request, exc. Sai com o resultado de http."""
         return JSONResponse(error_body("http_error", str(exc.detail)), status_code=exc.status_code)
 
     return app

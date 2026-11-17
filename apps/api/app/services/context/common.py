@@ -17,6 +17,7 @@ REF = 2026
 
 
 def slug(title: str) -> str:
+    """Entra: title. Sai com o resultado de slug."""
     text = unicodedata.normalize("NFKD", title)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     text = text.lower()
@@ -33,6 +34,7 @@ def item(
     note: str | None = None,
     notes: list[tuple[str, float | int | str, str]] | None = None,
 ) -> ContextItem:
+    """Entra: item_id, label, value, kind, chart_title, chart_label, note, notes. Sai com o resultado de item."""
     return ContextItem(
         id=item_id,
         label=label,
@@ -48,6 +50,7 @@ def item(
 
 
 def sex_code(value: str | None) -> str:
+    """Entra: value. Sai com o resultado de sex code."""
     text = (value or "T").strip().upper()
     if text in {"H", "HOMENS"}:
         return "h"
@@ -57,14 +60,17 @@ def sex_code(value: str | None) -> str:
 
 
 def is_uf(cod: int) -> bool:
+    """Entra: cod. Sai com o resultado de is uf."""
     return cod in UFS
 
 
 def is_region(cod: int) -> bool:
+    """Entra: cod. Sai com o resultado de is region."""
     return cod in REGIOES
 
 
 def people(dataset_id: str, cod: int, kind: str) -> pd.DataFrame:
+    """Entra: dataset_id, cod, kind. Sai com o resultado de people."""
     from app.services.facts.registry import cache_token
 
     key = (dataset_id, int(cod), kind, cache_token())
@@ -92,20 +98,24 @@ _PEOPLE: dict[tuple, pd.DataFrame] = {}
 
 
 def year_rows(data: pd.DataFrame, year: int) -> pd.DataFrame:
+    """Entra: data, year. Sai com o resultado de year rows."""
     if data.empty or "ano" not in data.columns:
         return data.iloc[0:0]
     return data[data["ano"] == year]
 
 
 def comma(value: float, digits: int) -> str:
+    """Entra: value, digits. Sai com o resultado de comma."""
     return f"{value:.{digits}f}".replace(".", ",")
 
 
 def ordinal(rank: int) -> str:
+    """Entra: rank. Sai com o resultado de ordinal."""
     return f"{rank}ª"
 
 
 def censo_item(cod: int, chart_title: str, chart_label: str) -> ContextItem | None:
+    """Entra: cod, chart_title, chart_label. Sai com o resultado de censo item."""
     settings = get_settings()
     cache = ResponseCache(settings.data_dir / "cache", settings.cache_ttl_s)
     census = get_censo_2022(cod, settings, cache)
@@ -131,6 +141,7 @@ def censo_item(cod: int, chart_title: str, chart_label: str) -> ContextItem | No
 
 
 def rank_of(rows: pd.DataFrame, cod: int, column: str) -> int | None:
+    """Entra: rows, cod, column. Sai com o resultado de rank of."""
     ordered = rows.dropna(subset=[column]).sort_values([column, "sigla"], ascending=[False, True])
     codes = [int(code) for code in ordered["cod"].tolist()]
     if cod not in codes:
@@ -139,6 +150,7 @@ def rank_of(rows: pd.DataFrame, cod: int, column: str) -> int | None:
 
 
 def ends(rows: pd.DataFrame, column: str, digits: int, as_percent: bool) -> tuple[str, float, str, float] | None:
+    """Entra: rows, column, digits, as_percent. Sai com o resultado de ends."""
     data = rows.dropna(subset=[column])
     if data.empty:
         return None

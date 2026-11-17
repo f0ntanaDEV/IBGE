@@ -5,6 +5,7 @@ from app.services.facts.models import DetailPoint, Fact
 
 
 def _share(column: str, year: int, data) -> float | None:
+    """Entra: column, year, data. Sai com o resultado de share."""
     value = cell(data, year, column)
     if value is None:
         return None
@@ -12,6 +13,7 @@ def _share(column: str, year: int, data) -> float | None:
 
 
 def _uf(cod: int, column: str, highest: bool) -> tuple[str, float] | None:
+    """Entra: cod, column, highest. Sai com o resultado de uf."""
     data = frame("ds3")
     codes = ufs_do_territorio(cod)
     rows = data[(data["ano"] == REF_YEAR) & (data["cod"].isin(codes)) & (data["nivel"] == "uf")].dropna(subset=[column])
@@ -22,6 +24,7 @@ def _uf(cod: int, column: str, highest: bool) -> tuple[str, float] | None:
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     data = territory("ds3", cod)
     ds4 = territory("ds4", cod)
     p60_now = _share("p_60_mais_t", REF_YEAR, data)

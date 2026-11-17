@@ -14,6 +14,7 @@ DATASETS = ("ds1", "ds2", "ds3", "ds4", "ds5")
 
 
 def _manifest_demo() -> tuple[int, int]:
+    """Entra: nenhum argumento. Sai com o resultado de manifest demo."""
     folder = get_settings().raw_dir
     duplicates = 0
     nulls = 0
@@ -28,6 +29,7 @@ def _manifest_demo() -> tuple[int, int]:
 
 
 def _finished(path) -> datetime:
+    """Entra: path. Sai com o resultado de finished."""
     token = path.name.split("_", 1)[1][:15]
     return datetime.strptime(token, "%Y%m%dT%H%M%S")
 
@@ -37,6 +39,7 @@ def latest_raw(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
     found = _latest(dataset_id, source)
     if found is not None:
         return found
+    # Sem relatório no disco, o fato usa o report_json da ouro.
     try:
         from app.db import get_engine
         from app.repositories.etl_runs import list_runs
@@ -64,6 +67,7 @@ def latest_raw(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
 
 
 def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
+    """Entra: dataset_id, source. Sai com o resultado de latest."""
     folder = get_settings().silver_dir
     paths = sorted(folder.glob(f"{dataset_id}_*.report.json"))
     chosen = None
@@ -75,6 +79,7 @@ def _latest(dataset_id: str, source: str) -> tuple[dict, datetime] | None:
 
 
 def validation_overview(source: str) -> dict:
+    """Entra: source. Sai com o resultado de validation overview."""
     items = []
     for dataset_id in DATASETS:
         raw = latest_raw(dataset_id, source)
@@ -98,6 +103,7 @@ def validation_overview(source: str) -> dict:
 
 
 def build(_cod: int) -> list[Fact]:
+    """Entra: _cod. Sai com o resultado de build."""
     original = []
     dirty = []
     for dataset_id in DATASETS:

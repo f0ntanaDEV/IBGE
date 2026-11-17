@@ -18,6 +18,7 @@ _MAX_PAGES = 3
 _PER_TERM = 30
 _MAX_ITEMS = 30
 IMAGE_ORIGIN = "https://agenciadenoticias.ibge.gov.br/"
+# Termos genéricos não filtram: a notícia precisa do vocabulário do dataset.
 _GENERIC = {
     "anos",
     "brasil",
@@ -33,6 +34,7 @@ _GENERIC = {
 
 
 def news_cache(settings: Settings) -> ResponseCache:
+    """Entra: settings. Sai com o resultado de news cache."""
     return ResponseCache(settings.data_dir / "cache", NEWS_CACHE_TTL_S)
 
 
@@ -42,7 +44,9 @@ def fetch_news(
     cache: ResponseCache,
     client: httpx.Client | None = None,
 ) -> dict:
+    """Entra: terms, settings, cache, client. Sai com o resultado de fetch news."""
     def one(term: str) -> tuple[bool, list[dict]]:
+        """Entra: term. Sai com o resultado de one."""
         needles = _needles(term)
         matched: list[dict] = []
         ok_any = False
@@ -86,6 +90,7 @@ def fetch_news(
 
 
 def _needles(term: str) -> list[str]:
+    """Entra: term. Sai com o resultado de needles."""
     words = re.findall(r"[A-Za-zÀ-ÿ]{4,}", term)
     tokens = []
     for word in words:
@@ -97,6 +102,7 @@ def _needles(term: str) -> list[str]:
 
 
 def _related(item: dict, needles: list[str]) -> bool:
+    """Entra: item, needles. Sai com o resultado de related."""
     if not needles:
         return True
     blob = _fold(f"{item.get('titulo') or ''} {item.get('introducao') or ''}")
@@ -104,12 +110,14 @@ def _related(item: dict, needles: list[str]) -> bool:
 
 
 def _fold(value: str) -> str:
+    """Entra: value. Sai com o resultado de fold."""
     text = unicodedata.normalize("NFKD", value)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     return text.lower()
 
 
 def _item(raw: dict) -> dict:
+    """Entra: raw. Sai com o resultado de item."""
     return {
         "id": raw.get("id"),
         "titulo": raw.get("titulo"),
@@ -122,6 +130,7 @@ def _item(raw: dict) -> dict:
 
 
 def _image(value: object) -> str | None:
+    """Entra: value. Sai com o resultado de image."""
     if isinstance(value, str):
         try:
             value = json.loads(value)

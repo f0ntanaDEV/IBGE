@@ -71,6 +71,7 @@ def _is_decimal_count(name: str) -> bool:
 
 
 def _is_count(name: str) -> bool:
+    """Entra: name. Sai com o resultado de is count."""
     return _is_bigint_count(name) or _is_decimal_count(name)
 
 
@@ -130,7 +131,78 @@ def _fact(name: str, columns: list[str], pk: list[str]) -> Table:
     if counts:
         rule = " AND ".join(f"{col} >= 0" for col in counts)
         table.append_constraint(CheckConstraint(rule, name=f"ck_{name}_contagens"))
+    for check_name, expression in _range_checks(name, columns):
+        table.append_constraint(CheckConstraint(expression, name=check_name))
+    RANGE_CHECKS[name] = _range_checks(name, columns)
     return table
+
+
+def _pick(columns: list[str], predicate) -> list[str]:
+    """Colunas da tabela que casam com o padrão do CHECK."""
+    return [column for column in columns if predicate(column)]
+
+
+def _between(columns: list[str], low: int, high: int) -> str:
+    """Expressão BETWEEN para cada coluna, ligada por AND."""
+    return " AND ".join(f"{column} BETWEEN {low} AND {high}" for column in columns)
+
+
+def _gte(columns: list[str], low: int) -> str:
+    """Expressão de mínimo para cada coluna, ligada por AND."""
+    return " AND ".join(f"{column} >= {low}" for column in columns)
+
+
+def _range_checks(table: str, columns: list[str]) -> list[tuple[str, str]]:
+    """CHECKs de domínio das taxas. Os prefixos saem das colunas, sem lista manual."""
+    prefix = f"ck_{table}"
+    found: list[tuple[str, str]] = []
+
+    def add(suffix: str, chosen: list[str], expression: str) -> None:
+        """Entra: suffix, chosen, expression. Sai com o resultado de add."""
+        if chosen:
+            found.append((f"{prefix}_{suffix}", expression))
+
+    if table == "ds3_grupos_etarios":
+        proportions = _pick(columns, lambda name: name.startswith("p_") and not name.startswith("pop_"))
+        add("proporcoes", proportions, _between(proportions, 0, 1))
+    if table == "ds4_indicadores":
+        hope = _pick(columns, lambda name: name.startswith("e0_") or name.startswith("e60_"))
+        add("esperanca", hope, _between(hope, 0, 120))
+        if "tft" in columns:
+            add("tft", ["tft"], "tft BETWEEN 0 AND 10")
+        fertility = _pick(columns, lambda name: name.startswith("tef_"))
+        add("tef", fertility, _between(fertility, 0, 1))
+        per_thousand = _pick(
+            columns,
+            lambda name: name.startswith(("tmi_", "n_5q0_", "n_45q15_", "n_20q60_")),
+        )
+        add("por_mil", per_thousand, _between(per_thousand, 0, 1000))
+        if "rs" in columns:
+            add("rs", ["rs"], "rs BETWEEN 50 AND 150")
+        ratios = _pick(
+            columns,
+            lambda name: name in {"ie60", "ie65", "ie80"} or name.startswith(("rdj", "rdi", "rdt")),
+        )
+        add("razoes", ratios, _gte(ratios, 0))
+        ages = [name for name in ("id_m", "id_med") if name in columns]
+        add("idade", ages, _between(ages, 0, 120))
+    if table == "ds5_tabuas_mortalidade":
+        if "nmx" in columns:
+            add("nmx", ["nmx"], "nmx >= 0")
+        if "nax" in columns:
+            add("nax", ["nax"], "nax >= 0")
+        if "sx" in columns:
+            add("sx", ["sx"], "sx BETWEEN 0 AND 1")
+        if "lx" in columns:
+            add("lx", ["lx"], "lx BETWEEN 0 AND 100000")
+        flows = [name for name in ("ndx", "nlx", "tx") if name in columns]
+        add("fluxos", flows, _gte(flows, 0))
+        if "ex" in columns:
+            add("ex", ["ex"], "ex BETWEEN 0 AND 120")
+    return found
+
+
+RANGE_CHECKS: dict[str, list[tuple[str, str]]] = {}
 
 
 dim_dataset = Table(

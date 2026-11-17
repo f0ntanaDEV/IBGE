@@ -10,13 +10,17 @@ URL: dash.clevo.com.br
 
 ```mermaid
 flowchart LR
-    xlsx["data/raw xlsx"] --> etl["ETL Python"]
-    etl --> silver["data/silver Parquet"]
-    silver --> mysql["MySQL ouro"]
-    mysql --> api["API e React"]
-    mysql --> volume["Volume Databricks"]
-    volume --> lake["Lakeview"]
+    raw["raw xlsx"] --> etl["ETL"]
+    etl --> silver["silver Parquet"]
+    silver --> api["API"]
+    api --> react["React"]
+    silver --> carga["carga"]
+    carga --> mysql["MySQL ouro"]
+    mysql --> export["export"]
+    export --> databricks["Databricks"]
 ```
+
+O MySQL é a camada ouro para consulta, para o Databricks e para a rubrica. A API lê a silver por desempenho.
 
 ## 3. Camadas
 
@@ -37,7 +41,7 @@ python -m app.tools.eda
 
 `run_all` grava a silver. `load_mysql_from_parquet` sobe o Alembic e troca as fatos originais em lotes de 10 mil, dentro de uma transação. A fonte `sujo` grava só `etl_runs`. Se um valor de referência divergir, a carga desfaz a transação, marca `etl_runs` como `failed` e o processo sai com código diferente de zero.
 
-A revisão `003_restricoes_ouro` apaga e recria as fatos. É preciso rodar a carga depois do upgrade.
+A revisão `003_restricoes_ouro` recria as fatos vazias. Com `AUTO_SEED`, a API recarrega a ouro pela silver na subida, sem comando manual.
 
 ## 5. Modelo de dados
 
@@ -63,14 +67,23 @@ A carga MySQL usa `TEST_MYSQL_URL` (MySQL 8). Sem essa variável, os testes marc
 
 ## 9. Deploy com Docker
 
+Local:
+
 ```bash
 docker compose up -d --build
-docker compose exec api python -m app.tools.load_mysql_from_parquet
 ```
 
 O site fica em `http://localhost:8082`, a API em `http://localhost:8001` e o MySQL em `3306`. Sem Docker: a API em `apps/api/README.md` e o frontend com `npm run dev -w @ibge/web` em `http://127.0.0.1:5173`.
 
-Depois do upgrade, confira no MySQL a soma do Brasil em 2026 (214.211.951) e zero atípicos na ds1. O comando da carga já falha se esses valores divergirem.
+No servidor, `docker-compose.prod.yml` publica só o web, no endereço de `WEB_BIND` (exemplo `192.168.0.37:80`). A API e o MySQL não publicam porta.
+
+```bash
+docker compose -p ibge-projecoes -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Variáveis obrigatórias no `.env`: `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_REQUIRED`, `DATA_DIR`, `AUTO_SEED`, `WEB_BIND`.
+
+Depois do deploy, `/api/v1/health` responde `mysql: ok` e a soma do Brasil em 2026 é 214.211.951. A carga falha se esse total ou os atípicos da ds1 divergirem.
 
 ## 10. Débitos atuais
 
@@ -78,13 +91,12 @@ Depois do upgrade, confira no MySQL a soma do Brasil em 2026 (214.211.951) e zer
 - A tabela paginada pede a página de novo a cada ano, enquanto a pirâmide já fica em memória.
 - As capturas do Lakeview e o PDF `docs/painel-databricks.pdf` dependem de uma conta no workspace.
 - A variante Federation depende de a rede do Databricks alcançar o MySQL.
-- A revisão 003 recria as fatos vazias até a carga original rodar de novo.
 
 ## 11. Prompts de IA
 
 # Prompts para o Cursor
 
-Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as onze pastas `specs/01-` a `specs/11-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as doze pastas `specs/01-` a `specs/12-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
 
 | Arquivo original | Renomear para |
 |---|---|
@@ -174,6 +186,13 @@ Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e 
 
 ```
 Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 11 seguindo @specs/11-finalizacao-rubrica/requirements.md, @specs/11-finalizacao-rubrica/design.md e @specs/11-finalizacao-rubrica/tasks.md. Esta etapa prevalece sobre a 10 na pasta silver, nas docstrings, na EDA e na leitura do MySQL pelo Databricks.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 12: Ressalvas finais
+
+```
+Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 12 seguindo @specs/12-ressalvas-finais/requirements.md, @specs/12-ressalvas-finais/design.md e @specs/12-ressalvas-finais/tasks.md. Esta etapa prevalece sobre a 11 apenas nos arquivos citados. Não edite o Databricks.
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
 ```
 

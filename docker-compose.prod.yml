@@ -1,0 +1,8 @@
+services:
+  mysql:
+    ports: !reset null
+  api:
+    ports: !reset null
+  web:
+    ports: !override
+      - "${WEB_BIND:?defina WEB_BIND}:80"

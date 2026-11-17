@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Health */
+        /**
+         * Health
+         * @description GET /health. Sem parâmetros. mysql: carregando, down, vazio ou ok, nessa ordem.
+         */
         get: operations["health_api_v1_health_get"];
         put?: never;
         post?: never;
@@ -28,7 +31,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Territories */
+        /**
+         * Territories
+         * @description O cadastro padrão completa o banco. Assim o Brasil permanece se o MySQL o perdeu.
+         */
         get: operations["territories_api_v1_territories_get"];
         put?: never;
         post?: never;
@@ -45,7 +51,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Datasets */
+        /**
+         * List Datasets
+         * @description GET . Parâmetros: nenhum argumento.
+         */
         get: operations["list_datasets_api_v1_datasets_get"];
         put?: never;
         post?: never;
@@ -62,7 +71,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Metrics */
+        /**
+         * Metrics
+         * @description GET /{dataset_id}/metrics. Parâmetros: dataset_id.
+         */
         get: operations["metrics_api_v1_datasets__dataset_id__metrics_get"];
         put?: never;
         post?: never;
@@ -81,7 +93,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Upload */
+        /**
+         * Upload
+         * @description POST /{dataset_id}/upload. Parâmetros: dataset_id, file.
+         */
         post: operations["upload_api_v1_datasets__dataset_id__upload_post"];
         delete?: never;
         options?: never;
@@ -98,7 +113,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Process */
+        /**
+         * Process
+         * @description POST /{dataset_id}/process. Parâmetros: dataset_id, body.
+         */
         post: operations["process_api_v1_datasets__dataset_id__process_post"];
         delete?: never;
         options?: never;
@@ -113,8 +131,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Quality Report */
+        /**
+         * Quality Report
+         * @description GET /{dataset_id}/quality-report. Parâmetros: dataset_id, source.
+         */
         get: operations["quality_report_api_v1_datasets__dataset_id__quality_report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/validations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Validations
+         * @description GET /validations. Parâmetros: source.
+         */
+        get: operations["validations_api_v1_datasets_validations_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -130,7 +171,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Runs */
+        /**
+         * Runs
+         * @description GET /{dataset_id}/runs. Parâmetros: dataset_id, source.
+         */
         get: operations["runs_api_v1_datasets__dataset_id__runs_get"];
         put?: never;
         post?: never;
@@ -147,7 +191,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Data */
+        /**
+         * Data
+         * @description GET /{dataset_id}/data. Parâmetros: dataset_id, page, page_size, ano, anos, cod, faixa, nivel, sexo, idade, grupo, sort, desc.
+         */
         get: operations["data_api_v1_datasets__dataset_id__data_get"];
         put?: never;
         post?: never;
@@ -164,7 +211,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Summary */
+        /**
+         * Dataset Summary
+         * @description GET /{dataset_id}/summary. Parâmetros: dataset_id, ano, cod, sexo.
+         */
         get: operations["dataset_summary_api_v1_datasets__dataset_id__summary_get"];
         put?: never;
         post?: never;
@@ -181,7 +231,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Pyramid */
+        /**
+         * Dataset Pyramid
+         * @description GET /{dataset_id}/pyramid. Parâmetros: dataset_id, ano, cod, compare_ano.
+         */
         get: operations["dataset_pyramid_api_v1_datasets__dataset_id__pyramid_get"];
         put?: never;
         post?: never;
@@ -198,7 +251,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Map */
+        /**
+         * Dataset Map
+         * @description GET /{dataset_id}/map. Parâmetros: dataset_id, metric, ano.
+         */
         get: operations["dataset_map_api_v1_datasets__dataset_id__map_get"];
         put?: never;
         post?: never;
@@ -215,7 +271,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Heatmap */
+        /**
+         * Dataset Heatmap
+         * @description GET /{dataset_id}/heatmap. Parâmetros: dataset_id, cod, sexo.
+         */
         get: operations["dataset_heatmap_api_v1_datasets__dataset_id__heatmap_get"];
         put?: never;
         post?: never;
@@ -232,7 +291,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Scatter */
+        /**
+         * Dataset Scatter
+         * @description GET /{dataset_id}/scatter. Parâmetros: dataset_id, anos.
+         */
         get: operations["dataset_scatter_api_v1_datasets__dataset_id__scatter_get"];
         put?: never;
         post?: never;
@@ -249,7 +311,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Slope */
+        /**
+         * Dataset Slope
+         * @description GET /{dataset_id}/slope. Parâmetros: dataset_id, metric, ano_a, ano_b.
+         */
         get: operations["dataset_slope_api_v1_datasets__dataset_id__slope_get"];
         put?: never;
         post?: never;
@@ -266,7 +331,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Claims */
+        /**
+         * Claims
+         * @description GET /{dataset_id}/claims. Parâmetros: dataset_id.
+         */
         get: operations["claims_api_v1_datasets__dataset_id__claims_get"];
         put?: never;
         post?: never;
@@ -283,7 +351,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** News */
+        /**
+         * News
+         * @description GET /{dataset_id}/news. Parâmetros: dataset_id.
+         */
         get: operations["news_api_v1_datasets__dataset_id__news_get"];
         put?: never;
         post?: never;
@@ -300,7 +371,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Download */
+        /**
+         * Download
+         * @description GET /{dataset_id}/download. Parâmetros: dataset_id, format.
+         */
         get: operations["download_api_v1_datasets__dataset_id__download_get"];
         put?: never;
         post?: never;
@@ -317,7 +391,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dataset Milestones */
+        /**
+         * Dataset Milestones
+         * @description GET /milestones. Parâmetros: cod.
+         */
         get: operations["dataset_milestones_api_v1_milestones_get"];
         put?: never;
         post?: never;
@@ -334,7 +411,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Censo */
+        /**
+         * Censo
+         * @description GET /reference/censo-2022. Parâmetros: cod.
+         */
         get: operations["censo_api_v1_reference_censo_2022_get"];
         put?: never;
         post?: never;
@@ -351,8 +431,71 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Facts */
+        /**
+         * Facts
+         * @description GET /facts. Parâmetros: page, cod.
+         */
         get: operations["facts_api_v1_facts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Context
+         * @description GET . Parâmetros: page, cod, ano, sexo.
+         */
+        get: operations["read_context_api_v1_context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Metrics
+         * @description GET . Parâmetros: nenhum argumento.
+         */
+        get: operations["read_metrics_api_v1_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/databricks/embed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Databricks Embed
+         * @description GET /databricks/embed. Parâmetros: nenhum argumento.
+         */
+        get: operations["databricks_embed_api_v1_databricks_embed_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -370,7 +513,10 @@ export interface components {
             /** File */
             file: string;
         };
-        /** CleaningIn */
+        /**
+         * CleaningIn
+         * @description CleaningIn.
+         */
         CleaningIn: {
             /** Null Threshold */
             null_threshold?: number | null;
@@ -381,7 +527,35 @@ export interface components {
             /** Outlier Strategy */
             outlier_strategy?: string | null;
         };
-        /** DetailPoint */
+        /**
+         * ContextItem
+         * @description ContextItem.
+         */
+        ContextItem: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: number | string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw" | "ratio";
+            /** Note */
+            note?: string | null;
+            /** Note Values */
+            note_values?: components["schemas"]["NoteValue"][] | null;
+            /** Chart Id */
+            chart_id: string;
+            /** Chart Label */
+            chart_label: string;
+        };
+        /**
+         * DetailPoint
+         * @description DetailPoint.
+         */
         DetailPoint: {
             /** Ano */
             ano: number;
@@ -392,15 +566,23 @@ export interface components {
              * @enum {string}
              */
             kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw";
+            /** Rotulo */
+            rotulo?: string | null;
         };
-        /** DuplicatesReport */
+        /**
+         * DuplicatesReport
+         * @description DuplicatesReport.
+         */
         DuplicatesReport: {
             /** Exact */
             exact: number;
             /** By Key */
             by_key: number;
         };
-        /** Fact */
+        /**
+         * Fact
+         * @description Fact.
+         */
         Fact: {
             /** Id */
             id: string;
@@ -417,8 +599,36 @@ export interface components {
             detail?: string | null;
             /** Detail Values */
             detail_values?: components["schemas"]["DetailPoint"][] | null;
+            /**
+             * Parts
+             * @default []
+             */
+            parts: components["schemas"]["FactPart"][];
             /** Reference Year */
             reference_year?: number | null;
+            /** Status */
+            status?: ("good" | "warn" | "bad") | null;
+        };
+        /**
+         * FactPart
+         * @description FactPart.
+         */
+        FactPart: {
+            /** Label */
+            label?: string | null;
+            /** Value */
+            value: number | string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw";
+            /**
+             * Position
+             * @default prefix
+             * @enum {string}
+             */
+            position: "prefix" | "suffix";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -432,14 +642,85 @@ export interface components {
         HealthOut: {
             /** Api */
             api: string;
-            /** Mysql */
-            mysql: string;
+            /**
+             * Mysql
+             * @enum {string}
+             */
+            mysql: "ok" | "vazio" | "carregando" | "down";
             /** Mysql Required */
             mysql_required: boolean;
             /** Seeding */
             seeding: boolean;
         };
-        /** NullsReport */
+        /**
+         * Manifest
+         * @description Manifest.
+         */
+        Manifest: {
+            /** Dataset */
+            dataset: string;
+            /** Seed */
+            seed: number;
+            /** Generated At */
+            generated_at: string;
+            /** Rows Original */
+            rows_original: number;
+            /** Nulls Injected */
+            nulls_injected: {
+                [key: string]: number;
+            };
+            /** Exact Duplicates */
+            exact_duplicates: number;
+            /** Key Duplicates */
+            key_duplicates: number;
+            outliers: components["schemas"]["ManifestOutliers"];
+            /** Whitespace Cells */
+            whitespace_cells: number;
+            /** Recoverable Ids */
+            recoverable_ids: number;
+        };
+        /**
+         * ManifestOutliers
+         * @description ManifestOutliers.
+         */
+        ManifestOutliers: {
+            /**
+             * Rows
+             * @default []
+             */
+            rows: number[];
+            /**
+             * Columns
+             * @default {}
+             */
+            columns: {
+                [key: string]: number;
+            };
+            /**
+             * Factor
+             * @default []
+             */
+            factor: number[];
+        };
+        /**
+         * NoteValue
+         * @description NoteValue.
+         */
+        NoteValue: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: number | string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "count" | "percent" | "permil" | "years" | "rate" | "index" | "year" | "raw" | "ratio";
+        };
+        /**
+         * NullsReport
+         * @description NullsReport.
+         */
         NullsReport: {
             /** By Column */
             by_column: {
@@ -452,7 +733,10 @@ export interface components {
             /** Total Imputed */
             total_imputed: number;
         };
-        /** OutliersReport */
+        /**
+         * OutliersReport
+         * @description OutliersReport.
+         */
         OutliersReport: {
             /** By Column */
             by_column: {
@@ -467,7 +751,10 @@ export interface components {
             /** Method */
             method: string;
         };
-        /** ProcessIn */
+        /**
+         * ProcessIn
+         * @description ProcessIn.
+         */
         ProcessIn: {
             /**
              * Source
@@ -481,7 +768,10 @@ export interface components {
              */
             confirm: boolean;
         };
-        /** QualityReport */
+        /**
+         * QualityReport
+         * @description QualityReport.
+         */
         QualityReport: {
             /** Dataset Id */
             dataset_id: string;
@@ -490,6 +780,7 @@ export interface components {
              * @enum {string}
              */
             source: "original" | "sujo" | "upload";
+            manifest?: components["schemas"]["Manifest"] | null;
             /** Run Id */
             run_id: number;
             /**
@@ -515,15 +806,32 @@ export interface components {
             outliers: components["schemas"]["OutliersReport"];
             /** Validations */
             validations: components["schemas"]["Validation"][];
+            validation_summary?: components["schemas"]["ValidationSummary"] | null;
+            /**
+             * Whitespace Cells
+             * @default 0
+             */
+            whitespace_cells: number;
+            /**
+             * Ids Recovered
+             * @default 0
+             */
+            ids_recovered: number;
         };
-        /** StepCount */
+        /**
+         * StepCount
+         * @description StepCount.
+         */
         StepCount: {
             /** Before */
             before: number;
             /** After */
             after: number;
         };
-        /** Validation */
+        /**
+         * Validation
+         * @description Validation.
+         */
         Validation: {
             /** Rule */
             rule: string;
@@ -531,6 +839,16 @@ export interface components {
             ok: boolean;
             /** Max Diff */
             max_diff: number;
+            /** Motivo */
+            motivo?: string | null;
+            /**
+             * Status
+             * @default ok
+             * @enum {string}
+             */
+            status: "ok" | "ok_arredondamento" | "falha";
+            /** Note */
+            note?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -544,6 +862,18 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * ValidationSummary
+         * @description ValidationSummary.
+         */
+        ValidationSummary: {
+            /** Approved */
+            approved: number;
+            /** Total */
+            total: number;
+            /** Text */
+            text: string;
         };
     };
     responses: never;
@@ -744,7 +1074,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QualityReport"] | null;
+                    "application/json": components["schemas"]["QualityReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validations_api_v1_datasets_validations_get: {
+        parameters: {
+            query?: {
+                source?: "original" | "sujo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -760,7 +1123,9 @@ export interface operations {
     };
     runs_api_v1_datasets__dataset_id__runs_get: {
         parameters: {
-            query?: never;
+            query?: {
+                source?: ("original" | "sujo" | "upload") | null;
+            };
             header?: never;
             path: {
                 dataset_id: string;
@@ -1248,6 +1613,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_context_api_v1_context_get: {
+        parameters: {
+            query: {
+                page: string;
+                cod?: number;
+                ano?: number;
+                sexo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContextItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_metrics_api_v1_metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
+    databricks_embed_api_v1_databricks_embed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };

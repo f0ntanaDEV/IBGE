@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -12,20 +14,26 @@ class HealthOut(BaseModel):
     """Estado da API, do MySQL e da semeadura."""
 
     api: str
-    mysql: str
+    mysql: Literal["ok", "vazio", "carregando", "down"]
     mysql_required: bool
     seeding: bool
 
 
-@router.get("/health", response_model=HealthOut)
-def health() -> HealthOut:
-    mysql = "down"
+def _mysql_state() -> Literal["ok", "vazio", "down"]:
+    """ok se ds1 tem linha, vazio se a tabela responde sem linha, down se o banco não abre."""
     try:
         with get_engine().connect() as connection:
-            connection.execute(text("SELECT 1"))
-        mysql = "ok"
+            row = connection.execute(text("SELECT 1 FROM ds1_populacao_idade LIMIT 1")).first()
+        return "ok" if row is not None else "vazio"
     except Exception:
-        mysql = "down"
+        return "down"
+
+
+@router.get("/health", response_model=HealthOut)
+def health() -> HealthOut:
+    """GET /health. Sem parâmetros. mysql: carregando, down, vazio ou ok, nessa ordem."""
     from app.core.startup import is_seeding
 
-    return HealthOut(api="ok", mysql=mysql, mysql_required=get_settings().mysql_required, seeding=is_seeding())
+    seeding = is_seeding()
+    mysql: Literal["ok", "vazio", "carregando", "down"] = "carregando" if seeding else _mysql_state()
+    return HealthOut(api="ok", mysql=mysql, mysql_required=get_settings().mysql_required, seeding=seeding)

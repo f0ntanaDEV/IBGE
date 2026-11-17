@@ -55,6 +55,7 @@ def validate(frame: pd.DataFrame, cfg: DatasetConfig, others: dict[str, pd.DataF
 
 
 def _territorial(frame: pd.DataFrame) -> list[dict]:
+    """Entra: frame. Sai com o resultado de territorial."""
     if "nivel" not in frame.columns or "ano" not in frame.columns:
         return []
     dims = [col for col in ("ano", "sexo", "idade", "grupo_etario") if col in frame.columns]
@@ -74,6 +75,7 @@ def _territorial(frame: pd.DataFrame) -> list[dict]:
 
 
 def _sex_sums(frame: pd.DataFrame) -> list[dict]:
+    """Entra: frame. Sai com o resultado de sex sums."""
     groups: dict[str, set[str]] = {}
     for col in frame.columns:
         for suffix in ("_t", "_h", "_m"):
@@ -96,6 +98,7 @@ def _sex_sums(frame: pd.DataFrame) -> list[dict]:
 
 
 def _sex_kind(prefix: str) -> str | None:
+    """Entra: prefix. Sai com o resultado de sex kind."""
     if prefix.startswith(_RATE_PREFIXES) or prefix in _RATE_PREFIXES:
         return None
     if prefix.startswith("p_") or prefix == "p":
@@ -106,6 +109,7 @@ def _sex_kind(prefix: str) -> str | None:
 
 
 def _ages_match_pop(ds1: pd.DataFrame, ds4: pd.DataFrame) -> dict:
+    """Entra: ds1, ds4. Sai com o resultado de ages match pop."""
     ambos = ds1[ds1["sexo"].map(_is_ambos)]
     left = ambos.groupby(["cod", "ano"])["populacao"].sum()
     right = ds4.groupby(["cod", "ano"])["pop_t"].sum()
@@ -118,6 +122,7 @@ def _ages_match_pop(ds1: pd.DataFrame, ds4: pd.DataFrame) -> dict:
 
 
 def _result(rule_id: str, max_diff: float | None, reference: float) -> dict:
+    """Entra: rule_id, max_diff, reference. Sai com o resultado de result."""
     diff = 0.0 if max_diff is None else float(max_diff)
     rule = rule_for(rule_id)
     status = "falha" if max_diff is None else evaluate(rule, diff, reference)
@@ -132,4 +137,5 @@ def _result(rule_id: str, max_diff: float | None, reference: float) -> dict:
 
 
 def _is_ambos(value: object) -> bool:
+    """Entra: value. Sai com o resultado de is ambos."""
     return str(value).strip().lower().startswith("ambos")

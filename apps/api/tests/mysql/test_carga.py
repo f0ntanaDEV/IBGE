@@ -1,6 +1,7 @@
 """Carga contra um MySQL 8. Sem TEST_MYSQL_URL o arquivo inteiro é pulado."""
 
 import json
+import logging
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -153,3 +154,49 @@ def test_rollback_do_golden(mysql_engine):
         error = connection.execute(text("SELECT error FROM etl_runs WHERE status = 'failed' ORDER BY id DESC LIMIT 1")).scalar()
     assert int(rows) == before
     assert "linhas" in (error or "")
+
+
+def test_migracao_recria_fatos_e_semeadura_recarrega(mysql_engine, monkeypatch, tmp_path, caplog):
+    """A 003 esvazia as fatos e mantém etl_runs. A semeadura recarrega a ouro pela silver."""
+    from app.core.config import get_settings
+    from app.core.startup import _run, should_seed
+    from app.repositories.schema import FACTS
+
+    frame = pd.read_parquet(AMOSTRA / "ds1.parquet")
+    refs = _refs()
+    _load(mysql_engine, frame, "original", refs)
+    with mysql_engine.begin() as connection:
+        for name in FACTS:
+            connection.execute(text(f"DROP TABLE IF EXISTS `{name}`"))
+        for name in FACTS:
+            FACTS[name].create(connection)
+        success = connection.execute(
+            text("SELECT 1 FROM etl_runs WHERE status = 'success' LIMIT 1")
+        ).first()
+    assert success is not None
+    for dataset_id in ("ds1", "ds2", "ds3", "ds4", "ds5"):
+        (tmp_path / f"{dataset_id}_x.parquet").write_bytes(b"")
+    monkeypatch.setenv("AUTO_SEED", "true")
+    monkeypatch.setenv("DATA_DIR", str(API_ROOT.parents[1] / "data"))
+    monkeypatch.setenv("SILVER_DIR", str(tmp_path))
+    get_settings.cache_clear()
+
+    def _recarrega():
+        _load(mysql_engine, frame, "original", refs)
+
+    def _etl():
+        raise AssertionError("ETL não deveria rodar")
+
+    monkeypatch.setattr("app.tools.load_mysql_from_parquet.main", _recarrega)
+    monkeypatch.setattr("app.tools.seed.seed_all", _etl)
+    try:
+        assert should_seed() is True
+        with caplog.at_level(logging.INFO, logger="app.core.startup"):
+            _run()
+        with mysql_engine.connect() as connection:
+            rows = connection.execute(text("SELECT COUNT(*) FROM ds1_populacao_idade")).scalar()
+        assert int(rows) == refs["rows"]
+        assert "semeadura: fatos vazias, recarregando a ouro" in caplog.text
+    finally:
+        get_settings.cache_clear()
+        _load(mysql_engine, frame, "original", refs)

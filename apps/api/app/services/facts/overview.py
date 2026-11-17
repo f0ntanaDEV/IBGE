@@ -5,6 +5,7 @@ from app.services.facts.models import DetailPoint, Fact
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     ds4 = territory("ds4", cod)
     ds3 = territory("ds3", cod)
     pop = cell(ds4, REF_YEAR, "pop_t")

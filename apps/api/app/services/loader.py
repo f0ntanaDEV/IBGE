@@ -76,6 +76,7 @@ def iter_parquet_batches(path, batch_size: int = BATCH) -> Callable[[], Iterator
     import pyarrow.parquet as pq
 
     def _iter() -> Iterator[pd.DataFrame]:
+        """Entra: nenhum argumento. Sai com o resultado de iter."""
         parquet = pq.ParquetFile(path)
         for batch in parquet.iter_batches(batch_size=batch_size):
             yield batch.to_pandas()
@@ -84,6 +85,7 @@ def iter_parquet_batches(path, batch_size: int = BATCH) -> Callable[[], Iterator
 
 
 def _batches(frame: Source) -> Iterator[pd.DataFrame]:
+    """Entra: frame. Sai com o resultado de batches."""
     if callable(frame):
         yield from frame()
         return
@@ -92,6 +94,7 @@ def _batches(frame: Source) -> Iterator[pd.DataFrame]:
 
 
 def _start_run(engine: Engine, dataset_id: str, source: str, report: QualityReport) -> int:
+    """Entra: engine, dataset_id, source, report. Sai com o resultado de start run."""
     from app.repositories.schema import etl_runs
 
     with engine.begin() as connection:
@@ -107,6 +110,7 @@ def _start_run(engine: Engine, dataset_id: str, source: str, report: QualityRepo
 
 
 def _finish_run(engine, dataset_id: str, source: str, report: QualityReport, status: str, rows_out: int, error: str | None) -> None:
+    """Entra: engine, dataset_id, source, report, status, rows_out, error. Sai com o resultado de finish run."""
     from app.repositories.schema import etl_runs
 
     with engine.begin() as connection:
@@ -126,6 +130,7 @@ def _finish_run(engine, dataset_id: str, source: str, report: QualityReport, sta
 
 
 def _mark_failed(engine: Engine, run_id: int, exc: Exception, report: QualityReport) -> None:
+    """Entra: engine, run_id, exc, report. Sai com o resultado de mark failed."""
     from app.repositories.schema import etl_runs
 
     with engine.begin() as connection:
@@ -164,6 +169,7 @@ def _ensure_datasets(connection) -> None:
 
 
 def _merge_territories(territories: dict, frame: pd.DataFrame) -> None:
+    """Entra: territories, frame. Sai com o resultado de merge territories."""
     if not {"cod", "sigla", "local", "nivel"} <= set(frame.columns):
         return
     grouped = frame.dropna(subset=["cod"]).groupby("cod", sort=False).first()
@@ -182,6 +188,7 @@ def _merge_territories(territories: dict, frame: pd.DataFrame) -> None:
 
 def _upsert_territories(connection, territories: dict) -> None:
     # Regiões antes das UFs: a FK regiao_cod aponta para um cod que já existe.
+    """Entra: connection, territories. Sai com o resultado de upsert territories."""
     ordered = sorted(territories.values(), key=lambda row: (int(row["cod"]) > 5, int(row["cod"])))
     if connection.dialect.name == "mysql":
         statement = text(
@@ -201,6 +208,7 @@ def _upsert_territories(connection, territories: dict) -> None:
 
 
 def _replace_metrics(connection, dataset_id: str, metrics: list[dict]) -> None:
+    """Entra: connection, dataset_id, metrics. Sai com o resultado de replace metrics."""
     connection.execute(delete(dim_metrica).where(dim_metrica.c.dataset_id == dataset_id))
     if not metrics:
         return
@@ -221,6 +229,7 @@ def _replace_metrics(connection, dataset_id: str, metrics: list[dict]) -> None:
 
 def _insert_frame(connection, table, frame: pd.DataFrame) -> int:
     # itertuples segue a ordem do frame; a tabela põe nivel antes de ano.
+    """Entra: connection, table, frame. Sai com o resultado de insert frame."""
     columns = [name for name in frame.columns if name in table.c]
     if frame.empty or not columns:
         return 0
@@ -232,16 +241,19 @@ def _insert_frame(connection, table, frame: pd.DataFrame) -> int:
 
 
 def _insert_sql(table: str, columns: list[str]) -> str:
+    """Entra: table, columns. Sai com o resultado de insert sql."""
     cols = ", ".join(f"`{col}`" for col in columns)
     vals = ", ".join(f":{col}" for col in columns)
     return f"INSERT INTO `{table}` ({cols}) VALUES ({vals})"
 
 
 def _record(values: tuple, columns: list[str]) -> dict:
+    """Entra: values, columns. Sai com o resultado de record."""
     return {name: _plain(value) for name, value in zip(columns, values, strict=True)}
 
 
 def _plain(value: object) -> object:
+    """Entra: value. Sai com o resultado de plain."""
     if value is None:
         return None
     try:

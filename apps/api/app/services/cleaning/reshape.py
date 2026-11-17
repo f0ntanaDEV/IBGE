@@ -45,6 +45,7 @@ def reshape(frame: pd.DataFrame, cfg: DatasetConfig, labels: dict[str, str]) -> 
 
 
 def _idade_inicio(value: object) -> int | None:
+    """Entra: value. Sai com o resultado de idade inicio."""
     if value is None or (isinstance(value, float) and pd.isna(value)) or pd.isna(value):
         return None
     text = str(value).strip()

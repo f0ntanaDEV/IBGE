@@ -52,6 +52,7 @@ def upload_table(host: str, token: str, table: str, folder: Path) -> None:
 
 
 def _record(engine) -> None:
+    """Entra: engine. Sai com o resultado de record."""
     from datetime import datetime
 
     from sqlalchemy import text

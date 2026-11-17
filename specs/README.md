@@ -1,6 +1,6 @@
 # Specs
 
-Desenvolvimento orientado a especificação, em 11 etapas. Cada etapa tem:
+Desenvolvimento orientado a especificação, em 12 etapas. Cada etapa tem:
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -21,5 +21,6 @@ Desenvolvimento orientado a especificação, em 11 etapas. Cada etapa tem:
 | 9 | `09-ajustes-avaliacao/` | Ajustes da avaliação de 14/11 |
 | 10 | `10-rubrica-entrega/` | Rubrica de entrega (Databricks no lugar do Power BI) |
 | 11 | `11-finalizacao-rubrica/` | Silver, restrições da ouro, EDA reproduzível e Databricks no MySQL |
+| 12 | `12-ressalvas-finais/` | Semeadura pelo conteúdo, CHECKs de taxa, repositório e acabamento da EDA |
 
 Regras transversais ficam em `.cursor/rules/`, o perfil das 5 planilhas em `DATA_PROFILE.md` e as decisões tomadas durante a implementação em `DECISIONS.md`.

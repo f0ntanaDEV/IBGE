@@ -10,6 +10,7 @@ HEAT = "Idade por ano"
 
 
 def _sum(rows: pd.DataFrame, low: int, high: int | None) -> float:
+    """Entra: rows, low, high. Sai com o resultado de sum."""
     if rows.empty:
         return 0
     ages = rows["idade"]
@@ -18,6 +19,7 @@ def _sum(rows: pd.DataFrame, low: int, high: int | None) -> float:
 
 
 def build(cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: cod, ano, sexo. Sai com o resultado de build."""
     base = people("ds1", cod, sexo)
     both_h = people("ds1", cod, "h")
     both_m = people("ds1", cod, "m")

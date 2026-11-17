@@ -60,6 +60,7 @@ def apply_filters(
     grupo: str | None = None,
     faixa: str | list[str] | None = None,
 ) -> pd.DataFrame:
+    """Entra: frame. Sai com o resultado de apply filters."""
     out = frame
     years = anos if isinstance(anos, list) else parse_int_list(anos, "anos")
     if years is not None and "ano" in out.columns:
@@ -92,6 +93,7 @@ def summary(
     cod: int | None = None,
     sexo: str | None = None,
 ) -> dict:
+    """Entra: frame, cfg. Sai com o resultado de summary."""
     metric = _main_metric(cfg, frame)
     base = frame if sexo is not None else _sexo_total(frame)
     current = apply_filters(base, ano=ano, cod=cod, sexo=sexo)
@@ -155,6 +157,7 @@ def pyramid(frame: pd.DataFrame, cfg: DatasetConfig, ano: int | None, cod: int |
 
 
 def compute_claims(frame: pd.DataFrame, cfg: DatasetConfig) -> list[dict]:
+    """Entra: frame, cfg. Sai com o resultado de compute claims."""
     results = []
     for spec in cfg.claims:
         function = CLAIMS.get(spec.id)
@@ -174,6 +177,7 @@ def compute_claims(frame: pd.DataFrame, cfg: DatasetConfig) -> list[dict]:
 
 
 def projection_2022(frame: pd.DataFrame, cod: int) -> float | None:
+    """Entra: frame, cod. Sai com o resultado de projection 2022."""
     if "pop_t" in frame.columns:
         rows = frame[(frame["cod"] == cod) & (frame["ano"] == 2022)]
         if not rows.empty:
@@ -186,6 +190,7 @@ def projection_2022(frame: pd.DataFrame, cod: int) -> float | None:
 
 
 def sexo_kind(value: object) -> str:
+    """Entra: value. Sai com o resultado de sexo kind."""
     text = str(value).strip().lower()
     if text in {"h", "homem", "homens"} or text.startswith("hom"):
         return "h"
@@ -197,18 +202,21 @@ def sexo_kind(value: object) -> str:
 
 
 def json_records(frame: pd.DataFrame) -> list[dict]:
+    """Entra: frame. Sai com o resultado de json records."""
     if frame.empty:
         return []
     return json_loads(frame)
 
 
 def json_loads(frame: pd.DataFrame) -> list[dict]:
+    """Entra: frame. Sai com o resultado de json loads."""
     import json
 
     return json.loads(frame.to_json(orient="records"))
 
 
 def _sort_pyramid(table: pd.DataFrame, frame: pd.DataFrame, cfg: DatasetConfig) -> pd.DataFrame:
+    """Entra: table, frame, cfg. Sai com o resultado de sort pyramid."""
     if table.empty:
         return table
     if cfg.id == "ds2" and "idade_inicio" in frame.columns:
@@ -221,6 +229,7 @@ def _sort_pyramid(table: pd.DataFrame, frame: pd.DataFrame, cfg: DatasetConfig) 
 
 
 def _pyramid_frame(frame: pd.DataFrame, faixa: str) -> pd.DataFrame:
+    """Entra: frame, faixa. Sai com o resultado de pyramid frame."""
     if frame.empty:
         return pd.DataFrame(columns=["faixa", "homens", "mulheres"])
     homens = frame[frame["sexo"].map(sexo_kind).eq("h")].groupby(faixa)["populacao"].sum()
@@ -230,6 +239,7 @@ def _pyramid_frame(frame: pd.DataFrame, faixa: str) -> pd.DataFrame:
 
 
 def _main_metric(cfg: DatasetConfig, frame: pd.DataFrame) -> str:
+    """Entra: cfg, frame. Sai com o resultado de main metric."""
     if cfg.metrics != "auto":
         for name in cfg.metrics:
             if name in frame.columns:
@@ -242,6 +252,7 @@ def _main_metric(cfg: DatasetConfig, frame: pd.DataFrame) -> str:
 
 
 def _aggregate(frame: pd.DataFrame, metric: str, additive: bool) -> float | None:
+    """Entra: frame, metric, additive. Sai com o resultado de aggregate."""
     if frame.empty or metric not in frame.columns or frame[metric].dropna().empty:
         return None
     if additive:
@@ -269,6 +280,7 @@ def _series(frame: pd.DataFrame, metric: str, additive: bool) -> list[dict]:
 
 
 def _rankings(frame: pd.DataFrame, metric: str, additive: bool) -> list[dict]:
+    """Entra: frame, metric, additive. Sai com o resultado de rankings."""
     if frame.empty or "nivel" not in frame.columns or metric not in frame.columns:
         return []
     ufs = frame[frame["nivel"] == "uf"]
@@ -280,18 +292,21 @@ def _rankings(frame: pd.DataFrame, metric: str, additive: bool) -> list[dict]:
 
 
 def _latest_year(frame: pd.DataFrame) -> int | None:
+    """Entra: frame. Sai com o resultado de latest year."""
     if "ano" not in frame.columns or frame.empty:
         return None
     return int(frame["ano"].max())
 
 
 def _reference_year(frame: pd.DataFrame) -> int:
+    """Entra: frame. Sai com o resultado de reference year."""
     current = date.today().year
     years = {int(year) for year in frame["ano"].dropna().unique()}
     return current if current in years else max(years)
 
 
 def _claim_pico(frame: pd.DataFrame) -> dict:
+    """Entra: frame. Sai com o resultado de claim pico."""
     ambos = frame[(frame["cod"] == 0) & frame["sexo"].map(sexo_kind).eq("t")]
     totals = ambos.groupby("ano")["populacao"].sum()
     year = int(totals.idxmax())
@@ -299,6 +314,7 @@ def _claim_pico(frame: pd.DataFrame) -> dict:
 
 
 def _claim_idosos(frame: pd.DataFrame) -> dict:
+    """Entra: frame. Sai com o resultado de claim idosos."""
     brasil = frame[frame["cod"] == 0]
     crossed = brasil[brasil["n_60_mais_t"] > brasil["n_0_14_t"]]
     if crossed.empty:
@@ -307,6 +323,7 @@ def _claim_idosos(frame: pd.DataFrame) -> dict:
 
 
 def _claim_tft(frame: pd.DataFrame) -> dict:
+    """Entra: frame. Sai com o resultado de claim tft."""
     year = _reference_year(frame)
     row = frame[(frame["cod"] == 0) & (frame["ano"] == year)].iloc[0]
     value = float(row["tft"])
@@ -314,12 +331,14 @@ def _claim_tft(frame: pd.DataFrame) -> dict:
 
 
 def _claim_e0(frame: pd.DataFrame) -> dict:
+    """Entra: frame. Sai com o resultado de claim e0."""
     year = _reference_year(frame)
     row = frame[(frame["cod"] == 0) & (frame["ano"] == year)].iloc[0]
     return {"value": float(row["e0_t"]), "detail": {"ano": year}}
 
 
 def _label(metric: str) -> str:
+    """Entra: metric. Sai com o resultado de label."""
     labels = {
         "populacao": "População",
         "pop_t": "População total",
@@ -341,6 +360,7 @@ def _kpi_value(metric: str, value: float | None) -> tuple[float | None, str]:
 
 
 def _unit(metric: str) -> str:
+    """Entra: metric. Sai com o resultado de unit."""
     if metric in {"populacao", "pop_t"}:
         return "pessoas"
     if metric == "tft":
@@ -423,6 +443,7 @@ def milestones(frames: dict[str, pd.DataFrame], cod: int) -> dict:
 
 
 def _require_metric(frame: pd.DataFrame, metric: str) -> None:
+    """Entra: frame, metric. Sai com o resultado de require metric."""
     if metric not in frame.columns:
         raise AppError("invalid_metric", f"Métrica inexistente: {metric}", 422, {"metric": metric})
 
@@ -433,6 +454,7 @@ def _headline(base: pd.DataFrame, cfg: DatasetConfig, year: int | None, cod: int
         future = min(int(year) + 14, 2070)
 
         def share(target: int) -> float | None:
+            """Entra: target. Sai com o resultado de share."""
             rows = apply_filters(base, ano=target, cod=cod)
             total = float(rows["populacao"].sum()) if not rows.empty else 0.0
             if total <= 0:
@@ -460,6 +482,7 @@ def _headline(base: pd.DataFrame, cfg: DatasetConfig, year: int | None, cod: int
 
 
 def _sexo_total(frame: pd.DataFrame) -> pd.DataFrame:
+    """Entra: frame. Sai com o resultado de sexo total."""
     if "sexo" not in frame.columns:
         return frame
     kinds = frame["sexo"].map(sexo_kind)
@@ -469,6 +492,7 @@ def _sexo_total(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def _uf_metric(frame: pd.DataFrame, metric: str, ano: int) -> pd.DataFrame:
+    """Entra: frame, metric, ano. Sai com o resultado de uf metric."""
     scoped = _sexo_total(apply_filters(frame, ano=ano, nivel="uf"))
     if scoped.empty:
         return pd.DataFrame(columns=["cod", "sigla", "local", "valor"])
@@ -478,6 +502,7 @@ def _uf_metric(frame: pd.DataFrame, metric: str, ano: int) -> pd.DataFrame:
 
 
 def _filter_faixa(frame: pd.DataFrame, bands: list[str]) -> pd.DataFrame:
+    """Entra: frame, bands. Sai com o resultado de filter faixa."""
     if "idade" in frame.columns and "grupo_etario" not in frame.columns:
         mask = pd.Series(False, index=frame.index)
         ages = pd.to_numeric(frame["idade"], errors="coerce")
@@ -492,6 +517,7 @@ def _filter_faixa(frame: pd.DataFrame, bands: list[str]) -> pd.DataFrame:
 
 
 def _faixa_bounds(band: str) -> tuple[int, int]:
+    """Entra: band. Sai com o resultado de faixa bounds."""
     if band.endswith("+"):
         return int(band[:-1]), 200
     if "-" in band:
@@ -502,6 +528,7 @@ def _faixa_bounds(band: str) -> tuple[int, int]:
 
 
 def _grupo_na_faixa(label: object, bands: list[str]) -> bool:
+    """Entra: label, bands. Sai com o resultado de grupo na faixa."""
     text = str(label)
     numbers = [int(item) for item in re.findall(r"\d+", text)]
     if not numbers:
@@ -512,6 +539,7 @@ def _grupo_na_faixa(label: object, bands: list[str]) -> bool:
 
 
 def _peak(frames: dict[str, pd.DataFrame], cod: int) -> dict:
+    """Entra: frames, cod. Sai com o resultado de peak."""
     ds1 = frames.get("ds1")
     if ds1 is not None and "populacao" in ds1.columns:
         scoped = _sexo_total(ds1[ds1["cod"] == cod])
@@ -533,6 +561,7 @@ def _peak(frames: dict[str, pd.DataFrame], cod: int) -> dict:
 
 
 def _crossing(frame: pd.DataFrame | None, cod: int) -> dict:
+    """Entra: frame, cod. Sai com o resultado de crossing."""
     if frame is None or "n_60_mais_t" not in frame.columns or "n_0_14_t" not in frame.columns:
         return {"ano": None}
     scoped = frame[frame["cod"] == cod]
@@ -543,6 +572,7 @@ def _crossing(frame: pd.DataFrame | None, cod: int) -> dict:
 
 
 def _first_year(frame: pd.DataFrame | None, cod: int, metric: str, predicate, limiar: float) -> dict:
+    """Entra: frame, cod, metric, predicate, limiar. Sai com o resultado de first year."""
     if frame is None or metric not in frame.columns:
         return {"ano": None, "limiar": limiar}
     scoped = frame[frame["cod"] == cod].dropna(subset=[metric])
@@ -553,6 +583,7 @@ def _first_year(frame: pd.DataFrame | None, cod: int, metric: str, predicate, li
 
 
 def _births_below_deaths(frame: pd.DataFrame | None, cod: int) -> dict:
+    """Entra: frame, cod. Sai com o resultado de births below deaths."""
     if frame is None or "nasc_t" not in frame.columns or "obt_t" not in frame.columns:
         return {"ano": None}
     scoped = frame[frame["cod"] == cod].dropna(subset=["nasc_t", "obt_t"])
@@ -563,6 +594,7 @@ def _births_below_deaths(frame: pd.DataFrame | None, cod: int) -> dict:
 
 
 def _bonus(frame: pd.DataFrame | None, cod: int) -> dict:
+    """Entra: frame, cod. Sai com o resultado de bonus."""
     empty = {"limiar": BONUS_RDT_PER_100, "ano_inicio": None, "ano_fim": None, "ponto_virada": None, "rdt65_min": None}
     if frame is None or "rdt65" not in frame.columns:
         return empty

@@ -67,6 +67,7 @@ def apply_outliers(
 
 
 def _join_reasons(left: object, right: object) -> object:
+    """Entra: left, right. Sai com o resultado de join reasons."""
     if pd.isna(left):
         return right
     if pd.isna(right):
@@ -131,6 +132,7 @@ def _level_jump(work: pd.DataFrame, reference: pd.DataFrame, series: list[str]) 
 
 
 def _domain_flags(frame: pd.DataFrame, cfg: DatasetConfig, col: str) -> pd.Series:
+    """Entra: frame, cfg, col. Sai com o resultado de domain flags."""
     flagged = pd.Series(False, index=frame.index)
     rules = set(cfg.domain_rules)
     if col == "nqx" and "0 <= nqx <= 1" in rules:
@@ -147,6 +149,7 @@ def _domain_flags(frame: pd.DataFrame, cfg: DatasetConfig, col: str) -> pd.Serie
 
 
 def _cap(frame: pd.DataFrame, col: str, series: list[str], flagged: pd.Series) -> pd.Series:
+    """Entra: frame, col, series, flagged. Sai com o resultado de cap."""
     sort_by = series + (["ano"] if "ano" in frame.columns else [])
     ordered = frame.sort_values(sort_by, kind="mergesort") if sort_by else frame
     masked = ordered[col].mask(flagged.reindex(ordered.index).fillna(False))

@@ -18,6 +18,7 @@ _cache: dict[tuple[str, int, float], list[Fact]] = {}
 
 
 def cache_token() -> float:
+    """Entra: nenhum argumento. Sai com o resultado de cache token."""
     stamps = []
     current = store()
     for dataset_id in ("ds1", "ds2", "ds3", "ds4", "ds5"):
@@ -31,6 +32,7 @@ def cache_token() -> float:
 
 
 def facts_for(page: str, cod: int) -> list[Fact]:
+    """Entra: page, cod. Sai com o resultado de facts for."""
     key = (page, 0 if page == "quality" else cod, cache_token())
     cached = _cache.get(key)
     if cached is not None:

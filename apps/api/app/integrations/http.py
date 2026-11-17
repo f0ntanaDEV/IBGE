@@ -18,6 +18,7 @@ def fetch_json(
     timeout: float | None = None,
     retries: int | None = None,
 ) -> tuple[object | None, bool]:
+    """Entra: url, settings, cache, client, sleep, timeout, retries. Sai com o resultado de fetch json."""
     cached = cache.fresh(url)
     if cached is not None:
         return cached, True

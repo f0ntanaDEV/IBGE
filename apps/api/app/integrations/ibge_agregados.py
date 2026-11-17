@@ -15,12 +15,14 @@ NOTA = "A projeção corrige a subenumeração do Censo."
 
 
 def load_reference() -> dict | None:
+    """Entra: nenhum argumento. Sai com o resultado de load reference."""
     if not REFERENCE_PATH.exists():
         return None
     return json.loads(REFERENCE_PATH.read_text(encoding="utf-8"))
 
 
 def save_reference(payload: dict) -> None:
+    """Entra: payload. Sai com o resultado de save reference."""
     REFERENCE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
@@ -74,6 +76,7 @@ def discover_censo(client: httpx.Client) -> dict:
 
 
 def localidade(cod: int) -> str:
+    """Entra: cod. Sai com o resultado de localidade."""
     if cod == 0:
         return "N1[1]"
     if 1 <= cod <= 5:
@@ -88,10 +91,12 @@ PROJECTION_2022 = 210_862_983
 
 
 def censo_cache_path(settings: Settings) -> Path:
+    """Entra: settings. Sai com o resultado de censo cache path."""
     return settings.data_dir / "cache" / "censo2022.json"
 
 
 def read_censo_cache(settings: Settings) -> dict[str, int] | None:
+    """Entra: settings. Sai com o resultado de read censo cache."""
     path = censo_cache_path(settings)
     if not path.exists():
         return None
@@ -102,6 +107,7 @@ def read_censo_cache(settings: Settings) -> dict[str, int] | None:
 
 
 def write_censo_cache(settings: Settings, values: dict[str, int]) -> None:
+    """Entra: settings, values. Sai com o resultado de write censo cache."""
     path = censo_cache_path(settings)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(values, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -129,6 +135,7 @@ def confirm_censo_metadata(client: httpx.Client) -> bool:
 
 
 def _populations(payload: object, fallback_cod: int | None = None) -> dict[str, int]:
+    """Entra: payload, fallback_cod. Sai com o resultado de populations."""
     if not isinstance(payload, list):
         return {}
     found: dict[str, int] = {}
@@ -190,6 +197,7 @@ def censo_population(
     cache: ResponseCache,
     client: httpx.Client | None = None,
 ) -> dict:
+    """Entra: cod, settings, cache, client. Sai com o resultado de censo population."""
     value = get_censo_2022(cod, settings, cache, client)
     if value is None:
         return {"available": False, "projecao": None, "censo": None, "diff_pct": None, "nota": NOTA}
@@ -197,6 +205,7 @@ def censo_population(
 
 
 def _population(payload: object) -> float | None:
+    """Entra: payload. Sai com o resultado de population."""
     if not isinstance(payload, list) or not payload:
         return None
     resultados = payload[0].get("resultados") or []

@@ -12,12 +12,14 @@ Status = Literal["good", "warn", "bad"]
 
 
 class Band(BaseModel):
+    """Band."""
     gt: float | None = None
     gte: float | None = None
     lt: float | None = None
     lte: float | None = None
 
     def holds(self, value: float) -> bool:
+        """Entra: value. Sai com o resultado de holds."""
         if self.gt is not None and not value > self.gt:
             return False
         if self.gte is not None and not value >= self.gte:
@@ -30,6 +32,7 @@ class Band(BaseModel):
 
 
 class KpiRule(BaseModel):
+    """KpiRule."""
     id: str
     metric_id: str
     basis: Literal["value", "yoy_pct", "vs_brazil", "delta10_pp", "delta10_rel", "pct_rows"]
@@ -41,11 +44,13 @@ class KpiRule(BaseModel):
 
 @lru_cache
 def load_rules() -> tuple[KpiRule, ...]:
+    """Entra: nenhum argumento. Sai com o resultado de load rules."""
     raw = yaml.safe_load(PATH.read_text(encoding="utf-8"))
     return tuple(KpiRule.model_validate(item) for item in raw)
 
 
 def rule_by_id(rule_id: str) -> KpiRule:
+    """Entra: rule_id. Sai com o resultado de rule by id."""
     found = next((item for item in load_rules() if item.id == rule_id), None)
     if found is None:
         raise KeyError(rule_id)
@@ -53,6 +58,7 @@ def rule_by_id(rule_id: str) -> KpiRule:
 
 
 def basis_value(rule: KpiRule, ctx: dict) -> float:
+    """Entra: rule, ctx. Sai com o resultado de basis value."""
     if rule.basis == "yoy_pct":
         return float(ctx["yoy_pct"])
     if rule.basis == "vs_brazil":
@@ -67,7 +73,9 @@ def basis_value(rule: KpiRule, ctx: dict) -> float:
 
 
 def evaluate(rule_id: str, ctx: dict) -> dict:
+    """Entra: rule_id, ctx. Sai com o resultado de evaluate."""
     rule = rule_by_id(rule_id)
     basis = basis_value(rule, ctx)
+    # good vence warn, e warn vence bad: a primeira faixa que contém a base define o status.
     status: Status = "good" if rule.good.holds(basis) else "warn" if rule.warn.holds(basis) else "bad"
     return {"status": status, "basis": basis}

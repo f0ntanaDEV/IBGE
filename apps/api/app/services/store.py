@@ -14,11 +14,14 @@ _lock = threading.Lock()
 
 
 class ParquetStore:
+    """ParquetStore."""
     def __init__(self, processed_dir: Path) -> None:
+        """Entra: processed_dir. Sai com o resultado de init  ."""
         self.processed_dir = processed_dir
         self._frames: dict[str, pd.DataFrame] = {}
 
     def put(self, dataset_id: str, frame: pd.DataFrame) -> None:
+        """Entra: dataset_id, frame. Sai com o resultado de put."""
         self._frames[dataset_id] = frame
         path = self.latest_file(dataset_id, ".parquet")
         if path is None:
@@ -29,6 +32,7 @@ class ParquetStore:
             _shared[key] = (*_stamp(path), frame)
 
     def latest_file(self, dataset_id: str, suffix: str) -> Path | None:
+        """Entra: dataset_id, suffix. Sai com o resultado de latest file."""
         files = sorted(self.processed_dir.glob(f"{dataset_id}_*{suffix}"))
         plain = self.processed_dir / f"{dataset_id}{suffix}"
         if plain.exists():
@@ -38,6 +42,7 @@ class ParquetStore:
         return chosen[-1] if chosen else None
 
     def get(self, dataset_id: str) -> pd.DataFrame:
+        """Entra: dataset_id. Sai com o resultado de get."""
         cached = self._frames.get(dataset_id)
         if cached is not None:
             return cached
@@ -58,6 +63,7 @@ class ParquetStore:
 
 
 def _report_source(path: Path) -> str:
+    """Entra: path. Sai com o resultado de report source."""
     report = path.with_name(f"{path.stem}.report.json")
     if not report.exists():
         return "original"
@@ -71,11 +77,13 @@ def _report_source(path: Path) -> str:
 
 
 def _stamp(path: Path) -> tuple[int, int]:
+    """Entra: path. Sai com o resultado de stamp."""
     stat = path.stat()
     return stat.st_mtime_ns, stat.st_size
 
 
 def _forget_other(dataset_id: str, key: str) -> None:
+    """Entra: dataset_id, key. Sai com o resultado de forget other."""
     prefix = f"{dataset_id}_"
     for old in list(_shared):
         if old != key and Path(old).name.startswith(prefix):
@@ -83,6 +91,7 @@ def _forget_other(dataset_id: str, key: str) -> None:
 
 
 def _shared_frame(key: str, path: Path) -> pd.DataFrame | None:
+    """Entra: key, path. Sai com o resultado de shared frame."""
     found = _shared.get(key)
     if found is None or found[:2] != _stamp(path):
         return None

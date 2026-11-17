@@ -7,6 +7,7 @@ from app.services.facts.models import DetailPoint, Fact, FactPart
 
 
 def _row(data: pd.DataFrame, year: int, age: int) -> pd.Series | None:
+    """Entra: data, year, age. Sai com o resultado de row."""
     rows = data[(data["ano"] == year) & (data["idade"] == age)]
     if rows.empty:
         return None
@@ -14,6 +15,7 @@ def _row(data: pd.DataFrame, year: int, age: int) -> pd.Series | None:
 
 
 def _ex(data: pd.DataFrame, year: int, age: int) -> float | None:
+    """Entra: data, year, age. Sai com o resultado de ex."""
     row = _row(data, year, age)
     if row is None or pd.isna(row["ex"]):
         return None
@@ -21,6 +23,7 @@ def _ex(data: pd.DataFrame, year: int, age: int) -> float | None:
 
 
 def _lx(data: pd.DataFrame, year: int, age: int) -> float | None:
+    """Entra: data, year, age. Sai com o resultado de lx."""
     row = _row(data, year, age)
     if row is None or pd.isna(row["lx"]):
         return None
@@ -28,6 +31,7 @@ def _lx(data: pd.DataFrame, year: int, age: int) -> float | None:
 
 
 def _q(data: pd.DataFrame, year: int, age: int) -> float | None:
+    """Entra: data, year, age. Sai com o resultado de q."""
     row = _row(data, year, age)
     if row is None or pd.isna(row["nqx"]):
         return None
@@ -35,6 +39,7 @@ def _q(data: pd.DataFrame, year: int, age: int) -> float | None:
 
 
 def build(cod: int) -> list[Fact]:
+    """Entra: cod. Sai com o resultado de build."""
     base = total_sex(territory("ds5", cod))
     men = sex(territory("ds5", cod), "h")
     women = sex(territory("ds5", cod), "m")

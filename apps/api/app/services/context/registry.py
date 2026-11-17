@@ -22,6 +22,7 @@ _static: dict[tuple[str, int], dict[str, list]] = {}
 
 
 def context_for(page: str, cod: int, ano: int, sexo: str) -> list[ContextItem]:
+    """Entra: page, cod, ano, sexo. Sai com o resultado de context for."""
     kind = sex_code(sexo)
     if kind == "t":
         warmed = _warmed(page, int(ano), int(cod))
@@ -39,6 +40,7 @@ def context_for(page: str, cod: int, ano: int, sexo: str) -> list[ContextItem]:
 
 
 def _warmed(page: str, ano: int, cod: int) -> list[ContextItem] | None:
+    """Entra: page, ano, cod. Sai com o resultado de warmed."""
     bucket = _static.get((page, ano))
     if bucket is None:
         path = get_settings().data_dir / "cache" / "context" / f"{page}_{ano}.json"

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class ValidationResult(BaseModel):
+    """ValidationResult."""
     rule: str
     ok: bool
     max_diff: float | None = None
@@ -15,6 +16,7 @@ class ValidationResult(BaseModel):
 
 
 class QualityReport(BaseModel):
+    """QualityReport."""
     dataset_id: str
     source: str
     rows_before: int

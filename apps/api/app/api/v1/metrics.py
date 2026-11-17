@@ -9,4 +9,5 @@ router = APIRouter(prefix="/metrics", tags=["metrics"])
 
 @router.get("")
 def read_metrics() -> list[dict]:
+    """GET . Parâmetros: nenhum argumento."""
     return [item.model_dump() for item in load_metricas()]

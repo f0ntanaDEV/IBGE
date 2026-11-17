@@ -11,6 +11,7 @@ router = APIRouter(tags=["facts"])
 
 @router.get("/facts", response_model=list[Fact])
 def facts(page: str = Query(...), cod: int = Query(0, ge=0)) -> list[Fact]:
+    """GET /facts. Parâmetros: page, cod."""
     if page not in PAGES:
         raise AppError("invalid_page", "Página de fatos desconhecida", 422, {"page": page})
     if page != "quality" and cod not in range(6):

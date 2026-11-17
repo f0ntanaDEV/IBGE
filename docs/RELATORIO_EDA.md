@@ -22,11 +22,15 @@ População por idade no Brasil em 2026 (sexo Ambos, 91 idades): média 2.353.97
 
 ### A população ainda cresce? Até quando?
 
-Sim, até **2041**. Nesse ano o Brasil chega a **220.425.299** pessoas e em **2070** a projeção é **199.228.708**. A série vai de 2000 a 2070. Gráfico: `docs/eda/populacao_2000_2070.png`.
+Sim, até **2041**. Nesse ano o Brasil chega a **220.425.299** pessoas e em **2070** a projeção é **199.228.708**. Em **2042** os óbitos superam os nascimentos. A série vai de 2000 a 2070.
+
+![População do Brasil, 2000–2070](eda/populacao_2000_2070.png)
 
 ### Como a idade muda e onde estará a demanda?
 
-Em 2026, **17,07%** da população do Brasil tem 60 anos ou mais e **19,17%** tem 0–14. A idade mediana entre as UFs tem mediana **35,04** anos (mínimo 28,08, máximo 39,12). A demanda se desloca para adultos e idosos. Gráfico: `docs/eda/piramide_2026_2070.png`.
+Em 2026, **17,07%** da população do Brasil tem 60 anos ou mais e **19,17%** tem 0–14. A idade mediana entre as UFs tem mediana **35,04** anos (mínimo 28,08, máximo 39,12). A demanda se desloca para adultos e idosos.
+
+![Pirâmide etária do Brasil, 2026 e 2070](eda/piramide_2026_2070.png)
 
 ### Quais faixas crescem e quais encolhem até 2070?
 
@@ -34,11 +38,17 @@ Do Brasil em 2026 até 2070, o grupo **90+** cresce **575,95%** (de 814.288 para
 
 ### Quando os idosos superam as crianças?
 
-Em **2029** a população de 60 anos ou mais supera a de 0–14 no Brasil. Gráfico de apoio: `docs/eda/populacao_2000_2070.png`.
+Em **2029** a população de 60 anos ou mais supera a de 0–14 no Brasil. O gráfico de apoio é o da série 2000–2070.
 
 ### Em que ritmo se vive mais e se tem menos filhos?
 
-A e0 do Brasil passa de **71,10** anos em 2000 para **77,03** em 2026. A TFT passa de **2,32** para **1,51** filho por mulher, abaixo da reposição de 2,10. A TMI cai de **28,13** para **11,83** por mil. Nas UFs em 2026 a e0 vai de 74,84 a 80,03 (histograma `docs/eda/histograma_e0_2026.png`) e a TFT por região está em `docs/eda/boxplot_tft_regiao.png`. A correlação de Pearson entre e0 e TFT nas 27 UFs é **-0,63** (`docs/eda/dispersao_e0_tft.png`).
+A e0 do Brasil passa de **71,10** anos em 2000 para **77,03** em 2026. A TFT passa de **2,32** para **1,51** filho por mulher, abaixo da reposição de 2,10. A TMI cai de **28,13** para **11,83** por mil. Nas UFs em 2026 a e0 vai de 74,84 a 80,03 e a correlação de Pearson entre e0 e TFT nas 27 UFs é **-0,63**.
+
+![Histograma da esperança de vida nas UFs, 2026](eda/histograma_e0_2026.png)
+
+![TFT por região, 2026](eda/boxplot_tft_regiao.png)
+
+![Dispersão de e0 e TFT nas UFs, 2026](eda/dispersao_e0_tft.png)
 
 | Região em 2026 | População | e0 | TFT | IE60 |
 |---|---:|---:|---:|---:|
@@ -50,7 +60,7 @@ A e0 do Brasil passa de **71,10** anos em 2000 para **77,03** em 2026. A TFT pas
 
 ### Quantos chegam a cada idade?
 
-A tábua tem 20 idades. O `nqx`, com 2 casas, vai de **0,00** a **1,00** (o intervalo aberto). Em 2022, aos 0 anos, a esperança de vida no Brasil é **75,45** para ambos os sexos, **72,11** para homens e **78,79** para mulheres. Entre as UFs em 2026, o `nqx` tem mediana **0,02**.
+A tábua tem 20 idades. O `nqx`, com 2 casas, vai de **0,00** a **1,00** (o intervalo aberto). Em 2022, aos 0 anos, a esperança de vida no Brasil é **75,45** para ambos os sexos, **72,11** para homens e **78,79** para mulheres. Entre as UFs em 2026, sexo Ambos, o `nqx` aos 0 anos tem média **0,01**, mediana **0,01**, mínimo **0,01** e máximo **0,02**. Aos 60 anos, a média é **0,05**, a mediana **0,05**, o mínimo **0,04** e o máximo **0,06**.
 
 ## Limitações
 

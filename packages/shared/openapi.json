@@ -11,6 +11,7 @@
           "health"
         ],
         "summary": "Health",
+        "description": "GET /health. Sem parâmetros. mysql: carregando, down, vazio ou ok, nessa ordem.",
         "operationId": "health_api_v1_health_get",
         "responses": {
           "200": {
@@ -32,6 +33,7 @@
           "territories"
         ],
         "summary": "Territories",
+        "description": "O cadastro padrão completa o banco. Assim o Brasil permanece se o MySQL o perdeu.",
         "operationId": "territories_api_v1_territories_get",
         "responses": {
           "200": {
@@ -58,6 +60,7 @@
           "datasets"
         ],
         "summary": "List Datasets",
+        "description": "GET . Parâmetros: nenhum argumento.",
         "operationId": "list_datasets_api_v1_datasets_get",
         "responses": {
           "200": {
@@ -84,6 +87,7 @@
           "datasets"
         ],
         "summary": "Metrics",
+        "description": "GET /{dataset_id}/metrics. Parâmetros: dataset_id.",
         "operationId": "metrics_api_v1_datasets__dataset_id__metrics_get",
         "parameters": [
           {
@@ -131,6 +135,7 @@
           "datasets"
         ],
         "summary": "Upload",
+        "description": "POST /{dataset_id}/upload. Parâmetros: dataset_id, file.",
         "operationId": "upload_api_v1_datasets__dataset_id__upload_post",
         "parameters": [
           {
@@ -185,6 +190,7 @@
           "datasets"
         ],
         "summary": "Process",
+        "description": "POST /{dataset_id}/process. Parâmetros: dataset_id, body.",
         "operationId": "process_api_v1_datasets__dataset_id__process_post",
         "parameters": [
           {
@@ -239,6 +245,7 @@
           "datasets"
         ],
         "summary": "Quality Report",
+        "description": "GET /{dataset_id}/quality-report. Parâmetros: dataset_id, source.",
         "operationId": "quality_report_api_v1_datasets__dataset_id__quality_report_get",
         "parameters": [
           {
@@ -271,15 +278,57 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/QualityReport"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "title": "Response Quality Report Api V1 Datasets  Dataset Id  Quality Report Get"
+                  "$ref": "#/components/schemas/QualityReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/datasets/validations": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "Validations",
+        "description": "GET /validations. Parâmetros: source.",
+        "operationId": "validations_api_v1_datasets_validations_get",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "original",
+                "sujo"
+              ],
+              "type": "string",
+              "default": "original",
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Validations Api V1 Datasets Validations Get"
                 }
               }
             }
@@ -303,6 +352,7 @@
           "datasets"
         ],
         "summary": "Runs",
+        "description": "GET /{dataset_id}/runs. Parâmetros: dataset_id, source.",
         "operationId": "runs_api_v1_datasets__dataset_id__runs_get",
         "parameters": [
           {
@@ -312,6 +362,27 @@
             "schema": {
               "type": "string",
               "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "original",
+                    "sujo",
+                    "upload"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
             }
           }
         ],
@@ -350,6 +421,7 @@
           "datasets"
         ],
         "summary": "Data",
+        "description": "GET /{dataset_id}/data. Parâmetros: dataset_id, page, page_size, ano, anos, cod, faixa, nivel, sexo, idade, grupo, sort, desc.",
         "operationId": "data_api_v1_datasets__dataset_id__data_get",
         "parameters": [
           {
@@ -571,6 +643,7 @@
           "datasets"
         ],
         "summary": "Dataset Summary",
+        "description": "GET /{dataset_id}/summary. Parâmetros: dataset_id, ano, cod, sexo.",
         "operationId": "dataset_summary_api_v1_datasets__dataset_id__summary_get",
         "parameters": [
           {
@@ -664,6 +737,7 @@
           "datasets"
         ],
         "summary": "Dataset Pyramid",
+        "description": "GET /{dataset_id}/pyramid. Parâmetros: dataset_id, ano, cod, compare_ano.",
         "operationId": "dataset_pyramid_api_v1_datasets__dataset_id__pyramid_get",
         "parameters": [
           {
@@ -760,6 +834,7 @@
           "datasets"
         ],
         "summary": "Dataset Map",
+        "description": "GET /{dataset_id}/map. Parâmetros: dataset_id, metric, ano.",
         "operationId": "dataset_map_api_v1_datasets__dataset_id__map_get",
         "parameters": [
           {
@@ -822,6 +897,7 @@
           "datasets"
         ],
         "summary": "Dataset Heatmap",
+        "description": "GET /{dataset_id}/heatmap. Parâmetros: dataset_id, cod, sexo.",
         "operationId": "dataset_heatmap_api_v1_datasets__dataset_id__heatmap_get",
         "parameters": [
           {
@@ -899,6 +975,7 @@
           "datasets"
         ],
         "summary": "Dataset Scatter",
+        "description": "GET /{dataset_id}/scatter. Parâmetros: dataset_id, anos.",
         "operationId": "dataset_scatter_api_v1_datasets__dataset_id__scatter_get",
         "parameters": [
           {
@@ -959,6 +1036,7 @@
           "datasets"
         ],
         "summary": "Dataset Slope",
+        "description": "GET /{dataset_id}/slope. Parâmetros: dataset_id, metric, ano_a, ano_b.",
         "operationId": "dataset_slope_api_v1_datasets__dataset_id__slope_get",
         "parameters": [
           {
@@ -1030,6 +1108,7 @@
           "datasets"
         ],
         "summary": "Claims",
+        "description": "GET /{dataset_id}/claims. Parâmetros: dataset_id.",
         "operationId": "claims_api_v1_datasets__dataset_id__claims_get",
         "parameters": [
           {
@@ -1077,6 +1156,7 @@
           "datasets"
         ],
         "summary": "News",
+        "description": "GET /{dataset_id}/news. Parâmetros: dataset_id.",
         "operationId": "news_api_v1_datasets__dataset_id__news_get",
         "parameters": [
           {
@@ -1121,6 +1201,7 @@
           "datasets"
         ],
         "summary": "Download",
+        "description": "GET /{dataset_id}/download. Parâmetros: dataset_id, format.",
         "operationId": "download_api_v1_datasets__dataset_id__download_get",
         "parameters": [
           {
@@ -1172,6 +1253,7 @@
           "milestones"
         ],
         "summary": "Dataset Milestones",
+        "description": "GET /milestones. Parâmetros: cod.",
         "operationId": "dataset_milestones_api_v1_milestones_get",
         "parameters": [
           {
@@ -1224,6 +1306,7 @@
           "reference"
         ],
         "summary": "Censo",
+        "description": "GET /reference/censo-2022. Parâmetros: cod.",
         "operationId": "censo_api_v1_reference_censo_2022_get",
         "parameters": [
           {
@@ -1276,6 +1359,7 @@
           "facts"
         ],
         "summary": "Facts",
+        "description": "GET /facts. Parâmetros: page, cod.",
         "operationId": "facts_api_v1_facts_get",
         "parameters": [
           {
@@ -1320,6 +1404,138 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/context": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Read Context",
+        "description": "GET . Parâmetros: page, cod, ano, sexo.",
+        "operationId": "read_context_api_v1_context_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Page"
+            }
+          },
+          {
+            "name": "cod",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 53,
+              "minimum": 0,
+              "default": 0,
+              "title": "Cod"
+            }
+          },
+          {
+            "name": "ano",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2070,
+              "minimum": 2000,
+              "default": 2026,
+              "title": "Ano"
+            }
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "T",
+              "title": "Sexo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContextItem"
+                  },
+                  "title": "Response Read Context Api V1 Context Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Read Metrics",
+        "description": "GET . Parâmetros: nenhum argumento.",
+        "operationId": "read_metrics_api_v1_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Read Metrics Api V1 Metrics Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/databricks/embed": {
+      "get": {
+        "tags": [
+          "databricks"
+        ],
+        "summary": "Databricks Embed",
+        "description": "GET /databricks/embed. Parâmetros: nenhum argumento.",
+        "operationId": "databricks_embed_api_v1_databricks_embed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Databricks Embed Api V1 Databricks Embed Get"
                 }
               }
             }
@@ -1392,7 +1608,93 @@
           }
         },
         "type": "object",
-        "title": "CleaningIn"
+        "title": "CleaningIn",
+        "description": "CleaningIn."
+      },
+      "ContextItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "count",
+              "percent",
+              "permil",
+              "years",
+              "rate",
+              "index",
+              "year",
+              "raw",
+              "ratio"
+            ],
+            "title": "Kind"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "note_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/NoteValue"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Values"
+          },
+          "chart_id": {
+            "type": "string",
+            "title": "Chart Id"
+          },
+          "chart_label": {
+            "type": "string",
+            "title": "Chart Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "kind",
+          "chart_id",
+          "chart_label"
+        ],
+        "title": "ContextItem",
+        "description": "ContextItem."
       },
       "DetailPoint": {
         "properties": {
@@ -1424,6 +1726,17 @@
               "raw"
             ],
             "title": "Kind"
+          },
+          "rotulo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rotulo"
           }
         },
         "type": "object",
@@ -1432,7 +1745,8 @@
           "valor",
           "kind"
         ],
-        "title": "DetailPoint"
+        "title": "DetailPoint",
+        "description": "DetailPoint."
       },
       "DuplicatesReport": {
         "properties": {
@@ -1450,7 +1764,8 @@
           "exact",
           "by_key"
         ],
-        "title": "DuplicatesReport"
+        "title": "DuplicatesReport",
+        "description": "DuplicatesReport."
       },
       "Fact": {
         "properties": {
@@ -1515,6 +1830,14 @@
             ],
             "title": "Detail Values"
           },
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/FactPart"
+            },
+            "type": "array",
+            "title": "Parts",
+            "default": []
+          },
           "reference_year": {
             "anyOf": [
               {
@@ -1525,6 +1848,22 @@
               }
             ],
             "title": "Reference Year"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "warn",
+                  "bad"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
           }
         },
         "type": "object",
@@ -1534,7 +1873,67 @@
           "value",
           "kind"
         ],
-        "title": "Fact"
+        "title": "Fact",
+        "description": "Fact."
+      },
+      "FactPart": {
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "count",
+              "percent",
+              "permil",
+              "years",
+              "rate",
+              "index",
+              "year",
+              "raw"
+            ],
+            "title": "Kind"
+          },
+          "position": {
+            "type": "string",
+            "enum": [
+              "prefix",
+              "suffix"
+            ],
+            "title": "Position",
+            "default": "prefix"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "kind"
+        ],
+        "title": "FactPart",
+        "description": "FactPart."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1557,6 +1956,12 @@
           },
           "mysql": {
             "type": "string",
+            "enum": [
+              "ok",
+              "vazio",
+              "carregando",
+              "down"
+            ],
             "title": "Mysql"
           },
           "mysql_required": {
@@ -1577,6 +1982,143 @@
         ],
         "title": "HealthOut",
         "description": "Estado da API, do MySQL e da semeadura."
+      },
+      "Manifest": {
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "title": "Dataset"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At"
+          },
+          "rows_original": {
+            "type": "integer",
+            "title": "Rows Original"
+          },
+          "nulls_injected": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Nulls Injected"
+          },
+          "exact_duplicates": {
+            "type": "integer",
+            "title": "Exact Duplicates"
+          },
+          "key_duplicates": {
+            "type": "integer",
+            "title": "Key Duplicates"
+          },
+          "outliers": {
+            "$ref": "#/components/schemas/ManifestOutliers"
+          },
+          "whitespace_cells": {
+            "type": "integer",
+            "title": "Whitespace Cells"
+          },
+          "recoverable_ids": {
+            "type": "integer",
+            "title": "Recoverable Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset",
+          "seed",
+          "generated_at",
+          "rows_original",
+          "nulls_injected",
+          "exact_duplicates",
+          "key_duplicates",
+          "outliers",
+          "whitespace_cells",
+          "recoverable_ids"
+        ],
+        "title": "Manifest",
+        "description": "Manifest."
+      },
+      "ManifestOutliers": {
+        "properties": {
+          "rows": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Rows",
+            "default": []
+          },
+          "columns": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Columns",
+            "default": {}
+          },
+          "factor": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Factor",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ManifestOutliers",
+        "description": "ManifestOutliers."
+      },
+      "NoteValue": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "count",
+              "percent",
+              "permil",
+              "years",
+              "rate",
+              "index",
+              "year",
+              "raw",
+              "ratio"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "kind"
+        ],
+        "title": "NoteValue",
+        "description": "NoteValue."
       },
       "NullsReport": {
         "properties": {
@@ -1605,7 +2147,8 @@
           "structural",
           "total_imputed"
         ],
-        "title": "NullsReport"
+        "title": "NullsReport",
+        "description": "NullsReport."
       },
       "OutliersReport": {
         "properties": {
@@ -1639,7 +2182,8 @@
           "strategy",
           "method"
         ],
-        "title": "OutliersReport"
+        "title": "OutliersReport",
+        "description": "OutliersReport."
       },
       "ProcessIn": {
         "properties": {
@@ -1665,7 +2209,8 @@
           }
         },
         "type": "object",
-        "title": "ProcessIn"
+        "title": "ProcessIn",
+        "description": "ProcessIn."
       },
       "QualityReport": {
         "properties": {
@@ -1681,6 +2226,16 @@
               "upload"
             ],
             "title": "Source"
+          },
+          "manifest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Manifest"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "run_id": {
             "type": "integer",
@@ -1730,6 +2285,26 @@
             },
             "type": "array",
             "title": "Validations"
+          },
+          "validation_summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "whitespace_cells": {
+            "type": "integer",
+            "title": "Whitespace Cells",
+            "default": 0
+          },
+          "ids_recovered": {
+            "type": "integer",
+            "title": "Ids Recovered",
+            "default": 0
           }
         },
         "type": "object",
@@ -1748,7 +2323,8 @@
           "outliers",
           "validations"
         ],
-        "title": "QualityReport"
+        "title": "QualityReport",
+        "description": "QualityReport."
       },
       "StepCount": {
         "properties": {
@@ -1766,7 +2342,8 @@
           "before",
           "after"
         ],
-        "title": "StepCount"
+        "title": "StepCount",
+        "description": "StepCount."
       },
       "Validation": {
         "properties": {
@@ -1781,6 +2358,38 @@
           "max_diff": {
             "type": "number",
             "title": "Max Diff"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "ok_arredondamento",
+              "falha"
+            ],
+            "title": "Status",
+            "default": "ok"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
           }
         },
         "type": "object",
@@ -1789,7 +2398,8 @@
           "ok",
           "max_diff"
         ],
-        "title": "Validation"
+        "title": "Validation",
+        "description": "Validation."
       },
       "ValidationError": {
         "properties": {
@@ -1830,6 +2440,30 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "ValidationSummary": {
+        "properties": {
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approved",
+          "total",
+          "text"
+        ],
+        "title": "ValidationSummary",
+        "description": "ValidationSummary."
       }
     }
   }

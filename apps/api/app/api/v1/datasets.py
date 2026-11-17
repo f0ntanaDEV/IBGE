@@ -38,6 +38,7 @@ router = APIRouter(prefix="/datasets", tags=["datasets"])
 
 
 class CleaningIn(BaseModel):
+    """CleaningIn."""
     null_threshold: float | None = None
     outlier_method: str | None = None
     outlier_factor: float | None = None
@@ -45,16 +46,19 @@ class CleaningIn(BaseModel):
 
 
 class ProcessIn(BaseModel):
+    """ProcessIn."""
     source: str = "original"
     cleaning: CleaningIn | None = None
     confirm: bool = False
 
 
 def _store() -> ParquetStore:
+    """Entra: nenhum argumento. Sai com o resultado de store."""
     return ParquetStore(get_settings().silver_dir)
 
 
 def _reports(dataset_id: str) -> list[dict]:
+    """Entra: dataset_id. Sai com o resultado de reports."""
     from app.services.run_stamp import finished_from_name
 
     folder = get_settings().silver_dir
@@ -76,6 +80,7 @@ def _reports(dataset_id: str) -> list[dict]:
 
 @router.get("")
 def list_datasets() -> list[dict]:
+    """GET . Parâmetros: nenhum argumento."""
     items = []
     for cfg in load_catalog().datasets:
         runs = _listed_runs(cfg.id, "original") or _listed_runs(cfg.id)
@@ -104,6 +109,7 @@ def list_datasets() -> list[dict]:
 
 @router.get("/{dataset_id}/metrics")
 def metrics(dataset_id: str) -> list[dict]:
+    """GET /{dataset_id}/metrics. Parâmetros: dataset_id."""
     cfg = catalog_or_404(dataset_id)
     path = get_settings().silver_dir / f"{dataset_id}_metrics.json"
     if path.exists():
@@ -118,6 +124,7 @@ def metrics(dataset_id: str) -> list[dict]:
 
 @router.post("/{dataset_id}/upload")
 def upload(dataset_id: str, file: UploadFile = File(...)) -> dict:
+    """POST /{dataset_id}/upload. Parâmetros: dataset_id, file."""
     cfg = catalog_or_404(dataset_id)
     suffix = Path(file.filename or "").suffix.lower()
     payload = file.file.read()
@@ -143,6 +150,7 @@ def upload(dataset_id: str, file: UploadFile = File(...)) -> dict:
 
 @router.post("/{dataset_id}/process")
 def process(dataset_id: str, body: ProcessIn) -> dict:
+    """POST /{dataset_id}/process. Parâmetros: dataset_id, body."""
     catalog_or_404(dataset_id)
     cleaning = body.cleaning.model_dump(exclude_none=True) if body.cleaning else None
     report = process_dataset(
@@ -156,6 +164,7 @@ def process(dataset_id: str, body: ProcessIn) -> dict:
 
 
 def _decode_report(payload: object) -> dict | None:
+    """Entra: payload. Sai com o resultado de decode report."""
     if isinstance(payload, str):
         try:
             payload = json.loads(payload)
@@ -169,6 +178,7 @@ def quality_report(
     dataset_id: str,
     source: Literal["original", "sujo"] = "original",
 ) -> PublishedQualityReport:
+    """GET /{dataset_id}/quality-report. Parâmetros: dataset_id, source."""
     catalog_or_404(dataset_id)
     from app.services.facts.quality import latest_raw
 
@@ -187,6 +197,7 @@ def quality_report(
 
 
 def _listed_runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
+    """Entra: dataset_id, source. Sai com o resultado de listed runs."""
     try:
         from app.db import get_engine
         from app.repositories.etl_runs import list_runs
@@ -209,6 +220,7 @@ def _listed_runs(dataset_id: str, source: Literal["original", "sujo", "upload"] 
 
 @router.get("/validations")
 def validations(source: Literal["original", "sujo"] = "original") -> dict:
+    """GET /validations. Parâmetros: source."""
     from app.services.facts.quality import validation_overview
 
     return validation_overview(source)
@@ -216,11 +228,13 @@ def validations(source: Literal["original", "sujo"] = "original") -> dict:
 
 @router.get("/{dataset_id}/runs")
 def runs(dataset_id: str, source: Literal["original", "sujo", "upload"] | None = None) -> list[dict]:
+    """GET /{dataset_id}/runs. Parâmetros: dataset_id, source."""
     catalog_or_404(dataset_id)
     return _listed_runs(dataset_id, source)
 
 
 def _public_run(row: dict) -> dict:
+    """Entra: row. Sai com o resultado de public run."""
     payload = row.get("report_json") if isinstance(row.get("report_json"), dict) else row
     rows = row.get("rows_out")
     if rows in (None, 0):
@@ -244,6 +258,7 @@ def _public_run(row: dict) -> dict:
 
 
 def _with_source(rows: list[dict], source: str | None) -> list[dict]:
+    """Entra: rows, source. Sai com o resultado de with source."""
     if source is None:
         return rows
     chosen = []
@@ -271,6 +286,7 @@ def data(
     sort: str | None = None,
     desc: bool = False,
 ) -> dict:
+    """GET /{dataset_id}/data. Parâmetros: dataset_id, page, page_size, ano, anos, cod, faixa, nivel, sexo, idade, grupo, sort, desc."""
     codes = parse_int_list(cod, "cod")
     known = known_territory_codes()
     if codes is not None:
@@ -304,6 +320,7 @@ def dataset_summary(
     cod: int | None = Depends(territory_params),
     sexo: str | None = None,
 ) -> dict:
+    """GET /{dataset_id}/summary. Parâmetros: dataset_id, ano, cod, sexo."""
     cfg = catalog_or_404(dataset_id)
     if cod is None:
         code = None
@@ -319,6 +336,7 @@ def dataset_pyramid(
     cod: int | None = Depends(territory_params),
     compare_ano: int | None = None,
 ) -> list[dict]:
+    """GET /{dataset_id}/pyramid. Parâmetros: dataset_id, ano, cod, compare_ano."""
     cfg = catalog_or_404(dataset_id)
     code = None if cod is None else cod
     return pyramid(_store().get(dataset_id), cfg, ano, code, compare_ano)
@@ -326,12 +344,14 @@ def dataset_pyramid(
 
 @router.get("/{dataset_id}/map")
 def dataset_map(dataset_id: str, metric: str, ano: int) -> dict:
+    """GET /{dataset_id}/map. Parâmetros: dataset_id, metric, ano."""
     catalog_or_404(dataset_id)
     return map_values(_store().get(dataset_id), metric, ano)
 
 
 @router.get("/{dataset_id}/heatmap")
 def dataset_heatmap(dataset_id: str, cod: int | None = Depends(territory_params), sexo: str | None = None) -> dict:
+    """GET /{dataset_id}/heatmap. Parâmetros: dataset_id, cod, sexo."""
     if dataset_id != "ds1":
         raise AppError("not_applicable", "Mapa de calor disponível apenas para ds1", 422)
     return heatmap(_store().get(dataset_id), cod, sexo)
@@ -339,6 +359,7 @@ def dataset_heatmap(dataset_id: str, cod: int | None = Depends(territory_params)
 
 @router.get("/{dataset_id}/scatter")
 def dataset_scatter(dataset_id: str, anos: str | None = None) -> dict:
+    """GET /{dataset_id}/scatter. Parâmetros: dataset_id, anos."""
     if dataset_id != "ds4":
         raise AppError("not_applicable", "Dispersão disponível apenas para ds4", 422)
     return scatter(_store().get(dataset_id), parse_int_list(anos, "anos"))
@@ -346,12 +367,14 @@ def dataset_scatter(dataset_id: str, anos: str | None = None) -> dict:
 
 @router.get("/{dataset_id}/slope")
 def dataset_slope(dataset_id: str, metric: str, ano_a: int, ano_b: int) -> dict:
+    """GET /{dataset_id}/slope. Parâmetros: dataset_id, metric, ano_a, ano_b."""
     catalog_or_404(dataset_id)
     return slope(_store().get(dataset_id), metric, ano_a, ano_b)
 
 
 @router.get("/{dataset_id}/claims")
 def claims(dataset_id: str) -> list[dict]:
+    """GET /{dataset_id}/claims. Parâmetros: dataset_id."""
     cfg = catalog_or_404(dataset_id)
     settings = get_settings()
     cache = news_cache(settings)
@@ -367,6 +390,7 @@ def claims(dataset_id: str) -> list[dict]:
 
 @router.get("/{dataset_id}/news")
 def news(dataset_id: str) -> dict:
+    """GET /{dataset_id}/news. Parâmetros: dataset_id."""
     cfg = catalog_or_404(dataset_id)
     settings = get_settings()
     return fetch_news(cfg.news_keywords, settings, news_cache(settings))
@@ -374,6 +398,7 @@ def news(dataset_id: str) -> dict:
 
 @router.get("/{dataset_id}/download")
 def download(dataset_id: str, format: str = Query("csv", pattern="^(csv|xlsx)$")):
+    """GET /{dataset_id}/download. Parâmetros: dataset_id, format."""
     catalog_or_404(dataset_id)
     path = _store().latest_file(dataset_id, f".{format}")
     if path is None:

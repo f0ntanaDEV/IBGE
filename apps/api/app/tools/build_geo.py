@@ -58,6 +58,7 @@ def main() -> None:
 
 
 def _round_geometry(geometry: dict) -> dict:
+    """Entra: geometry. Sai com o resultado de round geometry."""
     kind = geometry["type"]
     if kind == "Polygon":
         coordinates = [_ring(ring) for ring in geometry["coordinates"]]
@@ -69,6 +70,7 @@ def _round_geometry(geometry: dict) -> dict:
 
 
 def _signed_area(ring: list) -> float:
+    """Entra: ring. Sai com o resultado de signed area."""
     total = 0.0
     for index in range(len(ring) - 1):
         lon, lat = ring[index]
@@ -89,6 +91,7 @@ def _clockwise(ring: list, exterior: bool) -> list:
 
 
 def _rewind(geometry: dict) -> dict:
+    """Entra: geometry. Sai com o resultado de rewind."""
     kind = geometry["type"]
     if kind == "Polygon":
         coordinates = [_clockwise(ring, index == 0) for index, ring in enumerate(geometry["coordinates"])]
@@ -101,6 +104,7 @@ def _rewind(geometry: dict) -> dict:
 
 
 def _ring(ring: list) -> list:
+    """Entra: ring. Sai com o resultado de ring."""
     rounded = []
     for lon, lat in ring:
         point = [round(float(lon), 3), round(float(lat), 3)]

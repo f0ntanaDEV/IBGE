@@ -46,6 +46,7 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
+        """Entra: nenhum argumento. Sai com o resultado de database url."""
         user = quote_plus(self.mysql_user)
         password = quote_plus(self.mysql_password)
         return (
@@ -56,6 +57,7 @@ class Settings(BaseSettings):
 
     @property
     def raw_dir(self) -> Path:
+        """Entra: nenhum argumento. Sai com o resultado de raw dir."""
         return self.data_dir / "raw"
 
     @property
@@ -75,6 +77,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Entra: nenhum argumento. Sai com o resultado de get settings."""
     settings = Settings()
     configured = settings.data_dir
     if not configured.is_absolute():

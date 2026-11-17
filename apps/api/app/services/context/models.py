@@ -8,12 +8,14 @@ Kind = Literal["count", "percent", "permil", "years", "rate", "index", "year", "
 
 
 class NoteValue(BaseModel):
+    """NoteValue."""
     key: str
     value: float | int | str
     kind: Kind
 
 
 class ContextItem(BaseModel):
+    """ContextItem."""
     id: str
     label: str
     value: float | int | str
