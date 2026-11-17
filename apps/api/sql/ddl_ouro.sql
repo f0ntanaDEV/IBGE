@@ -265,7 +265,7 @@ CREATE TABLE etl_runs (
 	dataset_id VARCHAR(8) NOT NULL, 
 	source VARCHAR(16) NOT NULL, 
 	status VARCHAR(16) NOT NULL, 
-	started_at DATETIME NOT NULL DEFAULT now(), 
+	started_at DATETIME NOT NULL DEFAULT (now()), 
 	finished_at DATETIME, 
 	rows_in INTEGER, 
 	rows_out INTEGER, 
