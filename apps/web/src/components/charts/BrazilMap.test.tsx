@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { BrazilMap } from "@/components/charts/BrazilMap"
+import { BrazilMap, mapPaint } from "@/components/charts/BrazilMap"
 import { classOf, quantileBreaks } from "@/lib/quantiles"
 
 const mesh = {
@@ -53,5 +53,28 @@ describe("BrazilMap", () => {
     acre.focus()
     await userEvent.keyboard("{Enter}")
     expect(onSelect).toHaveBeenCalledWith(11, false)
+  })
+
+  it("destaca a UF escolhida e deixa as outras só com o contorno", async () => {
+    expect(mapPaint("selecionado").strokeWidth).toBe(2.5)
+    expect(mapPaint("contexto").fillOpacity).toBeLessThanOrEqual(0.1)
+    expect(mapPaint("normal").strokeWidth).toBe(1)
+    render(
+      <MemoryRouter>
+        <BrazilMap
+          summary="Mapa"
+          metric={{ key: "e0_t", kind: "years" }}
+          selected={[31]}
+          items={[
+            { cod: 11, sigla: "RO", local: "Rondônia", valor: 70 },
+            { cod: 31, sigla: "MG", local: "Minas Gerais", valor: 76 },
+          ]}
+        />
+      </MemoryRouter>,
+    )
+    const selected = await screen.findByRole("button", { name: /Minas Gerais/ })
+    const other = await screen.findByRole("button", { name: /Rondônia/ })
+    expect(selected).toHaveAttribute("stroke-width", "2.5")
+    expect(other).toHaveAttribute("fill-opacity", "0.08")
   })
 })

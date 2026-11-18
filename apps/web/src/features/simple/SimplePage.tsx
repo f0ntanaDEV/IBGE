@@ -1,7 +1,10 @@
 import type { ReactNode } from "react"
 import { Reveal } from "@/motion/useMotion"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
+import { withFilters } from "@/lib/navLink"
 import { Headline } from "@/components/common/Headline"
+import { StoryBlock } from "@/components/common/StoryBlock"
+import { ReportButton } from "@/components/common/ReportButton"
 import { PageHeader } from "@/components/common/PageHeader"
 import { UpdateLine } from "@/components/common/UpdateLine"
 import { pageCopy } from "@/content/pages"
@@ -94,6 +97,7 @@ function SectionCard({ id, title, wide, children }: { id: string; title: string;
 
 export function SimplePage({ pageId }: { pageId: string }) {
   const filters = useDashboardFilters()
+  const { search } = useLocation()
   const territories = useTerritories()
   const summaryId = pageId === "overview" || pageId === "quality" ? "ds4" : pageId
   const summary = useSummary(summaryId, { ano: filters.ano, cod: filters.cod })
@@ -125,8 +129,9 @@ export function SimplePage({ pageId }: { pageId: string }) {
   ]
   return (
     <div className="page-stack">
-      <PageHeader title={copy.title} lead={pageCopy(pageId)?.question} audience={pageCopy(pageId)?.audience} meta={<UpdateLine />} />
+      <PageHeader title={copy.title} lead={pageCopy(pageId)?.question} audience={pageCopy(pageId)?.audience} meta={<UpdateLine />} actions={<ReportButton pageId={pageId} title={copy.title} question={pageCopy(pageId)?.question} />} />
       <Headline pageId={pageId} input={{ cod: filters.cod, place, ano: filters.ano, pop: kpis.find((item) => item.id === "pop_t")?.value ?? null }} />
+      <StoryBlock pageId={pageId} />
       <FilterBar
         territories={filters.territories}
         filters={["territorio", "ano"]}
@@ -228,7 +233,7 @@ export function SimplePage({ pageId }: { pageId: string }) {
         </div>
       </section>
       <p className="text-sm">
-        <Link to="/insights" className="underline">
+        <Link to={withFilters("/insights", search)} className="underline">
           Ver perguntas da página Insights
         </Link>
       </p>

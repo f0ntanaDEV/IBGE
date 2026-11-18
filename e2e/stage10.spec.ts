@@ -9,7 +9,7 @@ test("anos sem ponto e rodapé do GitHub", async ({ page }) => {
     await page.goto(route)
     await settle(page)
     const leaked = await page.evaluate(() => {
-      const pattern = /\b2\.0[0-7]\d\b/
+      const pattern = /(?<![\d.])2\.0[0-7]\d(?![\d.])/
       const nodes = document.querySelectorAll("body *")
       for (const node of nodes) {
         if (pattern.test(node.textContent ?? "")) return node.textContent
@@ -31,7 +31,7 @@ test("voltar para o Brasil não esvazia a página", async ({ page }) => {
   await prepare(page)
   await page.goto("/datasets/ds1")
   await settle(page)
-  const territory = page.getByLabel("Território")
+  const territory = page.getByRole("combobox", { name: /^Território/ })
   await territory.selectOption("29")
   await territory.selectOption("0")
   await expect(page.getByRole("alert")).toHaveCount(0)

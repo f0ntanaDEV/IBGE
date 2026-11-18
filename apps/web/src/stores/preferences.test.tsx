@@ -29,6 +29,7 @@ describe("tema", () => {
       mode: "technical",
       motion: "off",
       sidebarCollapsed: false,
+      mapView: "mapa",
     })
   })
 

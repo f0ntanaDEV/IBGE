@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react"
 import type { PyramidRow } from "@/features/datasets/api"
-import { YEAR_MAX, YEAR_MIN, calendarYear, countOf, startAge, toPyramidChart } from "@/features/datasets/derive"
-import { useChartTheme } from "@/hooks/useChartTheme"
+import { YEAR_MAX, YEAR_MIN, calendarYear, countOf, rowsForYear, startAge, toPyramidChart } from "@/features/datasets/derive"
+import { HeldTip, TipList } from "@/components/ui/chart"
 import { motionVars, useMotion } from "@/motion/useMotion"
 import { useFormatter } from "@/hooks/useFormatter"
 import { formatAgeBand } from "@/lib/format"
@@ -10,6 +10,7 @@ type Outline = { id: string; label: string; rows: PyramidRow[] }
 
 type PopulationPyramidProps = {
   rows: PyramidRow[]
+  catalog?: PyramidRow[]
   outlines?: Outline[]
   granularity: "idade" | "quinquenal"
   year: number
@@ -22,15 +23,20 @@ const VB_W = 720
 const VB_H = 420
 const PLAY_STEP_MS = 140
 
-function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear, animate = false, summary }: PopulationPyramidProps) {
-  const { colors } = useChartTheme()
+function PopulationPyramidView({ rows, catalog, outlines = [], granularity, year, onYear, animate = false, summary }: PopulationPyramidProps) {
   const motion = useMotion()
   const grow = motion.animate ? motionVars(motion) : undefined
   const simple = false
   const formatCount = useFormatter({ key: "populacao", kind: "count" })
   const [playing, setPlaying] = useState(false)
-  const [hover, setHover] = useState<number | null>(null)
-  const data = useMemo(() => toPyramidChart(rows, outlines), [rows, outlines])
+  const [frame, setFrame] = useState(year)
+  const [hover, setHover] = useState<{ index: number; x: number; y: number } | null>(null)
+  useEffect(() => {
+    if (!playing) setFrame(year)
+  }, [playing, year])
+  const shownYear = catalog?.length ? frame : year
+  const viewRows = catalog?.length ? rowsForYear(catalog, shownYear) : rows
+  const data = useMemo(() => toPyramidChart(viewRows, outlines), [outlines, viewRows])
   const bars = useMemo(() => [...data].sort((a, b) => startAge(a.faixa) - startAge(b.faixa)), [data])
   const outlineIds = outlines.map((item) => item.id)
   const max = useMemo(() => {
@@ -39,44 +45,49 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
     )
     return Math.max(1, ...values)
   }, [bars])
-  const pad = { l: granularity === "idade" ? 44 : 64, r: 12, t: 8, b: 28 }
+  const pad = { l: granularity === "idade" ? 48 : 64, r: 28, t: 8, b: 28 }
   const plotW = VB_W - pad.l - pad.r
   const mid = pad.l + plotW / 2
   const maxBar = plotW / 2
   const slot = bars.length ? (VB_H - pad.t - pad.b) / bars.length : 0
-  const men = colors[0] || "var(--chart-1)"
-  const women = colors[1] || "var(--chart-2)"
+  const men = "hsl(var(--chart-1))"
+  const women = "hsl(var(--chart-4))"
 
   useEffect(() => {
     if (!playing) return
     const timer = window.setInterval(() => {
-      if (year >= YEAR_MAX) {
-        setPlaying(false)
-        return
-      }
-      onYear(year + 1)
+      setFrame((current) => {
+        if (current >= YEAR_MAX) {
+          setPlaying(false)
+          return current
+        }
+        return current + 1
+      })
     }, PLAY_STEP_MS)
     return () => window.clearInterval(timer)
-  }, [playing, onYear, year])
+  }, [playing])
 
-  const total = rows.reduce((sum, row) => sum + countOf(row, "Ambos"), 0)
-  const hovered = hover == null ? null : bars[hover]
+  const total = viewRows.reduce((sum, row) => sum + countOf(row, "Ambos"), 0)
+  const hovered = hover == null ? null : bars[hover.index]
+  const showBar = (index: number, event: { clientX: number; clientY: number }) => setHover({ index, x: event.clientX, y: event.clientY })
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3" role="img" aria-label={summary || `Pirâmide de ${formatCount(total)} pessoas em ${year}`}>
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 bg-card py-1 md:static">
+    <div className="absolute inset-0 flex min-h-0 flex-col gap-2 overflow-y-auto" role="img" aria-label={summary || `Pirâmide de ${formatCount(total)} pessoas em ${shownYear}`}>
+      <div className="z-10 flex shrink-0 flex-wrap items-center gap-3 bg-card py-1">
         <label className="flex min-w-48 flex-1 items-center gap-2 text-sm">
-          Ano {year}
-          {year > calendarYear() ? " (projetado)" : ""}
+          Ano {shownYear}
+          {shownYear > calendarYear() ? " (projetado)" : ""}
           <input
             type="range"
             min={YEAR_MIN}
             max={YEAR_MAX}
-            value={year}
-            aria-valuetext={String(year)}
+            value={shownYear}
+            aria-valuetext={String(shownYear)}
             onChange={(event) => {
               setPlaying(false)
-              onYear(Number(event.target.value))
+              const next = Number(event.target.value)
+              if (catalog?.length) setFrame(next)
+              else onYear(next)
             }}
             className="w-full"
           />
@@ -91,7 +102,7 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
                 setPlaying(false)
                 return
               }
-              onYear(YEAR_MIN)
+              setFrame(YEAR_MIN)
               setPlaying(true)
             }}
           >
@@ -99,20 +110,28 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
           </button>
         ) : null}
       </div>
-      <div className="relative h-full min-h-0 w-full flex-1">
+      <div className="relative min-h-0 w-full flex-1 overflow-hidden">
+        <p className="pointer-events-none absolute right-2 bottom-1 z-10 text-xs">
+          <span style={{ color: men }}>← Homens</span>
+          {" | "}
+          <span style={{ color: women }}>Mulheres →</span>
+        </p>
         {playing ? (
           <p aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center text-7xl font-medium text-foreground/10 tabular-nums">
             {year}
           </p>
         ) : null}
-        {hovered ? (
-          <div className="absolute top-2 right-2 z-10 grid gap-1 rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
-            <div className="font-medium">{formatAgeBand(hovered.faixa)}</div>
-            <div>Homens {formatCount(Math.abs(hovered.homens))}</div>
-            <div>Mulheres {formatCount(Math.abs(hovered.mulheres))}</div>
-          </div>
-        ) : null}
-        <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="relative h-full w-full">
+        <HeldTip open={hovered != null && hover != null} x={hover?.x ?? 0} y={hover?.y ?? 0} title={hovered ? formatAgeBand(hovered.faixa) : undefined}>
+          {hovered ? (
+            <TipList
+              rows={[
+                { key: "homens", label: "Homens", value: formatCount(Math.abs(hovered.homens)), color: men, suffix: shownYear > calendarYear() ? " (projeção)" : "" },
+                { key: "mulheres", label: "Mulheres", value: formatCount(Math.abs(hovered.mulheres)), color: women, suffix: shownYear > calendarYear() ? " (projeção)" : "" },
+              ]}
+            />
+          ) : null}
+        </HeldTip>
+        <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="absolute inset-0 h-full w-full">
           {!simple
             ? [-1, -0.5, 0, 0.5, 1].map((tick) => (
                 <line
@@ -129,7 +148,7 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
             <text
               key={`tick-${tick}`}
               x={mid + tick * maxBar}
-              y={VB_H - 8}
+              y={VB_H - 18}
               textAnchor="middle"
               fill="hsl(var(--muted-foreground))"
               fontSize={11}
@@ -171,7 +190,7 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
               const y = VB_H - pad.b - (index + 1) * slot + slot * 0.15
               const height = Math.max(1, slot * 0.7)
               return (
-                <g key={`h-${String(row.faixa)}`} onPointerEnter={() => setHover(index)} onPointerLeave={() => setHover(null)}>
+                <g key={`h-${String(row.faixa)}`} onPointerEnter={(event) => showBar(index, event)} onPointerMove={(event) => showBar(index, event)} onPointerLeave={() => setHover(null)}>
                   <PyramidBar x={mid - maxBar} y={y} width={maxBar} height={height} ratio={Math.abs(row.homens) / max} origin="right center" color={men} outline={false} dashed={false} />
                 </g>
               )
@@ -182,7 +201,7 @@ function PopulationPyramidView({ rows, outlines = [], granularity, year, onYear,
               const y = VB_H - pad.b - (index + 1) * slot + slot * 0.15
               const height = Math.max(1, slot * 0.7)
               return (
-                <g key={`m-${String(row.faixa)}`} onPointerEnter={() => setHover(index)} onPointerLeave={() => setHover(null)}>
+                <g key={`m-${String(row.faixa)}`} onPointerEnter={(event) => showBar(index, event)} onPointerMove={(event) => showBar(index, event)} onPointerLeave={() => setHover(null)}>
                   <PyramidBar x={mid} y={y} width={maxBar} height={height} ratio={Math.abs(row.mulheres) / max} origin="left center" color={women} outline={false} dashed={false} />
                 </g>
               )

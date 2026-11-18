@@ -9,6 +9,8 @@ import { ChartCard } from "@/components/common/ChartCard"
 import { ErrorState } from "@/components/common/ErrorState"
 import { ActionStrip } from "@/components/common/ActionStrip"
 import { Headline } from "@/components/common/Headline"
+import { StoryBlock } from "@/components/common/StoryBlock"
+import { ReportButton } from "@/components/common/ReportButton"
 import { KpiCard } from "@/components/common/KpiCard"
 import { PageHeader } from "@/components/common/PageHeader"
 import { UpdateLine } from "@/components/common/UpdateLine"
@@ -122,8 +124,9 @@ export function OverviewPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader title="Visão geral" lead={copy?.question} audience={copy?.audience} meta={<UpdateLine processedAt={processed} latestRevision={datasets.data?.[0]?.latest_revision} />} />
+      <PageHeader title="Visão geral" lead={copy?.question} audience={copy?.audience} meta={<UpdateLine processedAt={processed} latestRevision={datasets.data?.[0]?.latest_revision} />} actions={<ReportButton pageId="overview" title="Visão geral" question={copy?.question} />} />
       <Headline pageId="overview" input={{ cod, place, ano: year, pop: num(current?.pop_t), peakYear: peak?.ano ?? null, e0: num(current?.e0_t), e0Brazil: num(brazilNow?.e0_t) }} />
+      <StoryBlock pageId="overview" />
       <FilterBar
         territories={filters.territories}
         filters={["territorio", "ano"]}

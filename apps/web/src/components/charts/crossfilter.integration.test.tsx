@@ -5,7 +5,6 @@ import { MemoryRouter } from "react-router-dom"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { BrazilMap } from "@/components/charts/BrazilMap"
 import { buildNarratives } from "@/lib/narratives/engine"
-import { useCrossFilter } from "@/stores/crossfilter"
 
 const mesh = {
   type: "FeatureCollection",
@@ -26,40 +25,34 @@ const mesh = {
 const VALUES: Record<number, number> = { 11: 70, 31: 76 }
 
 function Host() {
-  const selection = useCrossFilter((state) => state.selection)
-  const toggle = useCrossFilter((state) => state.toggle)
   const [cod, setCod] = useState(11)
-  const active = selection.uf?.[0] ?? cod
   const text = buildNarratives({
     datasetId: "ds4",
-    territorio: { cod: active, nome: active === 31 ? "Minas Gerais" : "Rondônia", nivel: "uf" },
+    territorio: { cod, nome: cod === 31 ? "Minas Gerais" : "Rondônia", nivel: "uf" },
     ano: 2024,
     sexo: "Ambos",
-    selection,
+    selection: {},
     series: [{ key: "e0", label: "Esperança de vida" }],
     data: {
       series: [
-        { ano: 2000, valor: VALUES[active] - 4 },
-        { ano: 2024, valor: VALUES[active] },
+        { ano: 2000, valor: VALUES[cod] - 4 },
+        { ano: 2024, valor: VALUES[cod] },
       ],
     },
   })[0]?.text
   return (
     <>
-      <p>Indicador {VALUES[active]}</p>
+      <p>Indicador {VALUES[cod]}</p>
       <p>{text}</p>
       <BrazilMap
         summary="Mapa"
         metric={{ key: "e0_t", kind: "years" }}
-        selected={selection.uf}
+        selected={[cod]}
         items={[
           { cod: 11, sigla: "RO", local: "Rondônia", valor: 70 },
           { cod: 31, sigla: "MG", local: "Minas Gerais", valor: 76 },
         ]}
-        onSelect={(value, multi) => {
-          toggle("uf", value, { multi, source: "map" })
-          setCod(value)
-        }}
+        onSelect={(value) => setCod(value)}
       />
     </>
   )
@@ -67,7 +60,6 @@ function Host() {
 
 describe("filtro cruzado no mapa", () => {
   beforeEach(() => {
-    useCrossFilter.getState().clear()
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ json: async () => mesh }))
   })
 

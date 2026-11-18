@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useState, type ComponentProps } from "react"
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceDot, ReferenceLine, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { calendarYear, crossingYear, peakPoint } from "@/features/datasets/derive"
@@ -6,7 +6,11 @@ import { EndFade } from "@/motion/CountUp"
 import { motionVars, useMotion } from "@/motion/useMotion"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { decadeDomain, decadeTicks, formatAxis, labelSide, niceDomain, niceTicks, yAxisWidth, YEAR_TICKS, YEAR_TICKS_MOBILE } from "@/lib/chart-axes"
+import { BAND_COLORS, SEX_COLORS, xAxisDefaults, yAxisDefaults } from "@/lib/chartDefaults"
+import { placeReferenceLabels } from "@/lib/labelPlace"
 import { formatValue, metricFromFormat, type NumberFormat } from "@/lib/format"
+import { ZoneBand, zoneColor } from "@/components/charts/ZoneBand"
+import type { Zone } from "@/lib/zones"
 
 export type LinePoint = { ano: number } & Record<string, number | null>
 
@@ -28,6 +32,7 @@ type ProjectionLineProps = {
   markYear?: number
   reference?: LinePoint[]
   referenceKey?: string
+  zones?: Zone[] | null
 }
 
 function ProjectionLineView({
@@ -46,6 +51,7 @@ function ProjectionLineView({
   markYear,
   reference,
   referenceKey,
+  zones,
 }: ProjectionLineProps) {
   const { colors, strokeWidth, dash, highContrast, chartAnim } = useChartTheme()
   const motion = useMotion()
@@ -53,13 +59,16 @@ function ProjectionLineView({
   const late = motion.animate ? "motion-end" : undefined
   const sweep = variant === "area100" && motion.animate
   const [hidden, setHidden] = useState<Set<string>>(() => new Set())
-  const [inside, setInside] = useState(false)
   const simple = false
   const narrow = useNarrow()
   const candidates = simple ? series.slice(0, 3) : series
   const shown = candidates.filter((item) => !hidden.has(item.key))
   const log = Boolean(logY) && !simple
   const current = calendarYear()
+  const referenceLabels = placeReferenceLabels([
+    { id: "covid", x: 0, y: 0, width: 64, height: 14 },
+    { id: "proj", x: 18, y: 0, width: 78, height: 14 },
+  ])
   const config = useMemo<ChartConfig>(() => {
     const next: ChartConfig = {}
     shown.forEach((item, index) => {
@@ -141,10 +150,11 @@ function ProjectionLineView({
           data={chartData}
           margin={{ left: 8, right: directLabels ? 72 : 16, top: 18 }}
           syncId={syncId ?? "page"}
-          onMouseEnter={() => setInside(true)}
-          onMouseLeave={() => setInside(false)}
         >
-          <CartesianGrid stroke="hsl(var(--border))" vertical={!simple} />
+          <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.35} vertical={!simple} />
+          {zones?.map((zone) => (
+            <ZoneBand key={zone.label} zone={zone} y1={zone.from ?? (domain?.[0] ?? 0)} y2={zone.to ?? (domain?.[1] ?? 100)} />
+          ))}
           <XAxis
             dataKey="ano"
             type="number"
@@ -152,8 +162,11 @@ function ProjectionLineView({
             ticks={narrow ? YEAR_TICKS_MOBILE : YEAR_TICKS}
             allowDecimals={false}
             stroke="hsl(var(--muted-foreground))"
+            tickMargin={xAxisDefaults.tickMargin}
+            padding={xAxisDefaults.padding}
           />
           <YAxis
+            tickMargin={yAxisDefaults.tickMargin}
             scale={log ? "log" : "auto"}
             domain={domain ?? ["auto", "auto"]}
             ticks={log ? undefined : ticks}
@@ -162,7 +175,7 @@ function ProjectionLineView({
             width={ticks ? yAxisWidth(ticks, formatTick) : 48}
           />
           <ChartTooltip
-            {...(inside ? {} : { active: false, cursor: false })}
+            cursor={{ stroke: "hsl(var(--muted-foreground))", strokeOpacity: 0.35 }}
             content={<LineTooltip formatter={formatPoint} gap={shown.some((item) => item.key === "e0_h") && shown.some((item) => item.key === "e0_m")} />}
           />
           <ReferenceLine
@@ -170,7 +183,7 @@ function ProjectionLineView({
             className={late}
             stroke="hsl(var(--muted-foreground))"
             strokeOpacity={0.45}
-            label={{ value: "Projeção →", position: "insideTopRight", fill: "hsl(var(--muted-foreground))", className: late }}
+            label={{ value: "Projeção →", position: "insideTopRight", dy: referenceLabels[1]?.y ?? 16, fill: "hsl(var(--muted-foreground))", className: late }}
           />
           {life ? <CovidNote /> : null}
           {band ? <ReferenceArea className={late} x1={band.x1} x2={band.x2} /> : null}
@@ -183,7 +196,7 @@ function ProjectionLineView({
             </>
           ) : null}
           {shown.map((item, index) => {
-            const color = colors[index] || "hsl(215 24% 62%)"
+            const color = seriesColor(item.key, item.label, colors[index] || "hsl(var(--chart-1))")
             if (variant === "area100") {
               return (
                 <Area
@@ -221,7 +234,7 @@ function ProjectionLineView({
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray={highContrast ? "4 2" : "2 3"}
               dot={false}
-              strokeWidth={1.5}
+              strokeWidth={2}
               isAnimationActive={false}
               className={late}
               connectNulls
@@ -314,7 +327,17 @@ function ProjectionLineView({
           ))}
         </div>
       ) : null}
-      {simple && variant === "area100" ? <p className="text-sm">{shown.map((item) => item.label).join(" · ")}</p> : null}
+      {variant === "area100" ? <AreaLegend data={data} series={shown} year={markYear} /> : null}
+      {zones?.length ? (
+        <ul className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+          {zones.map((zone) => (
+            <li key={zone.label} className="flex items-center gap-1">
+              <span className="size-2" style={{ background: zoneColor(zone.status) }} />
+              {zone.label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   )
 }
@@ -329,7 +352,7 @@ function CovidNote() {
       shape={(props: { x?: number; y?: number; width?: number; height?: number }) => (
         <rect x={props.x} y={props.y} width={props.width} height={props.height} fill="none" />
       )}
-      label={{ value: "Covid-19", position: "insideTop", fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+      label={{ value: "Covid-19", position: "insideTop", dy: 0, fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
     />
   )
 }
@@ -357,18 +380,15 @@ function useNarrow() {
 type TooltipPayload = { dataKey?: string | number; value?: number | string; name?: string; color?: string }
 
 function LineTooltip({
-  active,
-  payload,
-  label,
   formatter,
   gap,
+  payload,
+  ...props
 }: {
-  active?: boolean
-  payload?: TooltipPayload[]
-  label?: string | number
   formatter: (value: number, key: string) => string
   gap: boolean
-}) {
+  payload?: TooltipPayload[]
+} & Omit<ComponentProps<typeof ChartTooltipContent>, "formatter" | "payload" | "footer">) {
   const men = payload?.find((item) => String(item.dataKey).startsWith("e0_h"))
   const women = payload?.find((item) => String(item.dataKey).startsWith("e0_m"))
   const diff =
@@ -376,10 +396,12 @@ function LineTooltip({
       ? `Diferença: ${formatValue(women.value - men.value, { key: "e0", kind: "years" })}`
       : null
   return (
-    <>
-      <ChartTooltipContent active={active} payload={payload} label={label} formatter={formatter} />
-      {diff ? <p className="px-3 pb-2 text-xs text-muted-foreground">{diff}</p> : null}
-    </>
+    <ChartTooltipContent
+      {...props}
+      payload={payload}
+      formatter={formatter}
+      footer={diff ? <p className="mt-2 text-muted-foreground">{diff}</p> : null}
+    />
   )
 }
 
@@ -391,6 +413,28 @@ function CrossingMark({ cx, cy, stroke }: { cx?: number; cy?: number; stroke: st
       <line x1={cx - arm} y1={cy - arm} x2={cx + arm} y2={cy + arm} stroke={stroke} strokeWidth={1.5} />
       <line x1={cx - arm} y1={cy + arm} x2={cx + arm} y2={cy - arm} stroke={stroke} strokeWidth={1.5} />
     </g>
+  )
+}
+
+function seriesColor(key: string, label: string, fallback: string) {
+  if (key.endsWith("_h") || label === "Homens") return SEX_COLORS.homens
+  if (key.endsWith("_m") || label === "Mulheres") return SEX_COLORS.mulheres
+  if (label.startsWith("0")) return BAND_COLORS["0-14"]
+  if (label.startsWith("15")) return BAND_COLORS["15-64"]
+  if (label.startsWith("60")) return BAND_COLORS["60+"]
+  return fallback
+}
+
+function AreaLegend({ data, series, year }: { data: LinePoint[]; series: Series[]; year?: number }) {
+  const row = data.find((item) => item.ano === year) ?? data[data.length - 1]
+  return (
+    <ul className="mt-2 flex flex-wrap gap-3 text-xs">
+      {series.map((item) => (
+        <li key={item.key}>
+          {item.label} {row ? formatValue(Number(row[item.key] ?? 0), { key: item.key, kind: "percent" }) : ""}
+        </li>
+      ))}
+    </ul>
   )
 }
 

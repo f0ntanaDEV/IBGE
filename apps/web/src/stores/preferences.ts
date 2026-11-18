@@ -8,6 +8,7 @@ export type Density = "comfortable" | "compact"
 export type ContrastChoice = "normal" | "high" | null
 export type NavigationMode = "technical" | "simple"
 export type MotionChoice = "on" | "off"
+export type MapView = "mapa" | "contorno" | "satelite"
 
 export type PreferenceValues = {
   theme: ThemeChoice
@@ -16,6 +17,7 @@ export type PreferenceValues = {
   mode: NavigationMode
   motion: MotionChoice
   sidebarCollapsed: boolean
+  mapView: MapView
 }
 
 export const initialPreferences: PreferenceValues = {
@@ -25,6 +27,7 @@ export const initialPreferences: PreferenceValues = {
   mode: "technical",
   motion: "off",
   sidebarCollapsed: false,
+  mapView: "mapa",
 }
 
 type PreferencesState = PreferenceValues & {
@@ -34,6 +37,7 @@ type PreferencesState = PreferenceValues & {
   setMode: (mode: NavigationMode) => void
   setMotion: (motion: MotionChoice) => void
   setSidebarCollapsed: (sidebarCollapsed: boolean) => void
+  setMapView: (mapView: MapView) => void
 }
 
 export function readStoredPreferences(raw: string | null): PreferenceValues {
@@ -49,6 +53,7 @@ export function readStoredPreferences(raw: string | null): PreferenceValues {
       mode: state.mode === "simple" ? "simple" : "technical",
       motion: state.motion === "on" ? "on" : "off",
       sidebarCollapsed: state.sidebarCollapsed === true,
+      mapView: state.mapView === "contorno" || state.mapView === "satelite" ? state.mapView : "mapa",
     }
   } catch {
     return initialPreferences
@@ -82,7 +87,7 @@ export function resolveContrast(contrast: ContrastChoice) {
 let preferencesReady = false
 let pendingTheme: boolean | null = null
 
-export function applyDocumentPreferences(state: Omit<PreferenceValues, "sidebarCollapsed">) {
+export function applyDocumentPreferences(state: Pick<PreferenceValues, "theme" | "density" | "contrast" | "mode" | "motion">) {
   const root = document.documentElement
   const dark = resolveTheme(state.theme) === "dark"
   const apply = () => {
@@ -128,6 +133,7 @@ export const usePreferences = create<PreferencesState>()(
       setMode: (mode) => set({ mode }),
       setMotion: (motion) => set({ motion }),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
+      setMapView: (mapView) => set({ mapView }),
     }),
     {
       name: PREFERENCES_KEY,
@@ -139,6 +145,7 @@ export const usePreferences = create<PreferencesState>()(
         mode: state.mode,
         motion: state.motion,
         sidebarCollapsed: state.sidebarCollapsed,
+        mapView: state.mapView,
       }),
     },
   ),

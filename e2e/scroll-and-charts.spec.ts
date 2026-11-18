@@ -26,10 +26,9 @@ for (const route of ROUTES) {
       await page.setViewportSize({ width: 1280, height: 900 })
       await page.goto(routeUrl(route, view.search))
       await settle(page)
-      await expect.poll(async () => (await chartMarks(page)).empty.length, { timeout: 2_000 }).toBeGreaterThanOrEqual(0)
+      await expect.poll(async () => (await chartMarks(page)).empty, { timeout: 20_000 }).toEqual([])
       const marks = await chartMarks(page)
       expect(marks.hosts, "página de gráfico sem marcas").toBeGreaterThan(0)
-      expect(marks.empty, marks.empty.join(", ")).toEqual([])
     })
   }
 }

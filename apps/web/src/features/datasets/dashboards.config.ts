@@ -1,4 +1,6 @@
 import { metricLabel } from "@/content/metricas"
+import { CHART_HELP } from "@/features/datasets/chartHelp"
+import { reactionsFor, type ChartFilters } from "@/features/datasets/filterMatrix"
 
 export type MetricFormat = "int" | "decimal" | "percent" | "permil" | "years"
 
@@ -42,7 +44,7 @@ export type DashboardSpec = {
 const young = { key: "p_0_14_t", format: "percent" as const }
 const old = { key: "p_60_mais_t", format: "percent" as const }
 
-export const dashboards: DashboardSpec[] = [
+const rawDashboards: DashboardSpec[] = [
   {
     id: "ds1",
     filters: ["territorio", "ano", "sexo"],
@@ -277,6 +279,26 @@ export const dashboards: DashboardSpec[] = [
     tableColumns: ["ano", "idade", "sexo", "local", "nqx", "lx", "ex", "is_outlier"],
   },
 ]
+
+function sexMetric(chart: ChartSpec) {
+  if (chart.kind === "map" || chart.kind === "slope") return /_(h|m)$/.test(chart.metric)
+  if (chart.kind === "ranking") return chart.metricOptions.some((item) => /_(h|m)$/.test(item.key))
+  if (chart.kind === "line" || chart.kind === "area" || chart.kind === "area100") return chart.series.some((item) => /_(h|m)$/.test(item.key))
+  return chart.kind === "pyramid" || chart.kind === "heatmap" || chart.kind === "lifeTable"
+}
+
+export type PreparedChart = ChartSpec & { help: { oQueMostra: string; comoLer: string }; filters: ChartFilters }
+
+export const dashboards: (Omit<DashboardSpec, "charts"> & { charts: PreparedChart[] })[] = rawDashboards.map((page) => ({
+  ...page,
+  charts: page.charts.map((chart) => ({
+    ...chart,
+    help: CHART_HELP[chart.title],
+    filters: reactionsFor(chart.kind, page.filters, sexMetric(chart)),
+  })),
+}))
+
+export type DashboardPage = (typeof dashboards)[number]
 
 export function dashboardById(id: string | undefined) {
   return dashboards.find((item) => item.id === id)

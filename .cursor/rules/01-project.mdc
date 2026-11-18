@@ -9,6 +9,6 @@ alwaysApply: true
 - React Native não faz parte do escopo web. `packages/shared` existe para permitir um app Expo no futuro.
 - Idioma da interface: pt-BR. Números e datas sempre formatados com `Intl` pt-BR.
 - Arquitetura limpa: routers finos → services (casos de uso) → repositories/integrations. Regra de negócio nunca fica em router ou componente de UI.
-- Visual: neutro e sóbrio (zinc/slate + um único acento dessaturado). Proibido usar cores vibrantes, gradientes chamativos ou sombras pesadas.
+- Visual: neutro e sóbrio (zinc/slate + um único acento dessaturado). Proibido usar cores vibrantes, gradientes chamativos ou sombras pesadas. Os gráficos usam a paleta `--chart-*`, que não precisa ser dessaturada.
 - Toda animação precisa respeitar o "Modo leve" (`data-reduced-motion` no `<html>`).
 - A barra "Buscar página ou território" permanece. Specs anteriores que pedem "sem busca" não prevalecem.

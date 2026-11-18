@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import { calendarYear } from "@/features/datasets/derive"
 import { motionVars, useMotion } from "@/motion/useMotion"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import { HeldTip, TipList } from "@/components/ui/chart"
 import { formatAxisValue } from "@/lib/format"
 
 export type HeatCell = { idade: number; ano: number; valor: number }
@@ -223,11 +224,8 @@ export function AgeYearHeatmap({
     if (!found) return null
     const valor = lookup.get(`${found.idade}:${found.ano}`)
     if (valor == null) return null
-    return { ...found, valor, x: event.clientX - (host.current?.getBoundingClientRect().left ?? 0), y: event.clientY - (host.current?.getBoundingClientRect().top ?? 0) }
+    return { ...found, valor, x: event.clientX, y: event.clientY }
   }
-
-  const tipLeft = tip ? Math.min(Math.max(8, tip.x + 8), box.w - 168) : 0
-  const tipTop = tip ? Math.min(Math.max(8, tip.y + 8), box.h - 28) : 0
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -293,14 +291,13 @@ export function AgeYearHeatmap({
             </g>
           ) : null}
         </svg>
-        {tip ? (
-          <div
-            className="pointer-events-none absolute z-10 max-w-40 rounded-md border border-border bg-popover px-2 py-1 text-xs"
-            style={{ left: tipLeft, top: tipTop }}
-          >
-            Idade {tip.idade} · {tip.ano} · {compactPeople(tip.valor)} pessoas
-          </div>
-        ) : null}
+        <HeldTip open={tip != null} x={tip?.x ?? 0} y={tip?.y ?? 0} title={tip ? String(tip.ano) : undefined}>
+          {tip ? (
+            <TipList
+              rows={[{ key: "idade", label: `Idade ${tip.idade}`, value: `${compactPeople(tip.valor)} pessoas`, color: "hsl(var(--chart-1))", suffix: tip.ano > calendarYear() ? " (projeção)" : "" }]}
+            />
+          ) : null}
+        </HeldTip>
       </div>
       <GradientLegend min={min} max={max} stops={palette} title="Pessoas por idade" />
       <p className="mt-1 text-xs text-muted-foreground" style={{ marginLeft: HEAT_MARGIN.left, marginRight: HEAT_MARGIN.right }}>

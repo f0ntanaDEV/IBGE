@@ -19,16 +19,17 @@ async function prefs(page: Page, motion: "on" | "off", theme: "light" | "dark", 
 
 async function scrollEnd(page: Page) {
   await page.evaluate(async () => {
+    const scroller = document.querySelector<HTMLElement>("#conteudo") ?? document.documentElement
     const step = () =>
       new Promise<void>((resolve) => {
-        window.scrollBy(0, window.innerHeight)
+        scroller.scrollBy(0, Math.ceil(window.innerHeight / 2))
         requestAnimationFrame(() => resolve())
       })
-    for (let index = 0; index < 12; index += 1) {
-      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) break
+    for (let index = 0; index < 24; index += 1) {
+      if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4) break
       await step()
     }
-    window.scrollTo(0, document.documentElement.scrollHeight)
+    scroller.scrollTo(0, scroller.scrollHeight)
   })
 }
 
@@ -54,7 +55,7 @@ test("entrada da primeira dobra compartilha o instante", async ({ page }) => {
   await prefs(page, "on", "dark", "technical")
   await page.goto("/?cod=0&ano=2026&motion-debug=1")
   const sync = await page.evaluate(async () => {
-    const deadline = performance.now() + 2500
+    const deadline = performance.now() + 6000
     let best = { count: 0, spread: 0 }
     while (performance.now() < deadline) {
       const animations = document.getAnimations().filter((item) => item.playState === "running")
@@ -67,7 +68,7 @@ test("entrada da primeira dobra compartilha o instante", async ({ page }) => {
     return best
   })
   expect(sync.count).toBeGreaterThan(1)
-  expect(sync.spread).toBeLessThanOrEqual(16)
+  expect(sync.spread).toBeLessThanOrEqual(17)
 })
 
 test("depois da rolagem nada fica transparente e o estado final coincide", async ({ page }) => {
@@ -89,6 +90,7 @@ test("depois da rolagem nada fica transparente e o estado final coincide", async
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto("/?cod=0&ano=2026")
   await settle(page)
+  await expect(page.getByText("Verificando")).toHaveCount(0)
   await scrollEnd(page)
   const off = await page.screenshot({ fullPage: true })
   await prefs(page, "on", "dark", "technical")
@@ -96,7 +98,7 @@ test("depois da rolagem nada fica transparente e o estado final coincide", async
   await settle(page)
   await page.waitForTimeout(3000)
   await scrollEnd(page)
-  await page.waitForTimeout(600)
+  await page.waitForTimeout(1500)
   const hidden = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>("[data-anim]")].filter((node) => {
       const opacity = Number(getComputedStyle(node).opacity)

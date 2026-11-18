@@ -8,6 +8,7 @@ import { Reveal } from "@/motion/useMotion"
 import { INSIGHTS, PATTERNS } from "@/content/insights"
 import { PAGE_COPY } from "@/content/pages"
 import { cn } from "@/lib/cn"
+import { withFilters } from "@/lib/navLink"
 
 export function InsightsPage() {
   usePageReady(true)
@@ -41,7 +42,7 @@ export function InsightsPage() {
         <ul>
           {PAGE_COPY.map((item) => (
             <li key={item.id} className="border-b border-border last:border-b-0">
-              <Link to={item.to} className="flex flex-col gap-1 px-4 py-3 text-sm hover:bg-muted sm:flex-row sm:items-baseline sm:gap-6">
+              <Link to={withFilters(item.to, location.search)} className="flex flex-col gap-1 px-4 py-3 text-sm hover:bg-muted sm:flex-row sm:items-baseline sm:gap-6">
                 <span className="shrink-0 text-muted-foreground sm:w-44">{item.title}</span>
                 <span className="font-medium leading-snug">{item.question}</span>
               </Link>
@@ -73,7 +74,7 @@ export function InsightsPage() {
                 <button type="button" className="underline" onClick={() => setOpen((current) => current.filter((id) => !ids.includes(id)))}>
                   Recolher todas
                 </button>
-                <Link to={section.route} className="underline">
+                <Link to={withFilters(section.route, location.search)} className="underline">
                   Ir para a página
                 </Link>
               </div>
@@ -114,7 +115,7 @@ export function InsightsPage() {
                           </span>
                         ))}
                       </div>
-                      <Link className="mt-4 inline-flex text-sm underline" to={`${item.route}?cod=0#chart-${item.chartId}`}>
+                      <Link className="mt-4 inline-flex text-sm underline" to={withFilters(`${item.route}#chart-${item.chartId}`, location.search)}>
                         Ver na página: {item.chartLabel}
                       </Link>
                     </div>

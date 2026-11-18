@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, useSearchParams } from "react-router-dom"
+import { migrateLegacyFilters } from "@/lib/navLink"
+import { useCrossFilter } from "@/stores/crossfilter"
 import { Footer } from "@/app/layout/Footer"
 import { MotionProvider } from "@/motion/MotionProvider"
 import { Header } from "@/app/layout/Header"
@@ -45,6 +47,21 @@ function useScrollEdges(pathname: string) {
   return { ref, edges }
 }
 
+function LegacyFilters() {
+  const [params, setParams] = useSearchParams()
+  const replace = useCrossFilter((state) => state.replace)
+  const ran = useRef(false)
+  useEffect(() => {
+    if (ran.current) return
+    ran.current = true
+    const migrated = migrateLegacyFilters(params)
+    if (!migrated) return
+    if (migrated.faixa?.length) replace({ faixa: migrated.faixa })
+    setParams(migrated.params, { replace: true })
+  }, [params, replace, setParams])
+  return null
+}
+
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const mobile = useMaxWidth(767)
@@ -73,6 +90,7 @@ export function AppShell() {
           <div className={embedded ? "relative mx-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background" : "relative mx-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background p-1"}>
             <main ref={viewRef} id="conteudo" className={embedded ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden" : "page-pad min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"}>
               <MotionProvider>
+                <LegacyFilters />
                 <Outlet />
               </MotionProvider>
             </main>

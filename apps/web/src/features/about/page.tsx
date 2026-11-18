@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
+import { withFilters } from "@/lib/navLink"
 import { PageHeader } from "@/components/common/PageHeader"
 import { KPI_RULES } from "@/content/kpi-rules"
 import { METRICAS, metricById } from "@/content/metricas"
@@ -18,6 +19,7 @@ function uniqueMetrics<T extends { id: string; nome: string }>(rows: T[]) {
 
 export function AboutPage() {
   const metrics = useMetricCatalog()
+  const { search } = useLocation()
   usePageReady(true)
   const rows = uniqueMetrics(metrics.data?.length ? metrics.data : METRICAS)
   return (
@@ -39,7 +41,7 @@ export function AboutPage() {
         <ul>
           {PAGE_COPY.map((item) => (
             <li key={item.id} className="border-b border-border px-4 py-3 last:border-b-0">
-              <Link to={item.to} className="text-sm font-medium underline">
+              <Link to={withFilters(item.to, search)} className="text-sm font-medium underline">
                 {item.title}
               </Link>
               <p className="mt-1 text-sm text-muted-foreground">{item.question}</p>

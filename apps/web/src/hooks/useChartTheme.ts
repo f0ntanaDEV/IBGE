@@ -65,7 +65,7 @@ export function useChartTheme() {
     colors,
     sequential,
     highContrast,
-    strokeWidth: highContrast ? 2.5 : 1.5,
+    strokeWidth: highContrast ? 2.5 : 2,
     dash: DASH,
     markers: MARKERS,
     isAnimationActive: chartAnim.isAnimationActive,

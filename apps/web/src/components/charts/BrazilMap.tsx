@@ -1,5 +1,7 @@
 import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react"
+import { HeldTip, TipList } from "@/components/ui/chart"
+import { glossaryByKey } from "@/features/glossary/glossary"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import { motionVars, useMotion } from "@/motion/useMotion"
 import { formatValue, type MetricMeta } from "@/lib/format"
@@ -30,6 +32,12 @@ function classLabel(index: number, edges: number[], format: (value: number) => s
   return `${format(edges[index - 1])}–${format(edges[index])}`
 }
 
+export function mapPaint(state: "selecionado" | "contexto" | "normal") {
+  if (state === "selecionado") return { fillOpacity: 1, strokeWidth: 2.5, stroke: "hsl(var(--foreground))" }
+  if (state === "contexto") return { fillOpacity: 0.08, strokeWidth: 1, stroke: "hsl(var(--muted-foreground))" }
+  return { fillOpacity: 1, strokeWidth: 1, stroke: "hsl(var(--muted-foreground))" }
+}
+
 export function BrazilMap({
   items,
   metric,
@@ -38,6 +46,7 @@ export function BrazilMap({
   onSelect,
   ufs,
   highlight,
+  outline = false,
 }: {
   items: BrazilMapItem[]
   metric: MetricMeta
@@ -46,6 +55,7 @@ export function BrazilMap({
   onSelect?: (cod: number, multi: boolean) => void
   ufs?: number[]
   highlight?: number
+  outline?: boolean
 }) {
   const { sequential, highContrast } = useChartTheme()
   const motion = useMotion()
@@ -62,6 +72,7 @@ export function BrazilMap({
   const host = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ w: WIDTH, h: HEIGHT })
   const [mesh, setMesh] = useState<Mesh | null>(null)
+  const [tip, setTip] = useState<{ name: string; value: string; color: string; x: number; y: number } | null>(null)
   const byCod = useMemo(() => new Map(items.map((item) => [item.cod, item])), [items])
   const edges = useMemo(
     () => {
@@ -131,9 +142,11 @@ export function BrazilMap({
         {paths.map((shape) => {
           const item = byCod.get(shape.cod)
           const value = item?.valor
-          const faded = highlight != null ? shape.cod !== highlight : selected.length > 0 && !selected.includes(shape.cod)
-          const painted = faded || value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
-          const fill = neutral ? "hsl(var(--muted))" : painted
+          const chosen = highlight != null ? [highlight] : selected
+          const state = chosen.length === 0 ? "normal" : chosen.includes(shape.cod) ? "selecionado" : "contexto"
+          const paint = mapPaint(state)
+          const painted = value == null ? "hsl(var(--muted))" : sequential[classOf(value, edges)] || "hsl(var(--chart-seq-3))"
+          const fill = outline || state === "contexto" ? "transparent" : neutral ? "hsl(var(--muted))" : painted
           const label = item ? `${item.local}: ${formatValue(item.valor, metric)}` : shape.sigla
           const shared = {
             d: shape.d,
@@ -141,9 +154,17 @@ export function BrazilMap({
             role: "button" as const,
             "aria-label": label,
             fill,
-            stroke: "hsl(var(--background))",
-            strokeWidth: 0.6,
+            stroke: paint.stroke,
+            strokeWidth: paint.strokeWidth,
             onClick: (event: MouseEvent<SVGPathElement>) => onSelect?.(shape.cod, event.ctrlKey || event.metaKey),
+            onPointerMove: (event: MouseEvent<SVGPathElement>) => setTip({
+              name: item?.local ?? shape.sigla,
+              value: item ? formatValue(item.valor, metric) : "—",
+              color: painted,
+              x: event.clientX,
+              y: event.clientY,
+            }),
+            onPointerLeave: () => setTip(null),
             onKeyDown: (event: KeyboardEvent<SVGPathElement>) => {
               if (event.key === "Enter") onSelect?.(shape.cod, false)
             },
@@ -154,12 +175,15 @@ export function BrazilMap({
               {...shared}
               data-allow-motion={motion.animate ? "fill" : undefined}
               style={motion.animate ? { transitionDuration: `${motion.durationMs}ms` } : undefined}
-              fillOpacity={faded ? 0.35 : 1}
+              fillOpacity={paint.fillOpacity}
             />
           )
         })}
       </svg>
       </div>
+      <HeldTip open={tip != null} x={tip?.x ?? 0} y={tip?.y ?? 0} title={tip?.name}>
+        {tip ? <TipList rows={[{ key: metric.key, label: glossaryByKey(metric.key)?.rotuloTecnico ?? metric.key, value: tip.value, color: tip.color }]} /> : null}
+      </HeldTip>
       <div className="grid grid-cols-5 gap-1 text-[11px] text-muted-foreground">
         {sequential.map((color, index) => (
           <div key={color || index} className="grid gap-1">

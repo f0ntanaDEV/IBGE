@@ -6,6 +6,8 @@ import { datasetNav } from "@/app/navigation"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FactsCard } from "@/features/facts/FactsCard"
 import { PageHeader } from "@/components/common/PageHeader"
+import { StoryBlock } from "@/components/common/StoryBlock"
+import { ReportButton } from "@/components/common/ReportButton"
 import { UpdateLine } from "@/components/common/UpdateLine"
 import { pageCopy } from "@/content/pages"
 import { CountUp } from "@/motion/CountUp"
@@ -101,7 +103,8 @@ function TechnicalQuality() {
   const title = source === "sujo" ? "Qualidade de dados · Base de demonstração" : "Qualidade de dados"
   return (
     <div className="page-stack">
-      <PageHeader title={title} lead={pageCopy("quality")?.question} audience={pageCopy("quality")?.audience} meta={<UpdateLine processedAt={processedAt} />} />
+      <PageHeader title={title} lead={pageCopy("quality")?.question} audience={pageCopy("quality")?.audience} meta={<UpdateLine processedAt={processedAt} />} actions={<ReportButton pageId="quality" title={title} question={pageCopy("quality")?.question} />} />
+      <StoryBlock pageId="quality" />
       <div className="flex flex-wrap gap-3">
         <label className="grid gap-1 text-sm">
           Dataset

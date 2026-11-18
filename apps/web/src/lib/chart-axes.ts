@@ -53,6 +53,17 @@ export function decadeTicks([min, max]: [number, number]) {
   return ticks
 }
 
+/** Começa em zero sem negativos e fica simétrico quando há valor abaixo de zero. */
+export function valueDomain(values: number[]): [number, number] {
+  const nums = values.filter((value) => Number.isFinite(value))
+  if (!nums.length) return [0, 1]
+  const min = Math.min(...nums)
+  const max = Math.max(...nums)
+  if (min >= 0) return [0, max || 1]
+  const span = Math.max(Math.abs(min), Math.abs(max)) || 1
+  return [-span, span]
+}
+
 export function niceTicks([min, max]: [number, number], count = 5): number[] {
   if (!(max > min)) return [min]
   const step = niceNum((max - min) / Math.max(1, count - 1), true)

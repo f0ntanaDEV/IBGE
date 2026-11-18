@@ -162,6 +162,11 @@ A chave é a pasta da etapa em `specs/`.
 - 2026-11-17 | 11-finalizacao-rubrica | O embed usa o UUID do SP `clevo-embed-ibge`, `external_viewer_id=clevo-public-viewer`, `external_value=clevo-public` e o segredo só em `SERVICE_PRINCIPAL_SECRET` | O client id numérico não devolve `access_token`. O par externo é fixo e sem dado pessoal. O token do passo 3 nasce a cada carregamento.
 - 2026-11-17 | 11-finalizacao-rubrica | `dump_ddl` compila com `server_version_info` 8.4, então `started_at` sai como `DEFAULT (now())` | Sem versão, o SQLAlchemy omite os parênteses e o DDL diverge do MySQL 8.4 do CI.
 
+## 13-storytelling-graficos-relatorio
+
+- 2026-11-18 | 13-storytelling-graficos-relatorio | Faixa etária fica só no store; `sel_*` viram `cod`, `ano` e `sexo` e saem da URL | R2.1 pede uma fonte para território, ano e sexo. O `ActionStrip` não navega, então `withFilters` fica nos links de página.
+- 2026-11-18 | 13-storytelling-graficos-relatorio | O ano "marca" dos gráficos de linha usa a reação `filtra` e uma linha vertical; as zonas usam classe CSS porque o tipo do ReferenceArea não aceita `fill` | A matriz só tem três reações. A cor da faixa fica em `.zone-good`, `.zone-warn` e `.zone-bad`.
+
 ## 12-ressalvas-finais
 
 - 2026-11-17 | 12-ressalvas-finais | A semeadura olha se alguma fato está vazia e recarrega a ouro pela silver; a revisão 004 só cria o CHECK de taxa se a ouro couber no limite | A 003 esvazia as fatos e o `success` antigo em `etl_runs` impedia o `AUTO_SEED`. O limite medido na silver não é afrouxado.

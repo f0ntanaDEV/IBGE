@@ -21,6 +21,7 @@ type DataTableProps<T> = {
   queryKey: readonly unknown[]
   fetcher: (params: TableQuery) => Promise<{ rows: T[]; total: number }>
   rowClassName?: (row: T) => string | undefined
+  onRow?: (row: T) => void
 }
 
 function priorityClass(meta: unknown) {
@@ -28,7 +29,7 @@ function priorityClass(meta: unknown) {
   return undefined
 }
 
-export function DataTable<T>({ columns, queryKey, fetcher, rowClassName }: DataTableProps<T>) {
+export function DataTable<T>({ columns, queryKey, fetcher, rowClassName, onRow }: DataTableProps<T>) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [sorting, setSorting] = useState<SortingState>([])
@@ -70,7 +71,7 @@ export function DataTable<T>({ columns, queryKey, fetcher, rowClassName }: DataT
       ) : query.isError ? (
         <ErrorState message="Não foi possível carregar a tabela." onRetry={() => void query.refetch()} />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border" role="region" aria-label="Tabela" tabIndex={0}>
+        <div className="overflow-x-auto overflow-y-hidden rounded-lg border border-border" role="region" aria-label="Tabela" tabIndex={0}>
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((group) => (
@@ -109,7 +110,7 @@ export function DataTable<T>({ columns, queryKey, fetcher, rowClassName }: DataT
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className={rowClassName?.(row.original)} data-outlier={rowClassName?.(row.original) ? "true" : undefined}>
+                  <TableRow key={row.id} className={cn(rowClassName?.(row.original), onRow && "cursor-pointer")} data-outlier={rowClassName?.(row.original) ? "true" : undefined} onClick={onRow ? () => onRow(row.original) : undefined}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className={cn(priorityClass(cell.column.columnDef.meta))}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

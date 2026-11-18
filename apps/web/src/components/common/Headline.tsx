@@ -4,10 +4,10 @@ import { buildHeadline, type HeadlineInput } from "@/lib/narratives/headline"
 
 export function Headline({ pageId, input }: { pageId: string; input: HeadlineInput }) {
   const segments = buildHeadline(pageId, input).filter((segment) => segment.text)
-  if (!segments.length) return null
+  if (!segments.length) return <div className="min-h-11" data-headline />
   return (
     <Reveal>
-      <p data-headline className="text-xl leading-snug text-foreground">
+      <p data-headline className="min-h-11 text-xl leading-snug text-foreground">
         {segments.map((segment, index) =>
           segment.strong ? (
             <strong key={index} className="font-bold tabular-nums">

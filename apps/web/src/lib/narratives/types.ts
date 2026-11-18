@@ -1,4 +1,4 @@
-export type CrossSelection = { uf?: number[]; regiao?: number[]; faixa?: string[]; ano?: number; sexo?: "H" | "M" }
+export type CrossSelection = { faixa?: string[] }
 
 export type SeriesMeta = { key: string; label: string }
 

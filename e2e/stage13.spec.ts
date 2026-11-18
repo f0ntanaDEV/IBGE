@@ -59,5 +59,5 @@ test("linha de atualização, contexto, anos e atípicos", async ({ page }) => {
   expect(values.every((value) => value.trim() === "Não")).toBe(true)
   await page.goto("/qualidade?dataset=ds1&source=original")
   await settle(page)
-  await expect(page.getByText(/\d+ de \d+ aprovadas/)).toBeVisible()
+  await expect(page.getByText(/\d+ de \d+ aprovadas/).first()).toBeVisible()
 })

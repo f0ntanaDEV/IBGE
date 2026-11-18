@@ -14,6 +14,7 @@ type RankingBarsProps = {
   options: MetricOption[]
   selectedCod: number
   summary: string
+  onSelect?: (cod: number) => void
 }
 
 function asFormat(format: string): NumberFormat {
@@ -22,7 +23,7 @@ function asFormat(format: string): NumberFormat {
   return "decimal"
 }
 
-function RankingBarsView({ rowsByMetric, options, selectedCod, summary }: RankingBarsProps) {
+function RankingBarsView({ rowsByMetric, options, selectedCod, summary, onSelect }: RankingBarsProps) {
   const { colors, chartAnim } = useChartTheme()
   const simple = false
   const [metric, setMetric] = useState(options[0]?.key ?? "")
@@ -75,7 +76,7 @@ function RankingBarsView({ rowsByMetric, options, selectedCod, summary }: Rankin
           <XAxis type="number" stroke="hsl(var(--muted-foreground))" tickCount={simple ? 5 : undefined} tickFormatter={(value) => formatTick(Number(value))} />
           <YAxis type="category" dataKey="label" width={108} interval={0} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
           <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatTick(value)} />} />
-          <Bar dataKey="value" barSize={barSize} {...chartAnim}>
+          <Bar dataKey="value" barSize={barSize} className={onSelect ? "cursor-pointer" : undefined} {...chartAnim} onClick={(row) => onSelect?.(Number(row.cod))}>
             {rows.map((row) => (
               <Cell key={row.cod} fill={row.cod === selectedCod ? accent : muted} />
             ))}

@@ -30,12 +30,34 @@ export function useDashboardFilters() {
 
   const setFilter = useCallback(
     (key: "ano" | "sexo", value: string) => {
-      const next = new URLSearchParams(params)
-      next.set(key, value)
-      setParams(next, { replace: true })
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          next.set(key, value)
+          return next
+        },
+        { replace: true },
+      )
     },
-    [params, setParams],
+    [setParams],
   )
+
+  const resetFilters = useCallback(() => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        next.set("cod", "0")
+        next.set("ano", String(clampYear(calendarYear())))
+        next.set("sexo", "Ambos")
+        for (const key of ["sel_uf", "sel_regiao", "sel_ano", "sel_sexo", "sel_faixa"]) next.delete(key)
+        for (const key of [...next.keys()]) {
+          if (key.startsWith("d_")) next.delete(key)
+        }
+        return next
+      },
+      { replace: false },
+    )
+  }, [setParams])
 
   return {
     ano,
@@ -45,6 +67,17 @@ export function useDashboardFilters() {
     setAno: (value: number) => setFilter("ano", String(clampYear(value))),
     setCod: territory.setCod,
     setSexo: (value: string) => setFilter("sexo", value),
+    resetFilters,
+  }
+}
+
+export function useFilterActions() {
+  const filters = useDashboardFilters()
+  return {
+    setCod: filters.setCod,
+    setAno: filters.setAno,
+    setSexo: filters.setSexo,
+    resetFilters: filters.resetFilters,
   }
 }
 

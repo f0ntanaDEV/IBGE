@@ -1,6 +1,6 @@
 # Prompts para o Cursor
 
-Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as doze pastas `specs/01-` a `specs/12-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
+Copie as pastas `.cursor/`, `specs/` e `assets/` para a raiz do projeto. As etapas são as pastas `specs/01-` a `specs/13-`, na ordem do `specs/README.md`. Coloque as 5 planilhas em `data/raw/` com estes nomes:
 
 | Arquivo original | Renomear para |
 |---|---|
@@ -97,6 +97,13 @@ Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e 
 
 ```
 Atue como desenvolvedor Fullstack sênior. Implemente a Etapa 12 seguindo @specs/12-ressalvas-finais/requirements.md, @specs/12-ressalvas-finais/design.md e @specs/12-ressalvas-finais/tasks.md. Esta etapa prevalece sobre a 11 apenas nos arquivos citados. Não edite o Databricks.
+Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
+```
+
+## Prompt 13: Storytelling, filtros, gráficos e relatório
+
+```
+Atue como desenvolvedor Frontend sênior. Implemente a Etapa 13 seguindo @specs/13-storytelling-graficos-relatorio/requirements.md, @specs/13-storytelling-graficos-relatorio/design.md e @specs/13-storytelling-graficos-relatorio/tasks.md. Esta etapa prevalece sobre as etapas 1–12 nos filtros, na paleta dos gráficos e no relatório. Apague specs/13-databricks-painel se a pasta existir.
 Comece pela primeira tarefa não marcada. Ao terminar cada tarefa, marque [x] e continue para a próxima, até concluir a etapa ou encontrar um bloqueio.
 ```
 

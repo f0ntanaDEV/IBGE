@@ -11,6 +11,8 @@ import { DataTable } from "@/components/common/DataTable"
 import { ObservationsCard } from "@/components/common/NarrativeText"
 import { ActionStrip } from "@/components/common/ActionStrip"
 import { Headline } from "@/components/common/Headline"
+import { StoryBlock } from "@/components/common/StoryBlock"
+import { ReportButton } from "@/components/common/ReportButton"
 import { KpiCard } from "@/components/common/KpiCard"
 import { UpdateLine } from "@/components/common/UpdateLine"
 import { NewsCard } from "@/components/common/NewsCard"
@@ -29,17 +31,19 @@ import {
   type PyramidRow,
 } from "@/features/datasets/api"
 import { FilterBar } from "@/features/datasets/components/FilterBar"
-import { FilterChipsBar } from "@/features/datasets/components/FilterChipsBar"
 import { LifeTableChart, type LifePoint } from "@/features/datasets/components/LifeTableChart"
 import { PopulationPyramid } from "@/features/datasets/components/PopulationPyramid"
 import { ProjectionLine, type LinePoint } from "@/features/datasets/components/ProjectionLine"
-import { RankingBars, type RankRow } from "@/features/datasets/components/RankingBars"
+import { UfColumns } from "@/components/charts/UfColumns"
+import { zonesFor } from "@/lib/zones"
 import { packRows } from "@/features/datasets/board"
 import { ContextCard } from "@/features/context/ContextCard"
 import { EnrichmentChart, isEnrichment } from "@/features/datasets/components/EnrichmentChart"
+import { CHART_HELP } from "@/features/datasets/chartHelp"
 import { TERRITORIES } from "@/features/datasets/territories"
 import { ufsForScope } from "@/features/datasets/territoryScope"
-import { SERIES_LABELS, type ChartSpec, type DashboardSpec, type MetricFormat } from "@/features/datasets/dashboards.config"
+import { SERIES_LABELS, type ChartSpec, type DashboardPage, type DashboardSpec, type MetricFormat, type PreparedChart } from "@/features/datasets/dashboards.config"
+import { filterFoot } from "@/features/datasets/filterMatrix"
 import {
   ageKpis,
   broadBands,
@@ -65,6 +69,7 @@ import {
   useFacts,
   useClaims,
   useDashboardFilters,
+  useFilterActions,
   useDatasetList,
   useDatasetNews,
   useMetrics,
@@ -158,7 +163,7 @@ function lifeKpis(items: Record<string, unknown>[], sexo: string) {
   ])
 }
 
-export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
+export function DatasetDashboardPage({ spec }: { spec: DashboardPage }) {
   const filters = useDashboardFilters()
   const sexo = filters.sexo
   const effective = useEffectiveFilters({ ano: filters.ano, cod: filters.cod, sexo })
@@ -311,6 +316,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         meta={<UpdateLine processedAt={processedAt} latestRevision={info?.latest_revision} />}
         actions={
           <div className="flex flex-wrap gap-2">
+            <ReportButton pageId={spec.id} title={meta?.title ?? spec.id} question={copy?.question} />
             <Button variant="outline" onClick={() => reprocess.mutate()} disabled={reprocess.isPending}>
               Reprocessar
             </Button>
@@ -352,7 +358,7 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
           vMin: summary.data?.headline?.v_min ?? null,
         }}
       />
-      <FilterChipsBar />
+      <StoryBlock pageId={spec.id} />
       {pyramid.isError || series.isError || life.isError ? (
         <ErrorState
           message="Não foi possível carregar os dados deste território."
@@ -479,6 +485,13 @@ export function DatasetDashboardPage({ spec }: { spec: DashboardSpec }) {
         columns={columns}
         queryKey={["dataset", spec.id, "table", effective.ano, effective.cod, spec.filters.includes("sexo") ? effective.sexo : ""]}
         rowClassName={(row) => (isOutlier(row.is_outlier) ? "bg-muted" : undefined)}
+        onRow={(row) => {
+          const nivel = String(row.nivel ?? "")
+          const cod = Number(row.cod)
+          const ano = Number(row.ano)
+          if ((nivel === "uf" || nivel === "regiao") && Number.isInteger(cod)) filters.setCod(cod)
+          else if (Number.isInteger(ano) && ano !== effective.ano) filters.setAno(ano)
+        }}
         fetcher={async (params) => {
           const page = await fetchData(spec.id, {
             page: params.page,
@@ -540,7 +553,7 @@ function chartError(spec: ChartSpec | undefined, pyramid: unknown, series: unkno
 
 type SlotProps = {
   spec?: ChartSpec
-  page: DashboardSpec
+  page: DashboardPage
   yearRows: PyramidRow[]
   allPyramid: PyramidRow[]
   year: number
@@ -575,8 +588,9 @@ function chartMetricKey(spec: ChartSpec) {
 }
 
 function ChartSlot(props: SlotProps) {
-  const spec = props.spec
+  const spec = props.spec as PreparedChart | undefined
   if (!spec || spec.kind === "context" || spec.kind === "facts") return null
+  const foot = filterFoot(spec.filters, { territorio: props.placeName ?? "Brasil", ano: String(props.year), sexo: props.sexo })
   const narrative = lineNarrative(spec, props.seriesItems, props.cod, props.placeName ?? "Brasil", props.year)
   if (isEnrichment(spec)) {
     return <EnrichmentChart spec={spec} datasetId={props.page.id} cod={props.cod} year={props.year} sexo={props.sexo} />
@@ -591,6 +605,8 @@ function ChartSlot(props: SlotProps) {
       error={props.error}
       onRetry={props.onRetry}
       narrative={narrative}
+      help={spec.help}
+      filtersLabel={foot}
       actions={
         spec.kind === "pyramid" && spec.compare && spec.granularity === "idade" ? (
           <label className="grid text-xs">
@@ -640,6 +656,8 @@ function seriesLabel(key: string) {
 }
 
 function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compareYear, seriesItems, rankItems, lifeItems, scope, brazilItems }: SlotProps & { spec: ChartSpec }) {
+  const { setCod } = useFilterActions()
+  const [rankKey, setRankKey] = useState("")
   if (isEnrichment(spec)) return null
   if (spec.kind === "pyramid") {
     const broad = spec.granularity === "ampla"
@@ -658,6 +676,7 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
     return (
       <PopulationPyramid
         rows={current}
+        catalog={broad ? undefined : allPyramid}
         outlines={outlines}
         granularity={spec.granularity === "idade" ? "idade" : "quinquenal"}
         year={broad && spec.compare ? 2000 : year}
@@ -668,24 +687,37 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
     )
   }
   if (spec.kind === "ranking") {
-    const rowsByMetric: Record<string, RankRow[]> = {}
-    for (const option of spec.metricOptions) {
-      const allow = new Set(scope?.ufs ?? [])
-      rowsByMetric[option.key] = rankItems
-        .map((row) => ({
-          cod: Number(row.cod),
-          label: String(row.sigla ?? row.local ?? row.cod),
-          value: num(row[option.key]) ?? 0,
-        }))
-        .filter((row) => Number.isFinite(row.cod) && (!allow.size || allow.has(row.cod)))
-    }
+    const option = spec.metricOptions.find((item) => item.key === rankKey) ?? spec.metricOptions[0]
+    const allow = new Set(scope?.ufs ?? [])
+    const rows = rankItems
+      .map((row) => ({
+        cod: Number(row.cod),
+        sigla: String(row.sigla ?? row.local ?? row.cod),
+        valores: { [option?.key ?? "valor"]: num(row[option?.key ?? ""]) },
+      }))
+      .filter((row) => Number.isFinite(row.cod) && (!allow.size || allow.has(row.cod)))
     return (
-      <RankingBars
-        rowsByMetric={rowsByMetric}
-        options={spec.metricOptions.map((item) => ({ ...item, format: asFormat(item.format) }))}
-        selectedCod={cod}
-        summary={spec.description}
-      />
+      <div className="flex h-full min-h-0 flex-col gap-2">
+        {spec.metricOptions.length > 1 ? (
+          <label className="grid max-w-xs gap-1 text-sm">
+            Indicador
+            <select className="h-9 rounded-md border border-border bg-background px-2" value={option?.key} onChange={(event) => setRankKey(event.target.value)}>
+              {spec.metricOptions.map((item) => (
+                <option key={item.key} value={item.key}>{item.label}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <UfColumns
+          rows={rows}
+          series={[{ key: option?.key ?? "valor", label: option?.label ?? "Valor", color: "hsl(var(--chart-1))" }]}
+          metric={{ key: option?.key ?? "valor", kind: option?.format === "percent" ? "percent" : option?.format === "years" ? "years" : "rate" }}
+          selectedCods={cod > 5 ? [cod] : []}
+          zones={zonesFor(option?.key ?? "")}
+          summary={spec.description}
+          onSelect={setCod}
+        />
+      </div>
     )
   }
   if (spec.kind === "lifeTable" && spec.metric !== "nqx") {
@@ -712,6 +744,7 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
         series={spec.series.map((item) => ({ key: item.key, label: seriesLabel(item.key), format: asFormat(item.format) }))}
         variant="area100"
         summary={spec.description}
+        markYear={year}
       />
     )
   }
@@ -743,6 +776,8 @@ function ChartBody({ spec, yearRows, allPyramid, year, onYear, sexo, cod, compar
       summary={summary}
       reference={reference}
       referenceKey={keys[0]}
+      markYear={year}
+      zones={zonesFor(keys[0] ?? "")}
     />
   )
 }
@@ -760,6 +795,8 @@ function NqxCompare({ spec, cod, year, sexo }: { spec: DashboardSpec; cod: numbe
       title={chart.title}
       chartId={chartId(chart.title)}
       description={chart.description}
+      help={CHART_HELP[chart.title]}
+      metricKey="nqx"
       loading={current.isLoading || previous.isLoading}
       error={current.error instanceof Error ? current.error.message : previous.error instanceof Error ? previous.error.message : null}
       onRetry={() => {

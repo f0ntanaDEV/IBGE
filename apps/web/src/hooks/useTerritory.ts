@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import { fetchTerritories, type Territory } from "@/features/datasets/api"
 import { TERRITORIES } from "@/features/datasets/territories"
-import { useCrossFilter } from "@/stores/crossfilter"
 
 const TERRITORIAL_DRILLS = new Set(["map", "ranking", "slope", "diverging", "scatter"])
 
@@ -43,7 +42,6 @@ export function useTerritory() {
         },
         { replace: false },
       )
-      useCrossFilter.getState().clear()
     },
     [setParams],
   )

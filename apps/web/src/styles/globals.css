@@ -24,17 +24,17 @@
   --input: 240 6% 88%;
   --ring: 215 20% 45%;
   --radius: 0.5rem;
-  --chart-1: 215 28% 42%;
-  --chart-2: 172 24% 34%;
-  --chart-3: 43 28% 38%;
-  --chart-4: 350 20% 46%;
-  --chart-5: 25 16% 40%;
-  --chart-6: 262 20% 46%;
-  --chart-seq-1: 215 16% 88%;
-  --chart-seq-2: 215 18% 74%;
-  --chart-seq-3: 215 20% 60%;
-  --chart-seq-4: 215 22% 46%;
-  --chart-seq-5: 215 24% 32%;
+  --chart-1: 214 62% 40%;
+  --chart-2: 170 60% 22%;
+  --chart-3: 36 85% 38%;
+  --chart-4: 345 58% 58%;
+  --chart-5: 262 42% 50%;
+  --chart-6: 90 40% 32%;
+  --chart-seq-1: 214 45% 90%;
+  --chart-seq-2: 214 48% 74%;
+  --chart-seq-3: 214 52% 58%;
+  --chart-seq-4: 214 56% 42%;
+  --chart-seq-5: 214 62% 25%;
   --density-gap: 1rem;
   --density-pad: 1.5rem;
   --density-row: 2.75rem;
@@ -68,17 +68,17 @@
   --border: 240 4% 20%;
   --input: 240 4% 20%;
   --ring: 215 20% 65%;
-  --chart-1: 215 24% 70%;
-  --chart-2: 172 20% 62%;
-  --chart-3: 43 24% 66%;
-  --chart-4: 350 18% 72%;
-  --chart-5: 25 14% 68%;
-  --chart-6: 262 18% 74%;
-  --chart-seq-1: 215 12% 28%;
-  --chart-seq-2: 215 16% 40%;
-  --chart-seq-3: 215 18% 52%;
-  --chart-seq-4: 215 20% 64%;
-  --chart-seq-5: 215 22% 78%;
+  --chart-1: 214 75% 70%;
+  --chart-2: 170 50% 54%;
+  --chart-3: 36 85% 62%;
+  --chart-4: 345 70% 78%;
+  --chart-5: 262 60% 76%;
+  --chart-6: 90 45% 68%;
+  --chart-seq-1: 214 20% 28%;
+  --chart-seq-2: 214 28% 42%;
+  --chart-seq-3: 214 36% 56%;
+  --chart-seq-4: 214 44% 70%;
+  --chart-seq-5: 214 50% 84%;
   --status-good: 140 20% 60%;
   --status-warn: 38 50% 62%;
   --status-bad: 6 40% 65%;
@@ -212,6 +212,12 @@ html.dark {
   --radius-sm: calc(var(--radius) - 4px);
 }
 
+details:not([open]) > :not(summary) { display: none; }
+
+.zone-good { fill: hsl(var(--status-good) / 0.14); }
+.zone-warn { fill: hsl(var(--status-warn) / 0.14); }
+.zone-bad { fill: hsl(var(--status-bad) / 0.14); }
+
 @layer base {
   body {
     margin: 0;
@@ -252,16 +258,35 @@ html.dark {
   }
 
   [data-chart-id="contexto"] .overflow-y-auto {
-    scrollbar-color: hsl(var(--muted)) hsl(var(--card));
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+  }
+
+  [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
   }
 
   [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-track,
   [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-corner {
-    background: hsl(var(--card));
+    background: transparent;
   }
 
   [data-chart-id="contexto"] .overflow-y-auto::-webkit-scrollbar-thumb {
-    border-color: hsl(var(--card));
+    border: 0;
+    background: hsl(var(--muted-foreground) / 0.45);
+  }
+
+  [aria-label="Tabela"] {
+    scrollbar-width: thin;
+  }
+
+  [aria-label="Tabela"]::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+
+  [aria-label="Tabela"]::-webkit-scrollbar-thumb {
+    border: 0;
   }
 }
 

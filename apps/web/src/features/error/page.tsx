@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react"
-import { isRouteErrorResponse, Link, useNavigate, useRouteError } from "react-router-dom"
+import { isRouteErrorResponse, Link, useLocation, useNavigate, useRouteError } from "react-router-dom"
+import { withFilters } from "@/lib/navLink"
 import { Button } from "@/components/ui/button"
 import { useMotionApi } from "@/motion/MotionProvider"
 import { motionVars, useMotion } from "@/motion/useMotion"
@@ -66,6 +67,7 @@ function Rise({ index, className, children }: { index: number; className?: strin
 
 export function ErrorPage({ code, title, message, detail, onRetry }: ErrorPageProps) {
   const navigate = useNavigate()
+  const { search } = useLocation()
   usePageReady(true)
   useEffect(() => {
     document.title = `${title} · Projeções IBGE`
@@ -86,7 +88,7 @@ export function ErrorPage({ code, title, message, detail, onRetry }: ErrorPagePr
       <Rise index={3} className="mt-6">
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link to="/">Ir para a visão geral</Link>
+            <Link to={withFilters("/", search)}>Ir para a visão geral</Link>
           </Button>
           <Button variant="outline" onClick={() => navigate(-1)}>
             Voltar
